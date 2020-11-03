@@ -9,30 +9,28 @@ use Hyperf\Contract\OnOpenInterface;
 use Swoole\Http\Request;
 use Swoole\Websocket\Frame;
 
-use Swoole\Server;
-use Swoole\WebSocket\Server as WebSocketServer;
-
 use Hyperf\Amqp\Producer;
 use App\Amqp\Producer\DemoProducer;
-
 
 class WebSocketController implements OnMessageInterface, OnOpenInterface, OnCloseInterface
 {
     public function onMessage($server, Frame $frame): void
     {
         $producer = container()->get(Producer::class);
-        $producer->produce(new DemoProducer('test'. date('Y-m-d H:i:s')));
 
-        //$server->push($frame->fd, 'Recv: ' . $frame->data);
+        $ip = config('ip_address');
+        $producer->produce(new DemoProducer("我是来自[{$ip} 服务器的消息]，{$frame->data}"));
     }
 
     public function onClose($server, int $fd, int $reactorId): void
     {
-        var_dump('closed');
+        echo PHP_EOL."FD : 【{$fd}】 已断开...";
     }
 
     public function onOpen($server, Request $request): void
     {
-        $server->push($request->fd, 'Opened');
+        $ip = config('ip_address');
+        $server->push($request->fd, "成功连接[{$ip}],IM 服务器");
+        echo PHP_EOL."FD : 【{$request->fd}】 成功连接...";
     }
 }

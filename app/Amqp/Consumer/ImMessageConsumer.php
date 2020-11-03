@@ -10,14 +10,13 @@ use Hyperf\Amqp\Message\ConsumerMessage;
 use PhpAmqpLib\Message\AMQPMessage;
 use Hyperf\Amqp\Message\Type;
 use Hyperf\Amqp\Builder\QueueBuilder;
-use Hyperf\Server\Server;
-use Hyperf\Server\ServerFactory;
 
 /**
- * @Consumer()
+ * @Consumer(name="IM信息消费")
  */
-class DemoConsumer extends ConsumerMessage
+class ImMessageConsumer extends ConsumerMessage
 {
+
     /**
      * 交换机名称
      *
@@ -33,18 +32,16 @@ class DemoConsumer extends ConsumerMessage
     public $type = Type::FANOUT;
 
     /**
-     * 绑定的队列名称
-     *
-     * @var string
-     */
-    public $queue = 'im:message:queue';
-
-    /**
      * 路由key
      *
      * @var string
      */
     public $routingKey = 'consumer:im:message';
+
+    public function __construct()
+    {
+        $this->setQueue('im:message:queue:'.config('ip_address'));
+    }
 
     /**
      * 重写创建队列生成类
@@ -67,8 +64,7 @@ class DemoConsumer extends ConsumerMessage
      */
     public function consumeMessage($data, AMQPMessage $message): string
     {
-        echo $data;
-        echo PHP_EOL;
+        echo PHP_EOL.$data;
 
         $server = server();
         foreach (server()->connections as $fd){

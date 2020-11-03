@@ -16,6 +16,9 @@ return [
     'app_name' => env('APP_NAME', 'skeleton'),
     'app_env' => env('APP_ENV', 'dev'),
     'scan_cacheable' => env('SCAN_CACHEABLE', false),
+
+    'ip_address'=>env('IP_ADDRESS', ''),
+
     StdoutLoggerInterface::class => [
         'log_level' => [
             LogLevel::ALERT,
