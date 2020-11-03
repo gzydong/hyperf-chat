@@ -19,7 +19,7 @@ return [
             'name' => 'http',
             'type' => Server::SERVER_HTTP,
             'host' => '0.0.0.0',
-            'port' => 9501,
+            'port' => 9503,
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
                 SwooleEvent::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
@@ -29,7 +29,7 @@ return [
             'name' => 'ws',
             'type' => Server::SERVER_WEBSOCKET,
             'host' => '0.0.0.0',
-            'port' => 9502,
+            'port' => 9504,
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
                 SwooleEvent::ON_HAND_SHAKE => [Hyperf\WebSocketServer\Server::class, 'onHandShake'],

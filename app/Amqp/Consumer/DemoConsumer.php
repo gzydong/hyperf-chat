@@ -37,7 +37,7 @@ class DemoConsumer extends ConsumerMessage
      *
      * @var string
      */
-    public $queue = 'im.message.queue';
+    public $queue = 'im:message:queue';
 
     /**
      * 路由key
@@ -69,6 +69,13 @@ class DemoConsumer extends ConsumerMessage
     {
         echo $data;
         echo PHP_EOL;
+
+        $server = server();
+        foreach (server()->connections as $fd){
+            if ($server->isEstablished($fd)) {
+                $server->push($fd, "Recv: 我是后台进程 [{$data}]");
+            }
+        }
 
         return Result::ACK;
     }

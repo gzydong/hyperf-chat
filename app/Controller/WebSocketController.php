@@ -7,15 +7,23 @@ use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
 use Swoole\Http\Request;
-use Swoole\Server;
 use Swoole\Websocket\Frame;
+
+use Swoole\Server;
 use Swoole\WebSocket\Server as WebSocketServer;
+
+use Hyperf\Amqp\Producer;
+use App\Amqp\Producer\DemoProducer;
+
 
 class WebSocketController implements OnMessageInterface, OnOpenInterface, OnCloseInterface
 {
     public function onMessage($server, Frame $frame): void
     {
-        $server->push($frame->fd, 'Recv: ' . $frame->data);
+        $producer = container()->get(Producer::class);
+        $producer->produce(new DemoProducer('test'. date('Y-m-d H:i:s')));
+
+        //$server->push($frame->fd, 'Recv: ' . $frame->data);
     }
 
     public function onClose($server, int $fd, int $reactorId): void

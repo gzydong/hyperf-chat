@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Hyperf\HttpServer\Contract\ResponseInterface;
+
 use Hyperf\Amqp\Producer;
 use App\Amqp\Producer\DemoProducer;
 
@@ -22,13 +23,12 @@ class IndexController extends AbstractController
         $user = $this->request->input('user', 'Hyperf');
         $method = $this->request->getMethod();
 
-        $producer = $this->container->get(Producer::class);
-
+        $producer = container()->get(Producer::class);
         $producer->produce(new DemoProducer('test'. date('Y-m-d H:i:s')));
 
         return [
             'method' => $method,
-            'message' => "Hello {$user}.",
+            'message' => "Hello {$user}."
         ];
     }
 }
