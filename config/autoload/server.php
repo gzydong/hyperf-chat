@@ -40,7 +40,7 @@ return [
     ],
     'settings' => [
         'enable_coroutine' => true,
-        'worker_num' => 1,
+        'worker_num' => swoole_cpu_num(),
         'pid_file' => BASE_PATH . '/runtime/hyperf.pid',
         'open_tcp_nodelay' => true,
         'max_coroutine' => 100000,
@@ -48,6 +48,7 @@ return [
         'max_request' => 100000,
         'socket_buffer_size' => 3 * 1024 * 1024,
         'buffer_output_size' => 3 * 1024 * 1024,
+        'package_max_length'=> 10 * 1024 * 1024,
     ],
     'callbacks' => [
         SwooleEvent::ON_WORKER_START => [Hyperf\Framework\Bootstrap\WorkerStartCallback::class, 'onWorkerStart'],

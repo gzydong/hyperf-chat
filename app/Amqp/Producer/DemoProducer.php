@@ -28,6 +28,14 @@ class DemoProducer extends ProducerMessage
 
     public function __construct($data)
     {
+        $message = [
+            'method'=>'', //
+            'sender'=>'', // 发送者
+            'receive'=>'', // 接收者
+            'receiveType'=>'',
+            'message'=>[]
+        ];
+
         $this->payload = $data;
     }
 }
