@@ -8,9 +8,8 @@ use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
 use Swoole\Http\Request;
 use Swoole\Websocket\Frame;
-
 use Hyperf\Amqp\Producer;
-use App\Amqp\Producer\DemoProducer;
+use App\Amqp\Producer\ChatMessageProducer;
 
 class WebSocketController implements OnMessageInterface, OnOpenInterface, OnCloseInterface
 {
@@ -19,7 +18,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $producer = container()->get(Producer::class);
 
         $ip = config('ip_address');
-        $producer->produce(new DemoProducer("我是来自[{$ip} 服务器的消息]，{$frame->data}"));
+        $producer->produce(new ChatMessageProducer("我是来自[{$ip} 服务器的消息]，{$frame->data}"));
     }
 
     public function onClose($server, int $fd, int $reactorId): void

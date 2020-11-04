@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 /**
  * This file is part of Hyperf.
  *
@@ -17,12 +18,9 @@ Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\IndexController@i
 
 Router::post('/upload', 'App\Controller\IndexController@upload',['middleware' => [CorsMiddleware::class]]);
 
-
 Router::get('/favicon.ico', function () {
     return '';
 });
-
-
 
 Router::addServer('ws', function () {
     Router::get('/', 'App\Controller\WebSocketController');

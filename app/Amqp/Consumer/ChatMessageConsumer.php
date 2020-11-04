@@ -12,11 +12,10 @@ use Hyperf\Amqp\Message\Type;
 use Hyperf\Amqp\Builder\QueueBuilder;
 
 /**
- * @Consumer(name="IM信息消费",enable=true)
+ * @Consumer(name=" ChatMessage ",enable=true)
  */
-class ImMessageConsumer extends ConsumerMessage
+class ChatMessageConsumer extends ConsumerMessage
 {
-
     /**
      * 交换机名称
      *
@@ -43,7 +42,7 @@ class ImMessageConsumer extends ConsumerMessage
      */
     public function __construct()
     {
-        $this->setQueue('im:message:queue:'.config('ip_address'));
+        $this->setQueue('im:message:queue:' . config('ip_address'));
     }
 
     /**
@@ -67,10 +66,10 @@ class ImMessageConsumer extends ConsumerMessage
      */
     public function consumeMessage($data, AMQPMessage $message): string
     {
-        echo PHP_EOL.$data;
+        echo PHP_EOL . $data;
 
         $server = server();
-        foreach (server()->connections as $fd){
+        foreach (server()->connections as $fd) {
             if ($server->isEstablished($fd)) {
                 $server->push($fd, "Recv: 我是后台进程 [{$data}]");
             }
@@ -82,7 +81,8 @@ class ImMessageConsumer extends ConsumerMessage
     /**
      * @param $data
      */
-    public function getClientFds($data){
+    public function getClientFds($data)
+    {
 
     }
 }
