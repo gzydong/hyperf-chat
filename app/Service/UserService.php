@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Model\User;
 use App\Model\ArticleClass;
+use Hyperf\DbConnection\Db;
 
 class UserService extends BaseService
 {
@@ -37,8 +38,9 @@ class UserService extends BaseService
     public function register(array $data)
     {
         try {
-            $data['password'] = Hash::make($data['password']);
+            $data['password'] = create_password($data['password']);
             $data['created_at'] = date('Y-m-d H:i:s');
+
             $result = User::create($data);
 
             // 创建用户的默认笔记分类
@@ -49,9 +51,8 @@ class UserService extends BaseService
                 'sort' => 1,
                 'created_at' => time()
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $result = false;
-            DB::rollBack();
         }
 
         return $result ? true : false;

@@ -26,12 +26,19 @@ class ArticleClass extends Model
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'user_id',
+        'class_name',
+        'sort',
+        'is_default',
+        'created_at',
+    ];
+
 
     /**
      * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'user_id' => 'integer', 'sort' => 'integer', 'is_default' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = ['id' => 'integer', 'user_id' => 'integer', 'sort' => 'integer', 'is_default' => 'integer', 'created_at' => 'int'];
 }

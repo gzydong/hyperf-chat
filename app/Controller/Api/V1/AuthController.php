@@ -3,6 +3,7 @@
 namespace App\Controller\Api\V1;
 
 use App\Constants\ResponseCode;
+use App\Model\User;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -32,6 +33,12 @@ class AuthController extends CController
     private $jwt;
 
     /**
+     * @Inject
+     * @var SmsCodeService
+     */
+    private $smsCodeService;
+
+    /**
      * 授权登录接口
      *
      * @RequestMapping(path="login", methods="post")
@@ -54,6 +61,7 @@ class AuthController extends CController
             $this->request->input('mobile'),
             $this->request->input('password')
         );
+
         if (!$userInfo) {
             return $this->response->fail('账号不存在或密码填写错误...', ResponseCode::FAIL);
         }
@@ -100,10 +108,9 @@ class AuthController extends CController
      *
      * @RequestMapping(path="register", methods="post")
      *
-     * @param SmsCodeService $smsCodeService
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function register(SmsCodeService $smsCodeService)
+    public function register()
     {
         $params = $this->request->all();
         $this->validate($params, [
@@ -114,8 +121,8 @@ class AuthController extends CController
             'platform' => 'required|in:h5,ios,windows,mac',
         ]);
 
-        if (!$smsCodeService->check('user_register', $params['mobile'], $params['sms_code'])) {
-            return $this->response->fail('验证码填写错误...');
+        if (!$this->smsCodeService->check('user_register', $params['mobile'], $params['sms_code'])) {
+            //return $this->response->fail('验证码填写错误...');
         }
 
         $isTrue = $this->userService->register([
@@ -124,11 +131,12 @@ class AuthController extends CController
             'nickname' => strip_tags($params['nickname']),
         ]);
 
-        if ($isTrue) {
-            $smsCodeService->delCode('user_register', $params['mobile']);
+        if (!$isTrue) {
+            return $this->response->fail('账号注册失败...');
         }
 
-        return $this->response->success([], 'Successfully logged out');
+        $this->smsCodeService->delCode('user_register', $params['mobile']);
+        return $this->response->success([], '账号注册成功...');
     }
 
     /**
@@ -138,7 +146,24 @@ class AuthController extends CController
      */
     public function forget()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
+            'password' => 'required',
+            'sms_code' => 'required|integer|max:999999',
+        ]);
 
+        if (!$this->smsCodeService->check('forget_password', $params['mobile'], $params['sms_code'])) {
+            return $this->response->fail('验证码填写错误...', ResponseCode::FAIL);
+        }
+
+        $isTrue = $this->userService->resetPassword($params['mobile'], $params['password']);
+        if ($isTrue) {
+            $this->smsCodeService->delCode('forget_password', $params['mobile']);
+            return $this->response->success([], '账号注册成功...');
+        }
+
+        return $this->response->fail('重置密码失败...', ResponseCode::FAIL);
     }
 
     /**
@@ -155,5 +180,46 @@ class AuthController extends CController
                 'expire' => $this->jwt->getTTL()
             ]
         ], '刷新 Token 成功...');
+    }
+
+    /**
+     * 发送验证码
+     *
+     * @RequestMapping(path="send-code", methods="post")
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function sendVerifyCode()
+    {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'type' => "required",
+            'mobile' => "required|regex:/^1[345789][0-9]{9}$/"
+        ]);
+
+        if (!$this->smsCodeService->isUsages($params['type'])) {
+            return $this->response->fail('验证码发送失败...');
+        }
+
+        if ($params['type'] == 'forget_password') {
+            if (!User::where('mobile', $params['mobile'])->value('id')) {
+                return $this->response->fail('手机号未被注册使用...');
+            }
+        } else if ($params['type'] == 'change_mobile' || $params['type'] == 'user_register') {
+            if (User::where('mobile', $params['mobile'])->value('id')) {
+                return $this->response->fail('手机号已被他(她)人注册...');
+            }
+        }
+
+        $data = ['is_debug' => true];
+        [$isTrue, $result] = $this->smsCodeService->send($params['type'], $params['mobile']);
+        if ($isTrue) {
+            // 测试环境下直接返回验证码
+            $data['sms_code'] = $result['data']['code'];
+        } else {
+            // ... 处理发送失败逻辑，当前默认发送成功
+        }
+
+        return $this->response->success($data, '验证码发送成功...');
     }
 }
