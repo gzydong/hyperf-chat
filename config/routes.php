@@ -18,6 +18,11 @@ Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\IndexController@i
 
 Router::post('/upload', 'App\Controller\IndexController@upload',['middleware' => [CorsMiddleware::class]]);
 
+
+
+
+
+
 Router::get('/favicon.ico', function () {
     return '';
 });

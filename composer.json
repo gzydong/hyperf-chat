@@ -29,7 +29,9 @@
         "hyperf/async-queue": "~2.0.0",
         "hyperf/amqp": "~2.0.0",
         "hyperf/websocket-server": "^2.0",
-        "hyperf/constants": "^2.0"
+        "hyperf/constants": "^2.0",
+        "hyperf/validation": "^2.0",
+        "phper666/jwt-auth": "^3.0"
     },
     "require-dev": {
         "swoole/ide-helper": "^4.5",

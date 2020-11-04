@@ -10,6 +10,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace App\Controller;
 
 use Hyperf\Di\Annotation\Inject;
@@ -51,11 +52,11 @@ abstract class AbstractController
      *
      * @param mixed ...$arg
      */
-    protected function validate(...$arg){
+    protected function validate(...$arg)
+    {
         $validator = $this->validationFactory->make(...$arg);
-
         if ($validator->fails()) {
-            throw new ValidateException($validator->errors()->first(),ResponseCode::VALIDATION_ERROR);
+            throw new ValidateException($validator->errors()->first(), ResponseCode::VALIDATION_ERROR);
         }
     }
 }

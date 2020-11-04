@@ -17,7 +17,7 @@ use Hyperf\ExceptionHandler\ExceptionHandler;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
-
+use Phper666\JWTAuth\Exception\TokenValidException;
 class AppExceptionHandler extends ExceptionHandler
 {
     /**
@@ -36,6 +36,11 @@ class AppExceptionHandler extends ExceptionHandler
         if($throwable instanceof  ValidateException){
             return $response;
         }
+
+        if($throwable instanceof  TokenValidException){
+            return $response;
+        }
+
 
         $this->logger->error(sprintf('%s[%s] in %s', $throwable->getMessage(), $throwable->getLine(), $throwable->getFile()));
         $this->logger->error($throwable->getTraceAsString());

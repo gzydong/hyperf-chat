@@ -111,3 +111,13 @@ if (!function_exists('response')) {
         return container()->get(ResponseInterface::class);
     }
 }
+
+/**
+ * 获取加密后的密码字符
+ *
+ * @param string $password
+ * @return bool|false|null|string
+ */
+function create_password(string $password){
+    return password_hash($password, PASSWORD_DEFAULT);
+}
