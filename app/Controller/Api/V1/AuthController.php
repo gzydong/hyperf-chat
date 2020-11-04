@@ -8,6 +8,7 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Service\UserService;
+use App\Service\SmsCodeService;
 use Phper666\JWTAuth\JWT;
 use Phper666\JWTAuth\Middleware\JWTAuthMiddleware;
 
@@ -45,8 +46,8 @@ class AuthController extends CController
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
             'platform' => 'required|in:h5,ios,windows,mac',
-        ],[
-            'mobile.regex'=>'mobile 格式不正确'
+        ], [
+            'mobile.regex' => 'mobile 格式不正确'
         ]);
 
         $userInfo = $this->userService->login(
@@ -84,7 +85,7 @@ class AuthController extends CController
     /**
      * 退出登录接口
      *
-     * @RequestMapping(path="logout", methods="get,post")
+     * @RequestMapping(path="logout", methods="post")
      * @Middleware(JWTAuthMiddleware::class)
      */
     public function logout()
@@ -96,10 +97,38 @@ class AuthController extends CController
 
     /**
      * 账号注册接口
+     *
+     * @RequestMapping(path="register", methods="post")
+     *
+     * @param SmsCodeService $smsCodeService
+     * @return \Psr\Http\Message\ResponseInterface
      */
-    public function register()
+    public function register(SmsCodeService $smsCodeService)
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'nickname' => "required",
+            'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
+            'password' => 'required',
+            'sms_code' => 'required|integer|max:999999',
+            'platform' => 'required|in:h5,ios,windows,mac',
+        ]);
 
+        if (!$smsCodeService->check('user_register', $params['mobile'], $params['sms_code'])) {
+            return $this->response->fail('验证码填写错误...');
+        }
+
+        $isTrue = $this->userService->register([
+            'mobile' => $params['mobile'],
+            'password' => $params['password'],
+            'nickname' => strip_tags($params['nickname']),
+        ]);
+
+        if ($isTrue) {
+            $smsCodeService->delCode('user_register', $params['mobile']);
+        }
+
+        return $this->response->success([], 'Successfully logged out');
     }
 
     /**
