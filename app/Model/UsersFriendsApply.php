@@ -12,7 +12,7 @@ namespace App\Model;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class UsersFriendsApply extends Model
+class UsersFriendsApply extends BaseModel
 {
     /**
      * The table associated with the model.

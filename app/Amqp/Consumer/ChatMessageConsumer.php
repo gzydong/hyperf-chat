@@ -75,7 +75,7 @@ class ChatMessageConsumer extends ConsumerMessage
             }
         }
 
-        return Result::ACK;
+        return Result::NACK;
     }
 
     /**

@@ -15,7 +15,7 @@ namespace App\Model;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class UsersChatList extends Model
+class UsersChatList extends BaseModel
 {
     /**
      * The table associated with the model.
@@ -36,5 +36,16 @@ class UsersChatList extends Model
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'type' => 'integer', 'uid' => 'integer', 'friend_id' => 'integer', 'group_id' => 'integer', 'status' => 'integer', 'is_top' => 'integer', 'not_disturb' => 'integer', 'created_at' => 'datetime', 'updated_at' => 'datetime'];
+    protected $casts = [
+        'id' => 'integer',
+        'type' => 'integer',
+        'uid' => 'integer',
+        'friend_id' => 'integer',
+        'group_id' => 'integer',
+        'status' => 'integer',
+        'is_top' => 'integer',
+        'not_disturb' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
 }

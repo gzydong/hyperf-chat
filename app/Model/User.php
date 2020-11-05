@@ -16,7 +16,7 @@ namespace App\Model;
  *
  * @package App\Model
  */
-class User extends Model
+class User extends BaseModel
 {
     /**
      * The table associated with the model.

@@ -53,8 +53,6 @@ class AuthController extends CController
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
             'platform' => 'required|in:h5,ios,windows,mac',
-        ], [
-            'mobile.regex' => 'mobile 格式不正确'
         ]);
 
         $userInfo = $this->userService->login(

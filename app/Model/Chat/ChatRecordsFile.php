@@ -2,7 +2,9 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Chat;
+
+use App\Model\BaseModel;
 
 /**
  * @property int $id
@@ -18,7 +20,7 @@ namespace App\Model;
  * @property int $is_delete
  * @property \Carbon\Carbon $created_at
  */
-class ChatRecordsFile extends Model
+class ChatRecordsFile extends BaseModel
 {
     /**
      * The table associated with the model.

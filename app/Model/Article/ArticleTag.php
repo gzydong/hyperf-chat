@@ -2,24 +2,25 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Article;
+
+use App\Model\BaseModel;
 
 /**
  * @property int $id
- * @property int $record_id
  * @property int $user_id
- * @property string $records_id
- * @property string $text
+ * @property string $tag_name
+ * @property int $sort
  * @property \Carbon\Carbon $created_at
  */
-class ChatRecordsForward extends Model
+class ArticleTag extends BaseModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'chat_records_forward';
+    protected $table = 'article_tags';
 
     /**
      * The attributes that are mass assignable.
@@ -33,5 +34,10 @@ class ChatRecordsForward extends Model
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'record_id' => 'integer', 'user_id' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = [
+        'id' => 'integer',
+        'user_id' => 'integer',
+        'sort' => 'integer',
+        'created_at' => 'datetime'
+    ];
 }

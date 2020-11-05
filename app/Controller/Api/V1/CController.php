@@ -3,7 +3,7 @@
 namespace App\Controller\Api\V1;
 
 use App\Controller\AbstractController;
-use App\Supports\Http\Response;
+use App\Support\Http\Response;
 use Hyperf\Di\Annotation\Inject;
 use Phper666\JWTAuth\JWT;
 

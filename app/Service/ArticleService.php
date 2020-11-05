@@ -2,13 +2,14 @@
 
 namespace App\Service;
 
-
-use App\Model\Article;
-use App\Model\ArticleClass;
-use App\Model\ArticleTag;
-use App\Model\ArticleAnnex;
+use App\Model\Article\Article;
+use App\Model\Article\ArticleClass;
+use App\Model\Article\ArticleDetail;
+use App\Model\Article\ArticleTag;
+use App\Model\Article\ArticleAnnex;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
+use Exception;
 
 class ArticleService extends BaseService
 {
@@ -159,4 +160,442 @@ class ArticleService extends BaseService
         ])->get(['id', 'file_suffix', 'file_size', 'original_name', 'created_at'])->toArray();
     }
 
+    /**
+     * 编辑笔记分类
+     *
+     * @param int $uid 用户ID
+     * @param int $class_id 分类ID
+     * @param string $class_name 分类名
+     * @return bool|int
+     */
+    public function editArticleClass(int $uid, int $class_id, string $class_name)
+    {
+        if ($class_id) {
+            if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->update(['class_name' => $class_name])) {
+                return false;
+            }
+
+            return $class_id;
+        }
+
+        $arr = [];
+        $items = ArticleClass::where('user_id', $uid)->get(['id', 'sort']);
+        foreach ($items as $key => $item) {
+            $arr[] = ['id' => $item->id, 'sort' => $key + 2];
+        }
+
+        unset($items);
+
+        Db::beginTransaction();
+        try {
+            foreach ($arr as $val) {
+                ArticleClass::where('id', $val['id'])->update(['sort' => $val['sort']]);
+            }
+
+            $insRes = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => 1, 'created_at' => time()]);
+            if (!$insRes) {
+                throw new Exception('笔记分类添加失败..,.');
+            }
+
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollBack();
+            return false;
+        }
+
+        return $insRes->id;
+    }
+
+    /**
+     * 删除笔记分类
+     *
+     * @param int $uid 用户ID
+     * @param int $class_id 分类ID
+     * @return bool
+     */
+    public function delArticleClass(int $uid, int $class_id)
+    {
+        if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->exists()) {
+            return false;
+        }
+
+        $count = Article::where('user_id', $uid)->where('class_id', $class_id)->count();
+        if ($count > 0) {
+            return false;
+        }
+
+        return (bool)ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->delete();
+    }
+
+    /**
+     * 文集分类排序
+     *
+     * @param int $user_id 用户ID
+     * @param int $class_id 文集分类ID
+     * @param int $sort_type 排序方式
+     * @return bool
+     */
+    public function articleClassSort(int $user_id, int $class_id, int $sort_type)
+    {
+        if (!$info = ArticleClass::select(['id', 'sort'])->where('id', $class_id)->where('user_id', $user_id)->first()) {
+            return false;
+        }
+
+        //向下排序
+        if ($sort_type == 1) {
+            $maxSort = ArticleClass::where('user_id', $user_id)->max('sort');
+            if ($maxSort == $info->sort) {
+                return false;
+            }
+
+            DB::beginTransaction();
+            try {
+                ArticleClass::where('user_id', $user_id)->where('sort', $info->sort + 1)->update([
+                    'sort' => $info->sort
+                ]);
+
+                ArticleClass::where('id', $class_id)->update([
+                    'sort' => $info->sort + 1
+                ]);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return false;
+            }
+
+            return true;
+        } else if ($sort_type == 2) {//向上排序
+            $minSort = ArticleClass::where('user_id', $user_id)->min('sort');
+            if ($minSort == $info->sort) {
+                return false;
+            }
+
+            DB::beginTransaction();
+            try {
+                ArticleClass::where('user_id', $user_id)->where('sort', $info->sort - 1)->update([
+                    'sort' => $info->sort
+                ]);
+
+                ArticleClass::where('id', $class_id)->where('user_id', $user_id)->update([
+                    'sort' => $info->sort - 1
+                ]);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    /**
+     * 笔记分类合并
+     *
+     * @param int $user_id 用户ID
+     * @param int $class_id 笔记分类ID
+     * @param int $to_class_id 笔记分类ID
+     * @return bool
+     */
+    public function mergeArticleClass(int $user_id, int $class_id, int $to_class_id)
+    {
+        $count = ArticleClass::whereIn('id', [$class_id, $to_class_id])->where('user_id', $user_id)->count();
+        if ($count < 2) {
+            return false;
+        }
+
+        return (boolean)Article::where('class_id', $class_id)->where('user_id', $user_id)->update([
+            'class_id' => $to_class_id
+        ]);
+    }
+
+    /**
+     * 编辑笔记标签
+     *
+     * @param int $uid 用户ID
+     * @param int $tag_id 标签ID
+     * @param string $tag_name 标签名
+     * @return bool|int
+     */
+    public function editArticleTag(int $uid, int $tag_id, string $tag_name)
+    {
+        $id = ArticleTag::where('user_id', $uid)->where('tag_name', $tag_name)->value('id');
+        if ($tag_id) {
+            if ($id && $id != $tag_id) {
+                return false;
+            }
+
+            return ArticleTag::where('id', $tag_id)->where('user_id', $uid)->update(['tag_name' => $tag_name]) ? $tag_id : false;
+        } else {
+            //判断新添加的标签名是否存在
+            if ($id) {
+                return false;
+            }
+
+            $insRes = ArticleTag::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
+            if (!$insRes) {
+                return false;
+            }
+
+            return $insRes->id;
+        }
+    }
+
+    /**
+     * 删除笔记标签
+     *
+     * @param int $uid 用户ID
+     * @param int $tag_id 标签ID
+     * @return bool
+     */
+    public function delArticleTags(int $uid, int $tag_id)
+    {
+        if (!ArticleTag::where('id', $tag_id)->where('user_id', $uid)->exists()) {
+            return false;
+        }
+
+        $count = Article::where('user_id', $uid)->whereRaw("FIND_IN_SET({$tag_id},tags_id)")->count();
+        if ($count > 0) {
+            return false;
+        }
+
+        return (bool)ArticleTag::where('id', $tag_id)->where('user_id', $uid)->delete();
+    }
+
+    /**
+     * 编辑文章信息
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 文章ID
+     * @param array $data 文章数据
+     * @return bool
+     */
+    public function editArticle(int $user_id, int $article_id, $data = [])
+    {
+        if ($article_id) {
+            if (!$info = Article::where('id', $article_id)->where('user_id', $user_id)->first()) {
+                return false;
+            }
+
+            Db::beginTransaction();
+            try {
+                Article::where('id', $article_id)->where('user_id', $user_id)->update([
+                    'class_id' => $data['class_id'],
+                    'title' => $data['title'],
+                    'abstract' => $data['abstract'],
+                    'image' => $data['image'] ? $data['image'][0] : '',
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+
+                ArticleDetail::where('article_id', $article_id)->update([
+                    'md_content' => $data['md_content'],
+                    'content' => $data['content']
+                ]);
+
+                Db::commit();
+                return $article_id;
+            } catch (Exception $e) {
+                Db::rollBack();
+            }
+
+            return false;
+        }
+
+        Db::beginTransaction();
+        try {
+            $res = Article::create([
+                'user_id' => $user_id,
+                'class_id' => $data['class_id'],
+                'title' => $data['title'],
+                'abstract' => $data['abstract'],
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+            ArticleDetail::create([
+                'article_id' => $res->id,
+                'md_content' => $data['md_content'],
+                'content' => $data['content']
+            ]);
+
+            Db::commit();
+            return $res->id;
+        } catch (Exception $e) {
+            Db::rollBack();
+
+            var_dump($e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * 更新笔记状态
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 笔记ID
+     * @param int $status 笔记状态 1:正常 2:已删除
+     * @return bool
+     */
+    public function updateArticleStatus(int $user_id, int $article_id, int $status)
+    {
+        $data = ['status' => $status];
+        if ($status == 2) {
+            $data['deleted_at'] = date('Y-m-d H:i:s');
+        }
+
+        return Article::where('id', $article_id)->where('user_id', $user_id)->update($data);
+    }
+
+    /**
+     * 笔记移动至指定分类
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 笔记ID
+     * @param int $class_id 笔记分类ID
+     * @return bool
+     */
+    public function moveArticle(int $user_id, int $article_id, int $class_id)
+    {
+        return (boolean)Article::where('id', $article_id)->where('user_id', $user_id)->update(['class_id' => $class_id]);
+    }
+
+    /**
+     * 笔记标记星号
+     *
+     * @param int $user_id 用户ID
+     * @param int $article_id 笔记ID
+     * @param int $type 1:标记星号 2:取消星号标记
+     * @return bool
+     */
+    public function setAsteriskArticle(int $user_id, int $article_id, int $type)
+    {
+        return (boolean)Article::where('id', $article_id)->where('user_id', $user_id)->update([
+            'is_asterisk' => $type == 1 ? 1 : 0
+        ]);
+    }
+
+    /**
+     * 更新笔记关联标签
+     *
+     * @param int $uid 用户ID
+     * @param int $article_id 笔记ID
+     * @param array $tags 关联标签ID
+     * @return bool
+     */
+    public function updateArticleTag(int $uid, int $article_id, array $tags)
+    {
+        return (bool)Article::where('id', $article_id)->where('user_id', $uid)->update(['tags_id' => implode(',', $tags)]);
+    }
+
+    /**
+     * 永久删除回收站中的笔记
+     *
+     * @param int $uid 用户ID
+     * @param int $article_id 笔记ID
+     * @return bool|int|mixed|null
+     * @throws Exception
+     */
+    public function foreverDelArticle(int $uid, int $article_id)
+    {
+        $info = Article::where('id', $article_id)->where('user_id', $uid)->where('status', 2)->first(['id', 'title']);
+        if (!$info) {
+            return false;
+        }
+
+        $annex_files = $info->annexs()->get(['id', 'article_id', 'save_dir'])->toArray();
+
+        //判断笔记是否存在附件，不存在直接删除
+        if (count($annex_files) == 0) {
+            return $info->delete();
+        }
+
+        Db::beginTransaction();
+        try {
+            $info->detail->delete();
+
+            if (!$info->delete()) {
+                throw new Exception('删除笔记失败...');
+            }
+
+            if (!ArticleAnnex::whereIn('id', array_column($annex_files, 'id'))->delete()) {
+                throw new Exception('删除笔记附件失败...');
+            }
+
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollBack();
+            return false;
+        }
+
+        // 从磁盘中永久删除文件附件
+        foreach ($annex_files as $item) {
+            //Storage::disk('uploads')->delete($item['save_dir']);
+        }
+
+        return true;
+    }
+
+    /**
+     * 更新笔记附件状态
+     *
+     * @param int $user_id 用户ID
+     * @param int $annex_id 附件ID
+     * @param int $status 附件状态 1:正常 2:已删除
+     * @return bool
+     */
+    public function updateArticleAnnexStatus(int $user_id, int $annex_id, int $status)
+    {
+        $data = ['status' => $status];
+        if ($status == 2) {
+            $data['deleted_at'] = date('Y-m-d H:i:s');
+        }
+
+        return ArticleAnnex::where('id', $annex_id)->where('user_id', $user_id)->update($data) ? true : false;
+    }
+
+    /**
+     * 回收站附件列表
+     *
+     * @param int $uid 用户ID
+     * @return array
+     */
+    public function recoverAnnexList(int $uid)
+    {
+        return ArticleAnnex::join('article', 'article.id', '=', 'article_annex.article_id')
+            ->where('article_annex.user_id', $uid)
+            ->where('article_annex.status', 2)
+            ->get([
+                'article_annex.id',
+                'article_annex.article_id',
+                'article.title',
+                'article_annex.original_name',
+                'article_annex.deleted_at'
+            ])->toArray();
+    }
+
+    /**
+     * 永久删除笔记附件(从磁盘中永久删除)
+     *
+     * @param int $uid 用户ID
+     * @param int $annex_id 笔记附件ID
+     * @return bool|int|mixed|null
+     * @throws Exception
+     */
+    public function foreverDelAnnex(int $uid, int $annex_id)
+    {
+        $info = ArticleAnnex::where('id', $annex_id)->where('user_id', $uid)->where('status', 2)->first(['id', 'save_dir']);
+        if (!$info) {
+            return false;
+        }
+
+        // 将文件从磁盘中删除
+//        if (!Storage::disk('uploads')->delete($info->save_dir)) {
+//            return false;
+//        }
+
+        return $info->delete();
+    }
 }

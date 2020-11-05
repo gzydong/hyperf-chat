@@ -3,6 +3,7 @@
 namespace App\Controller\Api\V1;
 
 use App\Service\ArticleService;
+use App\Support\RedisLock;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -32,10 +33,8 @@ class ArticleController extends CController
      */
     public function getArticleClass()
     {
-        $user_id = $this->uid();
-
         return $this->response->success(
-            $this->articleService->getUserClass($user_id)
+            $this->articleService->getUserClass($this->uid())
         );
     }
 
@@ -46,10 +45,8 @@ class ArticleController extends CController
      */
     public function getArticleTags()
     {
-        $user_id = $this->uid();
-
         return $this->response->success(
-            $this->articleService->getUserTags($user_id)
+            $this->articleService->getUserTags($this->uid())
         );
     }
 
@@ -100,12 +97,12 @@ class ArticleController extends CController
             'article_id' => 'required|integer',
         ]);
 
-        $data = $this->articleService->getArticleDetail(
-            $this->request->input('article_id'),
-            $this->uid()
+        return $this->response->success(
+            $this->articleService->getArticleDetail(
+                $this->request->input('article_id'),
+                $this->uid()
+            )
         );
-
-        return $this->response->success($data);
     }
 
     /**
@@ -115,7 +112,18 @@ class ArticleController extends CController
      */
     public function editArticleClass()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'class_id' => 'required|integer',
+            'class_name' => 'required',
+        ]);
 
+        $class_id = $this->articleService->editArticleClass($this->uid(), $params['class_id'], $params['class_name']);
+        if (!$class_id) {
+            return $this->response->fail('笔记分类编辑失败...');
+        }
+
+        return $this->response->success(['id' => $class_id]);
     }
 
     /**
@@ -125,7 +133,16 @@ class ArticleController extends CController
      */
     public function delArticleClass()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'class_id' => 'required|integer'
+        ]);
 
+        if (!$this->articleService->delArticleClass($this->uid(), $params['class_id'])) {
+            return $this->response->fail('笔记分类删除失败...');
+        }
+
+        return $this->response->success([], '笔记分类删除成功...');
     }
 
     /**
@@ -135,7 +152,27 @@ class ArticleController extends CController
      */
     public function articleClassSort()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'class_id' => 'required|integer',
+            'sort_type' => 'required|in:1,2'
+        ]);
 
+        $lockKey = "article_class_sort:{$params['class_id']}_{$params['sort_type']}";
+
+        // 获取Redis锁
+        if (RedisLock::lock($lockKey, 0, 5)) {
+            $isTrue = $this->articleService->articleClassSort($this->uid(), $params['class_id'], $params['sort_type']);
+
+            // 释放Redis锁
+            RedisLock::release($lockKey, 0);
+        } else {
+            $isTrue = false;
+        }
+
+        return $isTrue
+            ? $this->response->success([], '排序完成...')
+            : $this->response->fail('排序失败...');
     }
 
     /**
@@ -145,7 +182,17 @@ class ArticleController extends CController
      */
     public function mergeArticleClass()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'class_id' => 'required|integer',
+            'toid' => 'required|integer'
+        ]);
 
+        $isTrue = $this->articleService->mergeArticleClass($this->uid(), $params['class_id'], $params['toid']);
+
+        return $isTrue
+            ? $this->response->success([], '合并完成...')
+            : $this->response->fail('合并完成...');
     }
 
     /**
@@ -155,7 +202,21 @@ class ArticleController extends CController
      */
     public function editArticleTags()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'tag_id' => 'required|integer|min:0',
+            'tag_name' => 'required'
+        ]);
 
+        $id = $this->articleService->editArticleTag(
+            $this->uid(),
+            $this->request->post('tag_id', 0),
+            $this->request->post('tag_name', '')
+        );
+
+        return $id
+            ? $this->response->success(['id' => $id])
+            : $this->response->fail('笔记标签编辑失败...');
     }
 
     /**
@@ -165,17 +226,46 @@ class ArticleController extends CController
      */
     public function delArticleTags()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'tag_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->delArticleTags($this->uid(), $params['tag_id']);
+
+        return $isTrue
+            ? $this->response->success([], '笔记标签删除完成...')
+            : $this->response->fail('笔记标签删除失败...');
     }
 
     /**
-     * 编辑笔记信息
+     * 添加或编辑笔记
      *
      * @RequestMapping(path="edit-article", methods="post")
      */
     public function editArticle()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0',
+            'class_id' => 'required|integer|min:0',
+            'title' => 'required|max:255',
+            'content' => 'required',
+            'md_content' => 'required',
+        ]);
 
+        $id = $this->articleService->editArticle($this->uid(), $params['article_id'], [
+            'title' => $params['title'],
+            'abstract' => mb_substr(strip_tags($params['content']), 0, 200),
+            'class_id' => $params['class_id'],
+            'image' => get_html_images($params['content']),
+            'md_content' => htmlspecialchars($params['md_content']),
+            'content' => htmlspecialchars($params['content'])
+        ]);
+
+        return $id
+            ? $this->response->success(['aid' => $id], '笔记编辑成功...')
+            : $this->response->fail('笔记编辑失败...', ['id' => null]);
     }
 
     /**
@@ -185,17 +275,34 @@ class ArticleController extends CController
      */
     public function deleteArticle()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->updateArticleStatus($this->uid(), $params['article_id'], 2);
+
+        return $isTrue
+            ? $this->response->success([], '笔记删除成功...')
+            : $this->response->fail('笔记删除失败...');
     }
 
     /**
-     * 恢复笔记
+     * 恢复删除笔记
      *
      * @RequestMapping(path="recover-article", methods="post")
      */
     public function recoverArticle()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->updateArticleStatus($this->uid(), $params['article_id'], 1);
+        return $isTrue
+            ? $this->response->success([], '笔记恢复成功...')
+            : $this->response->fail('笔记恢复失败...');
     }
 
     /**
@@ -208,7 +315,6 @@ class ArticleController extends CController
 
     }
 
-
     /**
      * 移动笔记至指定分类
      *
@@ -216,7 +322,21 @@ class ArticleController extends CController
      */
     public function moveArticle()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0',
+            'class_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->moveArticle(
+            $this->uid(),
+            $params['article_id'],
+            $params['class_id']
+        );
+
+        return $isTrue
+            ? $this->response->success([], '笔记移动成功...')
+            : $this->response->fail('笔记移动失败...');
     }
 
     /**
@@ -226,7 +346,21 @@ class ArticleController extends CController
      */
     public function setAsteriskArticle()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0',
+            'type' => 'required|in:1,2'
+        ]);
 
+        $isTrue = $this->articleService->setAsteriskArticle(
+            $this->uid(),
+            $params['article_id'],
+            $params['type']
+        );
+
+        return $isTrue
+            ? $this->response->success([], '笔记标记成功...')
+            : $this->response->fail('笔记标记失败...');
     }
 
     /**
@@ -236,7 +370,16 @@ class ArticleController extends CController
      */
     public function updateArticleTag()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0',
+            'tags' => 'required|array'
+        ]);
 
+        $isTrue = $this->articleService->updateArticleTag($this->uid(), $params['article_id'], $params['tags']);
+        return $isTrue
+            ? $this->response->success([], 'success...')
+            : $this->response->fail('编辑失败...');
     }
 
     /**
@@ -246,7 +389,16 @@ class ArticleController extends CController
      */
     public function foreverDelArticle()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->foreverDelArticle($this->uid(), $params['article_id']);
+
+        return $isTrue
+            ? $this->response->success([], '笔记删除成功...')
+            : $this->response->fail('笔记删除失败...');
     }
 
     /**
@@ -266,7 +418,16 @@ class ArticleController extends CController
      */
     public function deleteArticleAnnex()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'annex_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), $params['annex_id'], 2);
+
+        return $isTrue
+            ? $this->response->success([], '笔记附件删除成功...')
+            : $this->response->fail('笔记附件删除失败...');
     }
 
     /**
@@ -276,7 +437,16 @@ class ArticleController extends CController
      */
     public function recoverArticleAnnex()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'annex_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), $params['annex_id'], 1);
+
+        return $isTrue
+            ? $this->response->success([], '笔记附件恢复成功...')
+            : $this->response->fail('笔记附件恢复失败...');
     }
 
     /**
@@ -286,16 +456,39 @@ class ArticleController extends CController
      */
     public function recoverAnnexList()
     {
+        $rows = $this->articleService->recoverAnnexList($this->uid());
+        if ($rows) {
+            $getDay = function ($delete_at) {
+                $last_time = strtotime('+30 days', strtotime($delete_at));
 
+                return (time() > $last_time) ? 0 : diff_date(date('Y-m-d', $last_time), date('Y-m-d'));
+            };
+
+            array_walk($rows, function (&$item) use ($getDay) {
+                $item['day'] = $getDay($item['deleted_at']);
+                $item['visible'] = false;
+            });
+        }
+
+        return $this->response->success(['rows' => $rows]);
     }
 
     /**
      * 永久删除笔记附件(从已删除附件中永久删除)
      *
-     * @RequestMapping(path="forever-delete-annex", methods="get")
+     * @RequestMapping(path="forever-delete-annex", methods="post")
      */
     public function foreverDelAnnex()
     {
+        $params = $this->request->all();
+        $this->validate($params, [
+            'annex_id' => 'required|integer|min:0'
+        ]);
 
+        $isTrue = $this->articleService->foreverDelAnnex($this->uid(), $params['annex_id']);
+
+        return $isTrue
+            ? $this->response->success([], '笔记附件删除成功...')
+            : $this->response->fail('笔记附件删除失败...');
     }
 }

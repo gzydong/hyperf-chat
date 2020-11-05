@@ -14,7 +14,7 @@ namespace App\Model;
  * @property int $file_size
  * @property \Carbon\Carbon $created_at
  */
-class EmoticonDetail extends Model
+class EmoticonDetail extends BaseModel
 {
     /**
      * The table associated with the model.

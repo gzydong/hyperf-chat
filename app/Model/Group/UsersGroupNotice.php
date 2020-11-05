@@ -2,28 +2,29 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Group;
+
+use App\Model\BaseModel;
 
 /**
  * @property int $id
+ * @property int $group_id
  * @property int $user_id
- * @property int $article_id
- * @property string $file_suffix
- * @property int $file_size
- * @property string $save_dir
- * @property string $original_name
- * @property int $status
+ * @property string $title
+ * @property string $content
+ * @property int $is_delete
  * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  * @property string $deleted_at
  */
-class ArticleAnnex extends Model
+class UsersGroupNotice extends BaseModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'article_annex';
+    protected $table = 'users_group_notice';
 
     /**
      * The attributes that are mass assignable.
@@ -37,5 +38,5 @@ class ArticleAnnex extends Model
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'user_id' => 'integer', 'article_id' => 'integer', 'file_size' => 'integer', 'status' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = ['id' => 'integer', 'group_id' => 'integer', 'user_id' => 'integer', 'is_delete' => 'integer', 'created_at' => 'datetime', 'updated_at' => 'datetime'];
 }

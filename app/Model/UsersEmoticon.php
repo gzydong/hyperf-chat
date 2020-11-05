@@ -8,7 +8,7 @@ namespace App\Model;
  * @property int $user_id
  * @property string $emoticon_ids
  */
-class UsersEmoticon extends Model
+class UsersEmoticon extends BaseModel
 {
     /**
      * The table associated with the model.

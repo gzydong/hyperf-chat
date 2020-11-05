@@ -1,25 +1,25 @@
 <?php
 
 declare (strict_types=1);
-namespace App\Model;
+
+namespace App\Model\Chat;
+
+use App\Model\BaseModel;
 
 /**
  * @property int $id
- * @property int $group_id
+ * @property int $record_id
  * @property int $user_id
- * @property int $group_owner
- * @property int $status
- * @property string $visit_card
  * @property \Carbon\Carbon $created_at
  */
-class UsersGroupMember extends Model
+class ChatRecordsDelete extends BaseModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'users_group_member';
+    protected $table = 'chat_records_delete';
 
     /**
      * The attributes that are mass assignable.
@@ -33,5 +33,5 @@ class UsersGroupMember extends Model
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'group_id' => 'integer', 'user_id' => 'integer', 'group_owner' => 'integer', 'status' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = ['id' => 'integer', 'record_id' => 'integer', 'user_id' => 'integer', 'created_at' => 'datetime'];
 }

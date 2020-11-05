@@ -10,7 +10,7 @@ namespace App\Model;
  * @property string $url
  * @property \Carbon\Carbon $created_at
  */
-class Emoticon extends Model
+class Emoticon extends BaseModel
 {
     /**
      * The table associated with the model.

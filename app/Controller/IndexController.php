@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Amqp\Producer\ChatMessageProducer;
 use Hyperf\HttpServer\Contract\ResponseInterface;
+use Hyperf\Amqp\Producer;
 
 class IndexController extends AbstractController
 {
@@ -22,10 +24,12 @@ class IndexController extends AbstractController
         $user = $this->request->input('user', 'Hyperf');
         $method = $this->request->getMethod();
 
-        $this->validate($this->request->all(), [
-            'username' => 'required',
-            'password' => 'required',
-        ]);
+        $producer = container()->get(Producer::class);
+
+        $ip = config('ip_address');
+
+        $string = time();
+        $producer->produce(new ChatMessageProducer("我是来自[{$ip} 服务器的消息]，{$string}"));
 
         return [
             'method' => $method,

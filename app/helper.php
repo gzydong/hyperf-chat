@@ -86,9 +86,9 @@ if (!function_exists('stdLog')) {
  * 文件日志
  */
 if (!function_exists('logger')) {
-    function logger()
+    function logger(string $name = 'APP')
     {
-        return container()->get(LoggerFactory::class)->make();
+        return container()->get(LoggerFactory::class)->get($name);
     }
 }
 
@@ -120,4 +120,43 @@ if (!function_exists('response')) {
  */
 function create_password(string $password){
     return password_hash($password, PASSWORD_DEFAULT);
+}
+
+/**
+ * 从HTML文本中提取所有图片
+ * @param $content
+ * @return array
+ */
+function get_html_images($content)
+{
+    $pattern = "/<img.*?src=[\'|\"](.*?)[\'|\"].*?[\/]?>/";
+    preg_match_all($pattern, htmlspecialchars_decode($content), $match);
+    $data = [];
+    if (!empty($match[1])) {
+        foreach ($match[1] as $img) {
+            if (!empty($img)) $data[] = $img;
+        }
+        return $data;
+    }
+
+    return $data;
+}
+
+/**
+ * 获取两个日期相差多少天
+ *
+ * @param $day1
+ * @param $day2
+ * @return float|int
+ */
+function diff_date($day1, $day2)
+{
+    $second1 = strtotime($day1);
+    $second2 = strtotime($day2);
+
+    if ($second1 < $second2) {
+        [$second1, $second2] = [$second2, $second1];
+    }
+
+    return ceil(($second1 - $second2) / 86400);
 }

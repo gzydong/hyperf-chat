@@ -18,7 +18,7 @@ namespace App\Model;
  * @property int $is_delete
  * @property int $upload_at
  */
-class FileSplitUpload extends Model
+class FileSplitUpload extends BaseModel
 {
     /**
      * The table associated with the model.

@@ -2,22 +2,26 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Chat;
+
+use App\Model\BaseModel;
 
 /**
  * @property int $id
  * @property int $record_id
  * @property int $user_id
+ * @property string $code_lang
+ * @property string $code
  * @property \Carbon\Carbon $created_at
  */
-class ChatRecordsDelete extends Model
+class ChatRecordsCode extends BaseModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'chat_records_delete';
+    protected $table = 'chat_records_code';
 
     /**
      * The attributes that are mass assignable.
