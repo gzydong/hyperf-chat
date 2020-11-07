@@ -32,6 +32,7 @@ return [
             'port' => 9504,
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
+                // 自定义握手处理
                 SwooleEvent::ON_HAND_SHAKE => [Hyperf\WebSocketServer\Server::class, 'onHandShake'],
                 SwooleEvent::ON_MESSAGE => [Hyperf\WebSocketServer\Server::class, 'onMessage'],
                 SwooleEvent::ON_CLOSE => [Hyperf\WebSocketServer\Server::class, 'onClose'],
@@ -52,7 +53,7 @@ return [
     ],
     'callbacks' => [
         //自定义启动前事件
-        //SwooleEvent::ON_BEFORE_START => [Hyperf\Framework\Bootstrap\ServerStartCallback::class, 'beforeStart'],
+        SwooleEvent::ON_BEFORE_START => [App\Bootstrap\ServerStart::class, 'beforeStart'],
 
         SwooleEvent::ON_WORKER_START => [Hyperf\Framework\Bootstrap\WorkerStartCallback::class, 'onWorkerStart'],
         SwooleEvent::ON_PIPE_MESSAGE => [Hyperf\Framework\Bootstrap\PipeMessageCallback::class, 'onPipeMessage'],

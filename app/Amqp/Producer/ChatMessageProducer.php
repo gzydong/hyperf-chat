@@ -6,6 +6,7 @@ namespace App\Amqp\Producer;
 
 use Hyperf\Amqp\Message\ProducerMessage;
 use Hyperf\Amqp\Message\Type;
+use Hyperf\Utils\Str;
 
 class ChatMessageProducer extends ProducerMessage
 {
@@ -16,13 +17,24 @@ class ChatMessageProducer extends ProducerMessage
     public function __construct($data)
     {
         $message = [
-            'method'=>'', //
-            'sender'=>'', // 发送者
-            'receive'=>'', // 接收者
-            'receiveType'=>'',
-            'message'=>[]
+            'uuid' => $this->uuid(),
+            'method' => '', //
+            'sender' => '',  //发送者ID
+            'receive' => '',  //接收者ID
+            'receiveType' => '', //接收者类型 1:好友;2:群组
+            'message' => []
         ];
 
         $this->payload = $data;
+    }
+
+    /**
+     * 生成唯一ID
+     *
+     * @return string
+     */
+    private function uuid()
+    {
+        return Str::random() . rand(100000, 999999);
     }
 }

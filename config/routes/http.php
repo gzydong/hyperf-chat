@@ -11,14 +11,7 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-use App\Middleware\CorsMiddleware;
-use App\Middleware\WebSocketAuthMiddleware;
+use Hyperf\HttpServer\Router\Router;
 
-return [
-    'http' => [
-        CorsMiddleware::class
-    ],
-    'ws' => [
 
-    ]
-];
+Router::get('/', 'App\Controller\IndexController@index');

@@ -25,7 +25,6 @@ class ResponseCode extends AbstractConstants
      */
     const SERVER_ERROR = 500;
 
-
     /**
      * @Message("请求数据验证失败！")
      */

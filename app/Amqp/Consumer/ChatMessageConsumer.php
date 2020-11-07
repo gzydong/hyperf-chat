@@ -12,7 +12,7 @@ use Hyperf\Amqp\Message\Type;
 use Hyperf\Amqp\Builder\QueueBuilder;
 
 /**
- * @Consumer(name=" ChatMessage ",enable=true)
+ * @Consumer(name="聊天消息消费者",enable=true)
  */
 class ChatMessageConsumer extends ConsumerMessage
 {

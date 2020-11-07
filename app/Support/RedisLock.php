@@ -31,13 +31,13 @@ class RedisLock
      *
      * @param  string $key 缓存KEY
      * @param  string $requestId 客户端请求唯一ID
-     * @param  int $lockSecond 锁定时间 单位(秒)
-     * @param  int $timeout 取锁超时时间。单位(秒)。等于0,如果当前锁被占用,则立即返回失败。如果大于0,则反复尝试获取锁直到达到该超时时间。
-     * @param  int $sleep 取锁间隔时间 单位(微秒)。当锁为占用状态时。每隔多久尝试去取锁。默认 0.1 秒一次取锁。
+     * @param  integer $lockSecond 锁定时间 单位(秒)
+     * @param  integer $timeout 取锁超时时间。单位(秒)。等于0,如果当前锁被占用,则立即返回失败。如果大于0,则反复尝试获取锁直到达到该超时时间。
+     * @param  integer|float $sleep 取锁间隔时间 单位(秒)。当锁为占用状态时。每隔多久尝试去取锁。默认 0.1 秒一次取锁。
      * @return bool
      * @throws \Exception
      */
-    public static function lock(string $key, string $requestId, $lockSecond = 20, $timeout = 0, $sleep = 100000)
+    public static function lock(string $key, string $requestId, $lockSecond = 20, $timeout = 0, $sleep = 0.1)
     {
         if (empty($key)) {
             throw new \Exception('获取锁的KEY值没有设置');
@@ -56,7 +56,7 @@ class RedisLock
                 break;
             }
 
-            usleep($sleep);
+            \Swoole\Coroutine\System::sleep($sleep);
         } while (!is_numeric($timeout) || (self::getMicroTime()) < ($start + ($timeout * 1000000)));
 
         return $acquired ? true : false;

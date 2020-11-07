@@ -1,6 +1,5 @@
 <?php
 
-
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Logger\LoggerFactory;
@@ -9,107 +8,88 @@ use Hyperf\Utils\ApplicationContext;
 use Psr\Http\Message\ServerRequestInterface;
 use Swoole\Websocket\Frame;
 use Swoole\WebSocket\Server as WebSocketServer;
+use Hyperf\Utils\Str;
 
 
 /**
  * 容器实例
  */
-if (!function_exists('container')) {
-    function container()
-    {
-        return ApplicationContext::getContainer();
-    }
+function container()
+{
+    return ApplicationContext::getContainer();
 }
-
 
 /**
  * Redis 客户端实例
  */
-if (!function_exists('redis')) {
-    function redis()
-    {
-        return container()->get(Redis::class);
-    }
+function redis()
+{
+    return container()->get(Redis::class);
 }
 
 /**
  * server 实例 基于 swoole server
  */
-if (!function_exists('server')) {
-    function server()
-    {
-        return container()->get(ServerFactory::class)->getServer()->getServer();
-    }
+function server()
+{
+    return container()->get(ServerFactory::class)->getServer()->getServer();
 }
+
 
 /**
  * websocket frame 实例
  */
-if (!function_exists('frame')) {
-    function frame()
-    {
-        return container()->get(Frame::class);
-    }
+function frame()
+{
+    return container()->get(Frame::class);
 }
 
 /**
  * websocket 实例
  */
-if (!function_exists('websocket')) {
-    function websocket()
-    {
-        return container()->get(WebSocketServer::class);
-    }
+function websocket()
+{
+    return container()->get(WebSocketServer::class);
 }
 
 /**
  * 缓存实例 简单的缓存
  */
-if (!function_exists('cache')) {
-    function cache()
-    {
-        return container()->get(Psr\SimpleCache\CacheInterface::class);
-    }
+function cache()
+{
+    return container()->get(Psr\SimpleCache\CacheInterface::class);
 }
 
 /**
  * 控制台日志
  */
-if (!function_exists('stdLog')) {
-    function stdLog()
-    {
-        return container()->get(StdoutLoggerInterface::class);
-    }
+function stdout_log()
+{
+    return container()->get(StdoutLoggerInterface::class);
 }
 
 /**
  * 文件日志
  */
-if (!function_exists('logger')) {
-    function logger(string $name = 'APP')
-    {
-        return container()->get(LoggerFactory::class)->get($name);
-    }
+function logger(string $name = 'APP')
+{
+    return container()->get(LoggerFactory::class)->get($name);
 }
 
 /**
  * http 请求实例
  */
-if (!function_exists('request')) {
-    function request()
-    {
-        return container()->get(ServerRequestInterface::class);
-    }
+function request()
+{
+    return container()->get(ServerRequestInterface::class);
 }
 
 /**
  * 请求响应
  */
-if (!function_exists('response')) {
-    function response()
-    {
-        return container()->get(ResponseInterface::class);
-    }
+function response()
+{
+    return container()->get(ResponseInterface::class);
 }
 
 /**
@@ -118,7 +98,8 @@ if (!function_exists('response')) {
  * @param string $password
  * @return bool|false|null|string
  */
-function create_password(string $password){
+function create_password(string $password)
+{
     return password_hash($password, PASSWORD_DEFAULT);
 }
 
@@ -159,4 +140,29 @@ function diff_date($day1, $day2)
     }
 
     return ceil(($second1 - $second2) / 86400);
+}
+
+
+/**
+ * 获取媒体文件url
+ *
+ * @param string $path 文件相对路径
+ * @return string
+ */
+function get_media_url(string $path)
+{
+    return '/' . $path;
+}
+
+/**
+ * 随机生成图片名
+ *
+ * @param string $ext 图片后缀名
+ * @param int $width 图片宽度
+ * @param int $height 图片高度
+ * @return string
+ */
+function create_image_name(string $ext, int $width, int $height)
+{
+    return uniqid() . Str::random(18) . uniqid() . '_' . $width . 'x' . $height . '.' . $ext;
 }

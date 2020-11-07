@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Http;
+namespace App\Support;
 
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Contract\ResponseInterface;
