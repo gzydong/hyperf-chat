@@ -48,7 +48,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     {
         $token = $request->get['token'] ?? '';
         $userInfo = $this->jwt->getParserData($token);
-        stdout_log()->info("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} | data:" . Json::encode($userInfo));
+        stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} | data:" . Json::encode($userInfo));
 
         // 绑定fd与用户关系
         $this->socketFDService->bindRelation($request->fd, $userInfo['user_id']);
@@ -65,6 +65,9 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onMessage($server, Frame $frame): void
     {
+        // 判断是否为心跳检测
+        if ($frame->data == 'PING') return;
+
         $ip = config('ip_address');
         $producer = container()->get(Producer::class);
         $producer->produce(new ChatMessageProducer("我是来自[{$ip} 服务器的消息]，{$frame->data}"));
@@ -79,8 +82,13 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onClose($server, int $fd, int $reactorId): void
     {
+        $user_id = $this->socketFDService->findFdUserId($fd);
+
+        stdout_log()->notice("客户端FD:{$fd} 已关闭连接,用户ID为【{$user_id}】");
+
         // 解除fd关系
         $this->socketFDService->removeRelation($fd);
-        echo PHP_EOL . "FD : 【{$fd}】 已断开...";
+
+        // ... 包装推送消息至队列
     }
 }

@@ -46,10 +46,14 @@ return [
         'open_tcp_nodelay' => true,
         'max_coroutine' => 100000,
         'open_http2_protocol' => true,
-        'max_request' => 100000,
+        'max_request' => 1000,
         'socket_buffer_size' => 3 * 1024 * 1024,
         'buffer_output_size' => 3 * 1024 * 1024,
         'package_max_length'=> 10 * 1024 * 1024,
+
+        //设置心跳检测
+        'heartbeat_idle_time' => 150,
+        'heartbeat_check_interval' => 60,
     ],
     'callbacks' => [
         //自定义启动前事件

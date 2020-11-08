@@ -22,6 +22,11 @@ class SocketFDService
     const BIND_USER_TO_FDS = 'ws:user:fds';
 
     /**
+     * 运行检测超时时间（单位秒）
+     */
+    const RUN_OVERTIME = 35;
+
+    /**
      * @var Redis
      */
     private $redis;
@@ -108,7 +113,7 @@ class SocketFDService
      *
      * @param int $user_id 用户ID
      * @param string $run_id 服务运行ID（默认当前服务ID）
-     * @return string
+     * @return array
      */
     public function findUserFds(int $user_id, $run_id = SERVER_RUN_ID)
     {
@@ -129,9 +134,9 @@ class SocketFDService
         $current_time = time();
         return array_filter($arr, function ($value) use ($current_time, $type) {
             if ($type == 1) {
-                return ($current_time - intval($value)) <= 35;
+                return ($current_time - intval($value)) <= self::RUN_OVERTIME;
             } else {
-                return ($current_time - intval($value)) > 35;
+                return ($current_time - intval($value)) > self::RUN_OVERTIME;
             }
         });
     }
@@ -146,6 +151,7 @@ class SocketFDService
         $this->redis->del(sprintf('%s:%s', self::BIND_FD_TO_USER, $run_id));
 
         $prefix = sprintf('%s:%s', self::BIND_USER_TO_FDS, $run_id);
+        $this->redis->hDel('SERVER_RUN_ID', $run_id);
 
         $iterator = null;
         while (true) {

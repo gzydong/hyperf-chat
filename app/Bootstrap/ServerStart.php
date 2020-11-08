@@ -21,17 +21,15 @@ class ServerStart extends ServerStartCallback
      */
     public function beforeStart()
     {
-        // 服务运行ID
-        define('SERVER_RUN_ID', uniqid());
         stdout_log()->info(sprintf('服务运行ID : %s', SERVER_RUN_ID));
 
-        $this->timer();
+        $this->setTimeOut();
         Timer::tick(15000, function () {
-            $this->timer();
+            $this->setTimeOut();
         });
     }
 
-    public function timer()
+    public function setTimeOut()
     {
         container()->get(Redis::class)->hset('SERVER_RUN_ID', SERVER_RUN_ID, time());
     }

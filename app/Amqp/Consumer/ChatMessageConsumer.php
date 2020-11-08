@@ -43,7 +43,7 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function __construct()
     {
-        $this->setQueue('im:message:queue:' . config('ip_address'));
+        $this->setQueue('queue:im-message' . SERVER_RUN_ID);
     }
 
     /**
