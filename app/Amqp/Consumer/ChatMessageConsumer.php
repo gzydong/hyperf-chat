@@ -7,6 +7,7 @@ namespace App\Amqp\Consumer;
 use Hyperf\Amqp\Result;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Message\ConsumerMessage;
+use Hyperf\Redis\Redis;
 use PhpAmqpLib\Message\AMQPMessage;
 use Hyperf\Amqp\Message\Type;
 use Hyperf\Amqp\Builder\QueueBuilder;
@@ -66,23 +67,21 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function consumeMessage($data, AMQPMessage $message): string
     {
-        echo PHP_EOL . $data;
+        $redis = container()->get(Redis::class);
+
+        //[加锁]防止消息重复消费
+        $lockName = sprintf('ws:message-lock:%s:%s', SERVER_RUN_ID, $data['uuid']);
+        if (!$redis->rawCommand('SET', $lockName, 1, 'NX', 'EX', 120)) {
+            return Result::ACK;
+        }
 
         $server = server();
         foreach (server()->connections as $fd) {
             if ($server->isEstablished($fd)) {
-                $server->push($fd, "Recv: 我是后台进程 [{$data}]");
+                $server->push($fd, "Recv: 我是后台进程 [{$data['message']}]");
             }
         }
 
-        return Result::NACK;
-    }
-
-    /**
-     * @param $data
-     */
-    public function getClientFds($data)
-    {
-
+        return Result::ACK;
     }
 }

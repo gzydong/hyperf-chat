@@ -19,6 +19,8 @@ return [
 
     'ip_address'=>env('IP_ADDRESS', ''),
 
+    // 运行模式
+    'run_mode'=>'cluster',
     StdoutLoggerInterface::class => [
         'log_level' => [
             LogLevel::ALERT,

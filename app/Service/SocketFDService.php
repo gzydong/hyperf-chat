@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\Redis\Redis;
 
 /**
@@ -15,18 +14,22 @@ class SocketFDService
     /**
      * fd与用户绑定(使用hash 做处理)
      */
-    const BIND_FD_TO_USER = 'socket:fd:user';
+    const BIND_FD_TO_USER = 'ws:fd:user';
 
     /**
      * 使用集合做处理
      */
-    const BIND_USER_TO_FDS = 'socket:user:fds';
+    const BIND_USER_TO_FDS = 'ws:user:fds';
 
     /**
-     * @inject
      * @var Redis
      */
     private $redis;
+
+    public function __construct()
+    {
+        $this->redis = container()->get(Redis::class);
+    }
 
     /**
      * 客户端fd与用户ID绑定关系
@@ -59,7 +62,7 @@ class SocketFDService
     }
 
     /**
-     * 检测用户当前是否在线
+     * 检测用户当前是否在线（指定运行服务器）
      *
      * @param int $user_id 用户ID
      * @param string $run_id 服务运行ID（默认当前服务ID）
@@ -68,6 +71,24 @@ class SocketFDService
     public function isOnline(int $user_id, $run_id = SERVER_RUN_ID): bool
     {
         return $this->redis->scard(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id)) ? true : false;
+    }
+
+    /**
+     * 检测用户当前是否在线(查询所有在线服务器)
+     *
+     * @param int $user_id 用户ID
+     * @param array $run_ids 服务运行ID
+     * @return bool
+     */
+    public function isOnlineAll(int $user_id, array $run_ids = [])
+    {
+        if (empty($run_ids)) $run_ids = $this->getServerRunIdAll();
+
+        foreach ($run_ids as $run_id) {
+            if ($this->isOnline($user_id, $run_id)) return true;
+        }
+
+        return false;
     }
 
     /**
@@ -91,24 +112,47 @@ class SocketFDService
      */
     public function findUserFds(int $user_id, $run_id = SERVER_RUN_ID)
     {
-        return '';
+        return $this->redis->smembers(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id));
+    }
+
+    /**
+     * 获取服务ID列表
+     *
+     * @param int $type 获取类型[1:正在运行;2:已超时;3:所有]
+     * @return array
+     */
+    public function getServerRunIdAll(int $type = 1)
+    {
+        $arr = $this->redis->hGetAll('SERVER_RUN_ID');
+        if ($type == 3) return $arr;
+
+        $current_time = time();
+        return array_filter($arr, function ($value) use ($current_time, $type) {
+            if ($type == 1) {
+                return ($current_time - intval($value)) <= 35;
+            } else {
+                return ($current_time - intval($value)) > 35;
+            }
+        });
     }
 
     /**
      * 清除绑定缓存的信息
      *
-     * @param string $run_id 服务运行ID（默认当前服务ID）
+     * @param string $run_id 服务运行ID
      */
-    public function removeRedisCache($run_id = SERVER_RUN_ID)
+    public function removeRedisCache(string $run_id)
     {
-        $this->redis->del(self::BIND_FD_TO_USER);
-        $prefix = self::BIND_USER_TO_FDS;
+        $this->redis->del(sprintf('%s:%s', self::BIND_FD_TO_USER, $run_id));
+
+        $prefix = sprintf('%s:%s', self::BIND_USER_TO_FDS, $run_id);
+
         $iterator = null;
         while (true) {
             $keys = $this->redis->scan($iterator, "{$prefix}*");
-            if ($keys === false) {
-                return;
-            }
+
+            if ($keys === false) return;
+
             if (!empty($keys)) {
                 $this->redis->del(...$keys);
             }

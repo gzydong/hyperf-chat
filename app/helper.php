@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Swoole\Websocket\Frame;
 use Swoole\WebSocket\Server as WebSocketServer;
 use Hyperf\Utils\Str;
-
+use Hyperf\Redis\Redis;
 
 /**
  * 容器实例

@@ -47,7 +47,7 @@ class RedisLock
         $redis = self::getRedis();
 
         do {
-            $acquired = $redis->set(self::getLockKey($key), $requestId, 'NX', 'EX', $lockSecond);
+            $acquired = $redis->rawCommand('SET', self::getLockKey($key), $requestId, 'NX', 'EX', $lockSecond);
             if ($acquired) {
                 break;
             }

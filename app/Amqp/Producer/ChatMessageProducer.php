@@ -22,10 +22,10 @@ class ChatMessageProducer extends ProducerMessage
             'sender' => '',  //发送者ID
             'receive' => '',  //接收者ID
             'receiveType' => '', //接收者类型 1:好友;2:群组
-            'message' => []
+            'message' => $data
         ];
 
-        $this->payload = $data;
+        $this->payload = $message;
     }
 
     /**
@@ -35,6 +35,6 @@ class ChatMessageProducer extends ProducerMessage
      */
     private function uuid()
     {
-        return Str::random() . rand(100000, 999999);
+        return Str::random() . rand(100000, 999999).uniqid();
     }
 }
