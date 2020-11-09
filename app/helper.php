@@ -166,3 +166,30 @@ function create_image_name(string $ext, int $width, int $height)
 {
     return uniqid() . Str::random(18) . uniqid() . '_' . $width . 'x' . $height . '.' . $ext;
 }
+
+/**
+ * 替换文本中的url 为 a标签
+ *
+ * @param string $str
+ * @return null|string|string[]
+ */
+function replace_url_link(string $str)
+{
+    $re = '@((https|http)?://([-\w\.]+)+(:\d+)?(/([\w/_\-.#%]*(\?\S+)?)?)?)@';
+    return preg_replace_callback($re, function ($matches) {
+        return sprintf('<a href="%s" target="_blank">%s</a>', trim($matches[0], '&quot;'), $matches[0]);
+    }, $str);
+}
+
+/**
+ * 二维数组排序
+ * @param array $array 数组
+ * @param string $field 排序字段
+ * @param int $sort 排序方式
+ * @return array
+ */
+function arraysSort(array $array, $field, $sort = SORT_DESC)
+{
+    array_multisort(array_column($array, $field), $sort, $array);
+    return $array;
+}
