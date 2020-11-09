@@ -77,7 +77,7 @@ class ChatMessageConsumer extends ConsumerMessage
 
         $server = server();
         foreach ($server->connections as $fd) {
-            if ($server->isEstablished($fd)) {
+            if ($server->exist($fd) && $server->isEstablished($fd)) {
                 $server->push($fd, "Recv: 我是后台进程 [{$data['message']}]");
             }
         }

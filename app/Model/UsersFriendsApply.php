@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace App\Model;
 
 /**
@@ -26,7 +27,14 @@ class UsersFriendsApply extends BaseModel
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'user_id',
+        'friend_id',
+        'status',
+        'remarks',
+        'created_at',
+        'updated_at'
+    ];
 
     /**
      * The attributes that should be cast to native types.

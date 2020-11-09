@@ -10,7 +10,7 @@ class Hash
      * @param  string $value
      * @return string
      */
-    public function make($value)
+    public static function make($value)
     {
         return password_hash($value, PASSWORD_DEFAULT);
     }
@@ -22,7 +22,7 @@ class Hash
      * @param  string $hashedValue
      * @return bool
      */
-    public function check($value, $hashedValue)
+    public static function check($value, $hashedValue)
     {
         return password_verify($value, $hashedValue);
     }

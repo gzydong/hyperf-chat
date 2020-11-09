@@ -49,6 +49,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $token = $request->get['token'] ?? '';
         $userInfo = $this->jwt->getParserData($token);
         stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} | data:" . Json::encode($userInfo));
+        stdout_log()->notice('连接时间：' . date('Y-m-d H:i:s'));
 
         // 绑定fd与用户关系
         $this->socketFDService->bindRelation($request->fd, $userInfo['user_id']);
@@ -85,10 +86,18 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $user_id = $this->socketFDService->findFdUserId($fd);
 
         stdout_log()->notice("客户端FD:{$fd} 已关闭连接,用户ID为【{$user_id}】");
+        stdout_log()->notice('关闭时间：' . date('Y-m-d H:i:s'));
 
         // 解除fd关系
         $this->socketFDService->removeRelation($fd);
 
-        // ... 包装推送消息至队列
+        // 判断是否存在异地登录
+        $isOnline = $this->socketFDService->isOnlineAll(intval($user_id));
+        if (!$isOnline) {
+            // ... 不存在异地登录，推送下线通知消息
+            // ... 包装推送消息至队列
+        } else {
+            stdout_log()->notice("用户:{$user_id} 存在异地登录...");
+        }
     }
 }

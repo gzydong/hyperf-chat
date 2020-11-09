@@ -37,6 +37,11 @@ return [
                 SwooleEvent::ON_MESSAGE => [Hyperf\WebSocketServer\Server::class, 'onMessage'],
                 SwooleEvent::ON_CLOSE => [Hyperf\WebSocketServer\Server::class, 'onClose'],
             ],
+            'settings'=>[
+                //设置心跳检测
+                'heartbeat_idle_time' => 70,
+                'heartbeat_check_interval' => 30,
+            ]
         ],
     ],
     'settings' => [
@@ -50,10 +55,6 @@ return [
         'socket_buffer_size' => 3 * 1024 * 1024,
         'buffer_output_size' => 3 * 1024 * 1024,
         'package_max_length'=> 10 * 1024 * 1024,
-
-        //设置心跳检测
-        'heartbeat_idle_time' => 150,
-        'heartbeat_check_interval' => 60,
     ],
     'callbacks' => [
         //自定义启动前事件

@@ -89,7 +89,7 @@ class SocketFDService
     {
         if (empty($run_ids)) $run_ids = $this->getServerRunIdAll();
 
-        foreach ($run_ids as $run_id) {
+        foreach ($run_ids as $run_id => $time) {
             if ($this->isOnline($user_id, $run_id)) return true;
         }
 
