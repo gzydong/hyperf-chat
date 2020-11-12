@@ -15,7 +15,6 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Phper666\JWTAuth\Middleware\JWTAuthMiddleware;
 
-
 /**
  * Class TalkController
  *
@@ -48,14 +47,12 @@ class TalkController extends CController
         $user_id = $this->uid();
 
         // 读取用户的未读消息列表
-        $result = $this->unreadTalkCache->getAll($user_id);
-        if ($result) {
+        if ($result = $this->unreadTalkCache->getAll($user_id)) {
             $this->talkService->updateUnreadTalkList($user_id, $result);
         }
 
         // 获取聊天列表
-        $rows = $this->talkService->talks($user_id);
-        if ($rows) {
+        if ($rows = $this->talkService->talks($user_id)) {
             $rows = arraysSort($rows, 'updated_at');
         }
 
@@ -66,11 +63,8 @@ class TalkController extends CController
      * 新增对话列表
      *
      * @RequestMapping(path="create", methods="post")
-     *
-     * @param UnreadTalkCache $unreadTalkCache
-     * @return \Psr\Http\Message\ResponseInterface
      */
-    public function create(UnreadTalkCache $unreadTalkCache)
+    public function create()
     {
         $params = $this->request->inputs(['type', 'receive_id']);
         $this->validate($params, [
@@ -111,8 +105,7 @@ class TalkController extends CController
         ];
 
         if ($result['type'] == 1) {
-            $data['unread_num'] = $unreadTalkCache->get($user_id, $result['friend_id']);
-
+            $data['unread_num'] = $this->unreadTalkCache->get($user_id, $result['friend_id']);
             $userInfo = User::where('id', $user_id)->first(['nickname', 'avatar']);
             $data['name'] = $userInfo->nickname;
             $data['avatar'] = $userInfo->avatar;
@@ -173,7 +166,7 @@ class TalkController extends CController
      */
     public function setNotDisturb()
     {
-        $params = $this->request->inputs(['list_id', 'type', 'not_disturb']);
+        $params = $this->request->inputs(['receive_id', 'type', 'not_disturb']);
         $this->validate($params, [
             'receive_id' => 'required|integer|min:0',
             'type' => 'required|in:1,2',
@@ -191,11 +184,8 @@ class TalkController extends CController
      * 更新对话列表未读数
      *
      * @RequestMapping(path="update-unread-num", methods="post")
-     *
-     * @param UnreadTalkCache $unreadTalkCache
-     * @return \Psr\Http\Message\ResponseInterface
      */
-    public function updateUnreadNum(UnreadTalkCache $unreadTalkCache)
+    public function updateUnreadNum()
     {
         $params = $this->request->inputs(['receive', 'type']);
         $this->validate($params, [
@@ -203,28 +193,31 @@ class TalkController extends CController
             'type' => 'required|integer|min:0'
         ]);
 
-        $user_id = $this->uid();
-
         // 设置好友消息未读数
         if ($params['type'] == 1) {
-            $unreadTalkCache->del($user_id, $params['receive']);
+            $this->unreadTalkCache->del($this->uid(), $params['receive']);
         }
 
         return $this->response->success([], 'success');
     }
 
     /**
+     * 撤回聊天对话消息
+     *
      * @RequestMapping(path="revoke-records", methods="post")
      */
     public function revokeChatRecords()
     {
-        $user_id = $this->uid();
-        $record_id = $this->request->get('record_id', 0);
+        $params = $this->request->inputs(['record_id']);
+        $this->validate($params, [
+            'record_id' => 'required|integer|min:0'
+        ]);
 
-        [$isTrue, $message, $data] = $this->talkService->revokeRecord($user_id, $record_id);
+        [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
 
-
-        return $isTrue ? $this->ajaxSuccess($message) : $this->ajaxError($message);
+        return $isTrue
+            ? $this->response->success([], $message)
+            : $this->response->fail($message);
     }
 
     /**
@@ -234,58 +227,195 @@ class TalkController extends CController
      */
     public function removeChatRecords()
     {
-        $user_id = $this->uid();
+        $params = $this->request->inputs(['source', 'record_id', 'receive_id']);
+        $this->validate($params, [
+            'source' => 'required|in:1,2',//消息来源（1：好友消息 2：群聊消息）
+            'record_id' => 'required|integer|min:0',
+            'receive_id' => 'required|integer|min:0'
+        ]);
 
-        //消息来源（1：好友消息 2：群聊消息）
-        $source = $this->request->post('source', 0);
+        $record_ids = explode(',', $params['record_id']);
 
-        //接收者ID（好友ID或者群聊ID）
-        $receive_id = $this->request->post('receive_id', 0);
+        $isTrue = $this->talkService->removeRecords(
+            $this->uid(),
+            $params['source'],
+            $params['receive_id'],
+            $record_ids
+        );
 
-        //消息ID
-        $record_ids = explode(',', $this->request->get('record_id', ''));
-        if (!in_array($source, [1, 2]) || !check_int($receive_id) || !check_ids($record_ids)) {
-            return $this->ajaxParamError();
-        }
-
-        $isTrue = $this->talkService->removeRecords($user_id, $source, $receive_id, $record_ids);
-
-        return $isTrue ? $this->ajaxSuccess('删除成功...') : $this->ajaxError('删除失败...');
+        return $isTrue
+            ? $this->response->success([], '删除成功...')
+            : $this->response->fail('删除失败...');
     }
 
     /**
+     * 转发聊天记录(待优化)
+     *
      * @RequestMapping(path="forward-records", methods="post")
      */
     public function forwardChatRecords()
     {
+        $params = $this->request->inputs(['source', 'records_ids', 'receive_id', 'forward_mode', 'receive_user_ids', 'receive_group_ids']);
+        $this->validate($params, [
+            //消息来源[1：好友消息 2：群聊消息]
+            'source' => 'required|in:1,2',
+            //聊天记录ID，多个逗号拼接
+            'records_ids' => 'required',
+            //接收者ID（好友ID或者群聊ID）
+            'receive_id' => 'required|integer|min:0',
+            //转发方方式[1:逐条转发;2:合并转发]
+            'forward_mode' => 'required|in:1,2',
+            //转发的好友的ID
+            'receive_user_ids' => 'required|array',
+            //转发的群聊ID
+            'receive_group_ids' => 'required|array',
+        ]);
 
+        $user_id = $this->uid();
+        $items = array_merge(
+            array_map(function ($friend_id) {
+                return ['source' => 1, 'id' => $friend_id];
+            }, $params['receive_user_ids']),
+            array_map(function ($group_id) {
+                return ['source' => 2, 'id' => $group_id];
+            }, $params['receive_group_ids'])
+        );
+
+        if ($params['forward_mode'] == 1) {//单条转发
+            $ids = $this->talkService->forwardRecords($user_id, $params['receive_id'], $params['records_ids']);
+        } else {//合并转发
+            $ids = $this->talkService->mergeForwardRecords($user_id, $params['receive_id'], $params['source'], $params['records_ids'], $items);
+        }
+
+        if (!$ids) {
+            return $this->response->fail('转发失败...');
+        }
+
+        if ($params['receive_user_ids']) {
+            foreach ($params['receive_user_ids'] as $v) {
+                $this->unreadTalkCache->setInc($v, $user_id);
+            }
+        }
+
+        //这里需要调用WebSocket推送接口
+        // ...
+
+        return $this->response->success([], '转发成功...');
     }
 
     /**
+     * 获取对话面板中的聊天记录
+     *
      * @RequestMapping(path="records", methods="get")
      */
     public function getChatRecords()
     {
+        $params = $this->request->inputs(['record_id', 'source', 'receive_id']);
+        $this->validate($params, [
+            'source' => 'required|in:1,2',//消息来源（1：好友消息 2：群聊消息）
+            'record_id' => 'required|integer|min:0',
+            'receive_id' => 'required|integer|min:1',
+        ]);
 
+        $user_id = $this->uid();
+        $limit = 30;
+
+        // 判断是否属于群成员
+        if ($params['source'] == 2 && UsersGroup::isMember($params['receive_id'], $user_id) == false) {
+            return $this->response->success([
+                'rows' => [],
+                'record_id' => 0,
+                'limit' => $limit
+            ], '非群聊成员不能查看群聊信息...');
+        }
+
+        $result = $this->talkService->getChatRecords(
+            $user_id,
+            $params['receive_id'],
+            $params['source'],
+            $params['record_id'],
+            $limit
+        );
+
+        return $this->response->success([
+            'rows' => $result,
+            'record_id' => $result ? $result[count($result) - 1]['id'] : 0,
+            'limit' => $limit
+        ]);
     }
 
     /**
+     * 获取转发记录详情
+     *
      * @RequestMapping(path="get-forward-records", methods="get")
      */
     public function getForwardRecords()
     {
+        $params = $this->request->inputs(['records_id']);
+        $this->validate($params, [
+            'records_id' => 'required|integer|min:0'
+        ]);
 
+        $rows = $this->talkService->getForwardRecords(
+            $this->uid(),
+            $params['records_id']
+        );
+
+        return $this->response->success(['rows' => $rows]);
     }
 
     /**
+     * 查询聊天记录
+     *
      * @RequestMapping(path="find-chat-records", methods="get")
      */
     public function findChatRecords()
     {
+        $params = $this->request->inputs(['record_id', 'source', 'receive_id', 'msg_type']);
+        $this->validate($params, [
+            'source' => 'required|in:1,2',//消息来源（1：好友消息 2：群聊消息）
+            'record_id' => 'required|integer|min:0',
+            'receive_id' => 'required|integer|min:1',
+            'msg_type' => 'required|in:0,1,2,3,4,5,6',
+        ]);
 
+        $user_id = $this->uid();
+        $limit = 30;
+
+        // 判断是否属于群成员
+        if ($params['source'] == 2 && UsersGroup::isMember($params['receive_id'], $user_id) == false) {
+            return $this->response->success([
+                'rows' => [],
+                'record_id' => 0,
+                'limit' => $limit
+            ], '非群聊成员不能查看群聊信息...');
+        }
+
+        if (in_array($params['msg_type'], [1, 2, 4, 5])) {
+            $msg_type = [$params['msg_type']];
+        } else {
+            $msg_type = [1, 2, 4, 5];
+        }
+
+        $result = $this->talkService->getChatRecords(
+            $user_id,
+            $params['receive_id'],
+            $params['source'],
+            $params['record_id'],
+            $limit,
+            $msg_type
+        );
+
+        return $this->response->success([
+            'rows' => $result,
+            'record_id' => $result ? $result[count($result) - 1]['id'] : 0,
+            'limit' => $limit
+        ]);
     }
 
     /**
+     * 搜索聊天记录（待开发）
+     *
      * @RequestMapping(path="search-chat-records", methods="get")
      */
     public function searchChatRecords()
@@ -294,6 +424,8 @@ class TalkController extends CController
     }
 
     /**
+     * 获取聊天记录上下文数据（待开发）
+     *
      * @RequestMapping(path="get-records-context", methods="get")
      */
     public function getRecordsContext()
@@ -302,6 +434,8 @@ class TalkController extends CController
     }
 
     /**
+     * 上传聊天对话图片（待优化）
+     *
      * @RequestMapping(path="send-image", methods="post")
      */
     public function sendImage()
@@ -310,6 +444,8 @@ class TalkController extends CController
     }
 
     /**
+     * 发送代码块消息
+     *
      * @RequestMapping(path="send-code-block", methods="post")
      */
     public function sendCodeBlock()
@@ -318,6 +454,8 @@ class TalkController extends CController
     }
 
     /**
+     * 发送文件消息
+     *
      * @RequestMapping(path="send-file", methods="post")
      */
     public function sendFile()
@@ -326,6 +464,8 @@ class TalkController extends CController
     }
 
     /**
+     * 发送表情包消息
+     *
      * @RequestMapping(path="send-emoticon", methods="post")
      */
     public function sendEmoticon()
