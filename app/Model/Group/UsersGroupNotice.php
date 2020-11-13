@@ -7,15 +7,19 @@ namespace App\Model\Group;
 use App\Model\BaseModel;
 
 /**
- * @property int $id
- * @property int $group_id
- * @property int $user_id
- * @property string $title
- * @property string $content
- * @property int $is_delete
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property string $deleted_at
+ * 用户群组[公告消息]数据表模型
+ *
+ * @property int $id 群公告ID
+ * @property int $group_id 群ID
+ * @property int $user_id 发布者ID
+ * @property string $title 公告标题
+ * @property string $content 公告内容
+ * @property int $is_delete 是否删除[0:否;1:是]
+ * @property string $created_at 发布时间
+ * @property string $updated_at 修改时间
+ * @property string $deleted_at 删除时间
+ *
+ * @package App\Model\Group
  */
 class UsersGroupNotice extends BaseModel
 {
@@ -31,12 +35,21 @@ class UsersGroupNotice extends BaseModel
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+
+    ];
 
     /**
      * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'group_id' => 'integer', 'user_id' => 'integer', 'is_delete' => 'integer', 'created_at' => 'datetime', 'updated_at' => 'datetime'];
+    protected $casts = [
+        'id' => 'integer',
+        'group_id' => 'integer',
+        'user_id' => 'integer',
+        'is_delete' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
 }

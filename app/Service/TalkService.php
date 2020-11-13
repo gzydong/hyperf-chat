@@ -84,7 +84,7 @@ class TalkService extends BaseService
                     }
                 }
             } else {
-                $data['name'] = $item['group_name'];
+                $data['name'] = strval($item['group_name']);
                 $data['avatar'] = $item['group_avatar'];
             }
 

@@ -33,9 +33,9 @@ class ArticleController extends CController
      */
     public function getArticleClass()
     {
-        return $this->response->success(
-            $this->articleService->getUserClass($this->uid())
-        );
+        return $this->response->success([
+            'rows' => $this->articleService->getUserClass($this->uid())
+        ]);
     }
 
     /**
@@ -45,9 +45,9 @@ class ArticleController extends CController
      */
     public function getArticleTags()
     {
-        return $this->response->success(
-            $this->articleService->getUserTags($this->uid())
-        );
+        return $this->response->success([
+            'tags' => $this->articleService->getUserTags($this->uid())
+        ]);
     }
 
     /**
@@ -408,7 +408,8 @@ class ArticleController extends CController
      */
     public function uploadArticleAnnex()
     {
-
+        $file = $this->request->file('annex');
+        $file->isValid();
     }
 
     /**

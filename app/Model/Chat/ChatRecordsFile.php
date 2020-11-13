@@ -7,18 +7,22 @@ namespace App\Model\Chat;
 use App\Model\BaseModel;
 
 /**
- * @property int $id
- * @property int $record_id
- * @property int $user_id
- * @property int $file_source
- * @property int $file_type
- * @property int $save_type
- * @property string $original_name
- * @property string $file_suffix
- * @property int $file_size
- * @property string $save_dir
- * @property int $is_delete
- * @property \Carbon\Carbon $created_at
+ * 聊天记录(文件消息)数据表模型
+ *
+ * @property int $id 文件消息ID
+ * @property int $record_id 聊天记录ID
+ * @property int $user_id 用户ID
+ * @property int $file_source 文件上传来源
+ * @property int $file_type 文件类型
+ * @property int $save_type 文件保存类型
+ * @property string $original_name 文件原始名称
+ * @property string $file_suffix 文件后缀名
+ * @property int $file_size 文件大小
+ * @property string $save_dir 文件保存路径
+ * @property int $is_delete 是否已删除
+ * @property string $created_at 上传时间
+ *
+ * @package App\Model\Chat
  */
 class ChatRecordsFile extends BaseModel
 {

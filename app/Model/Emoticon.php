@@ -5,10 +5,14 @@ declare (strict_types=1);
 namespace App\Model;
 
 /**
+ * Class Emoticon
+ *
  * @property int $id
  * @property string $name
  * @property string $url
  * @property \Carbon\Carbon $created_at
+ *
+ * @package App\Model
  */
 class Emoticon extends BaseModel
 {
@@ -31,5 +35,8 @@ class Emoticon extends BaseModel
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = [
+        'id' => 'integer',
+        'created_at' => 'datetime'
+    ];
 }

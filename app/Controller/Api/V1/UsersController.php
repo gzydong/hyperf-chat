@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Cache\ApplyNumCache;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -186,19 +187,17 @@ class UsersController extends CController
     /**
      * 通过手机号查找用户
      *
-     * @RequestMapping(path="search-user", methods="get")
+     * @RequestMapping(path="search-user", methods="post")
      */
     public function searchUserInfo()
     {
         $params = $this->request->inputs(['user_id', 'mobile']);
-        $this->validate($params, [
-            'user_id' => 'present|integer',
-            'mobile' => "present|regex:/^1[345789][0-9]{9}$/",
-        ]);
 
-        if (!empty($params['user_id'])) {
+        if (isset($params['user_id'])) {
+            $this->validate($params, ['user_id' => 'present|integer']);
             $where['uid'] = $params['user_id'];
-        } else if (!empty($params['mobile'])) {
+        } else if (isset($params['mobile'])) {
+            $this->validate($params, ['mobile' => "present|regex:/^1[345789][0-9]{9}$/"]);
             $where['mobile'] = $params['mobile'];
         } else {
             return $this->response->fail('请求参数不正确...', [], ResponseCode::VALIDATION_ERROR);
@@ -322,11 +321,16 @@ class UsersController extends CController
     }
 
     /**
+     * 获取好友申请未读数
+     *
      * @RequestMapping(path="friend-apply-num", methods="get")
      */
     public function getApplyUnreadNum()
     {
-
+        $num = ApplyNumCache::get($this->uid());
+        return $this->response->success([
+            'unread_num' => $num ? $num : 0
+        ]);
     }
 
     /**

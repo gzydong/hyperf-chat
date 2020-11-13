@@ -7,10 +7,14 @@ namespace App\Model\Chat;
 use App\Model\BaseModel;
 
 /**
- * @property int $id
- * @property int $record_id
- * @property int $user_id
- * @property \Carbon\Carbon $created_at
+ * 聊天记录(已删除消息)数据表模型
+ *
+ * @property int $id 代码块ID
+ * @property int $record_id 聊天记录ID
+ * @property int $user_id 用户ID
+ * @property string $created_at 删除时间
+ *
+ * @package App\Model\Chat
  */
 class ChatRecordsDelete extends BaseModel
 {

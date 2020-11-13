@@ -9,15 +9,15 @@ use App\Model\BaseModel;
 /**
  * 笔记数据表模型
  *
- * @property int $id 笔记ID
- * @property int $user_id 用户ID
- * @property int $class_id 分类ID
+ * @property integer $id 笔记ID
+ * @property integer $user_id 用户ID
+ * @property integer $class_id 分类ID
  * @property string $tags_id 笔记标签ID
  * @property string $title 笔记标题
  * @property string $abstract 笔记摘要
  * @property string $image 笔记头图
- * @property int $is_asterisk 是否标记星号
- * @property int $status 笔记状态
+ * @property integer $is_asterisk 是否标记星号
+ * @property integer $status 笔记状态
  * @property string $created_at 创建时间
  * @property string $updated_at 更新时间
  * @property string $deleted_at 删除时间

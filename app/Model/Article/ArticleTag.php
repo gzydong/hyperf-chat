@@ -7,11 +7,11 @@ namespace App\Model\Article;
 use App\Model\BaseModel;
 
 /**
- * @property int $id
- * @property int $user_id
- * @property string $tag_name
- * @property int $sort
- * @property \Carbon\Carbon $created_at
+ * @property integer $id 标签ID
+ * @property integer $user_id 用户ID
+ * @property string $tag_name 标签名称
+ * @property integer $sort 标签排序
+ * @property integer $created_at 创建时间
  */
 class ArticleTag extends BaseModel
 {
@@ -27,7 +27,9 @@ class ArticleTag extends BaseModel
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'user_id','tag_name','sort','created_at'
+    ];
 
     /**
      * The attributes that should be cast to native types.
@@ -38,6 +40,6 @@ class ArticleTag extends BaseModel
         'id' => 'integer',
         'user_id' => 'integer',
         'sort' => 'integer',
-        'created_at' => 'datetime'
+        'created_at' => 'integer'
     ];
 }

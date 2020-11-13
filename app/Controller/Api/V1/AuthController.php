@@ -52,7 +52,7 @@ class AuthController extends CController
         $this->validate($this->request->all(), [
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
-            'platform' => 'required|in:h5,ios,windows,mac',
+            'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
 
         $userInfo = $this->userService->login(
@@ -75,8 +75,8 @@ class AuthController extends CController
 
         return $this->response->success([
             'authorize' => [
-                'token' => $token,
-                'expire' => $this->jwt->getTTL()
+                'access_token' => $token,
+                'expires_in' => $this->jwt->getTTL()
             ],
             'user_info' => [
                 'nickname' => $userInfo['nickname'],
@@ -116,7 +116,7 @@ class AuthController extends CController
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
             'sms_code' => 'required|integer|max:999999',
-            'platform' => 'required|in:h5,ios,windows,mac',
+            'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
 
         if (!$this->smsCodeService->check('user_register', $params['mobile'], $params['sms_code'])) {

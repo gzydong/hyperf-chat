@@ -7,13 +7,17 @@ namespace App\Model\Group;
 use App\Model\BaseModel;
 
 /**
- * @property int $id
- * @property int $group_id
- * @property int $user_id
- * @property int $group_owner
- * @property int $status
- * @property string $visit_card
- * @property \Carbon\Carbon $created_at
+ * 用户群组[成员]数据表模型
+ *
+ * @property int $id 群成员ID
+ * @property int $group_id 群组ID
+ * @property int $user_id 用户ID
+ * @property int $group_owner 是否群主[0:否;1:是;]
+ * @property int $status 退群状态[0:正常状态;1:已退群;]
+ * @property string $visit_card 用户群名片
+ * @property string $created_at 入群时间
+ *
+ * @package App\Model\Group
  */
 class UsersGroupMember extends BaseModel
 {

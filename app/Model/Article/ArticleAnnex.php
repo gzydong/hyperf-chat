@@ -9,9 +9,9 @@ use App\Model\BaseModel;
 /**
  * 笔记附件数据表模型
  *
- * @property int $id 笔记附件ID
- * @property int $user_id 用户ID
- * @property int $article_id 笔记ID
+ * @property integer $id 笔记附件ID
+ * @property integer $user_id 用户ID
+ * @property integer $article_id 笔记ID
  * @property string $file_suffix 文件后缀名
  * @property int $file_size 文件大小
  * @property string $save_dir 文件相对路径
