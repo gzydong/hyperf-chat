@@ -1,12 +1,17 @@
 <?php
 
 declare (strict_types=1);
+
 namespace App\Model;
 
 /**
- * @property int $id
- * @property int $user_id
- * @property string $emoticon_ids
+ * 表情包收藏数据表模型
+ *
+ * @property int $id 收藏ID
+ * @property int $user_id 用户ID
+ * @property string $emoticon_ids 表情包ID，多个用英文逗号拼接
+ *
+ * @package App\Model
  */
 class UsersEmoticon extends BaseModel
 {
@@ -22,12 +27,18 @@ class UsersEmoticon extends BaseModel
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'user_id',
+        'emoticon_ids'
+    ];
 
     /**
      * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'user_id' => 'integer'];
+    protected $casts = [
+        'id' => 'integer',
+        'user_id' => 'integer'
+    ];
 }

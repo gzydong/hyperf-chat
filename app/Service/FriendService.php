@@ -13,7 +13,6 @@ class FriendService extends BaseService
 {
     use PagingTrait;
 
-
     /**
      * 创建好友的申请
      *

@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace App\Model;
 
 /**
@@ -31,7 +32,7 @@ class User extends BaseModel
      * @var array
      */
     protected $fillable = [
-        'mobile','nickname','avatar','gender','password','motto','email','created_at'
+        'mobile', 'nickname', 'avatar', 'gender', 'password', 'motto', 'email', 'created_at'
     ];
 
     /**

@@ -7,15 +7,19 @@ namespace App\Model;
 use Hyperf\DbConnection\Db;
 
 /**
+ * 表情包收藏数据表模型
+ *
  * @property int $id
- * @property int $user1
- * @property int $user2
- * @property string $user1_remark
- * @property string $user2_remark
- * @property int $active
- * @property int $status
- * @property string $agree_time
- * @property \Carbon\Carbon $created_at
+ * @property int $user1 用户1ID
+ * @property int $user2 用户2ID
+ * @property string $user1_remark 用户1好友备注
+ * @property string $user2_remark 用户2好友备注
+ * @property int $active 主动邀请方[1:user1;2:user2;]
+ * @property int $status 好友状态[1:好友状态;0:已解除好友关系]
+ * @property string $agree_time 成为好友时间
+ * @property string $created_at 创建时间
+ *
+ * @package App\Model
  */
 class UsersFriend extends BaseModel
 {
@@ -38,7 +42,14 @@ class UsersFriend extends BaseModel
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'user1' => 'integer', 'user2' => 'integer', 'active' => 'integer', 'status' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = [
+        'id' => 'integer',
+        'user1' => 'integer',
+        'user2' => 'integer',
+        'active' => 'integer',
+        'status' => 'integer',
+        'created_at' => 'datetime'
+    ];
 
     /**
      * 获取用户所有好友

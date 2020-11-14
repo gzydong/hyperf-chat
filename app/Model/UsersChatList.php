@@ -1,19 +1,24 @@
 <?php
 
 declare (strict_types=1);
+
 namespace App\Model;
 
 /**
- * @property int $id
- * @property int $type
- * @property int $uid
- * @property int $friend_id
- * @property int $group_id
- * @property int $status
- * @property int $is_top
- * @property int $not_disturb
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * 聊天列表组数据表模型
+ *
+ * @property int $id 聊天列表ID
+ * @property int $type 聊天类型[1:好友;2:群聊;]
+ * @property int $uid 用户ID
+ * @property int $friend_id 好友ID
+ * @property int $group_id 群组ID
+ * @property int $status 列表状态
+ * @property int $is_top 是否置顶
+ * @property int $not_disturb 是否消息免打扰
+ * @property string $created_at 创建时间
+ * @property string $updated_at 更新时间
+ *
+ * @package App\Model
  */
 class UsersChatList extends BaseModel
 {
@@ -66,10 +71,10 @@ class UsersChatList extends BaseModel
             $result->save();
 
             return [
-                'id'=>$result->id,
-                'type'=>$result->type,
-                'friend_id'=>$result->friend_id,
-                'group_id'=>$result->group_id,
+                'id' => $result->id,
+                'type' => $result->type,
+                'friend_id' => $result->friend_id,
+                'group_id' => $result->group_id,
             ];
         }
 
@@ -86,10 +91,10 @@ class UsersChatList extends BaseModel
         }
 
         return [
-            'id'=>$result->id,
-            'type'=>$result->type,
-            'friend_id'=>$result->friend_id,
-            'group_id'=>$result->group_id,
+            'id' => $result->id,
+            'type' => $result->type,
+            'friend_id' => $result->friend_id,
+            'group_id' => $result->group_id,
         ];
     }
 
