@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Cache;
 
 /**
@@ -15,10 +14,10 @@ class UnreadTalkCache
      * 设置用户未读消息(自增加1)
      *
      * @param int $user_id 用户ID
-     * @param int $friend_id 好友ID
+     * @param string $friend_id 好友ID
      * @return bool
      */
-    public function setInc(int $user_id, int $friend_id)
+    public function setInc(int $user_id, string $friend_id)
     {
         $num = $this->get($user_id, $friend_id) + 1;
 
@@ -29,10 +28,10 @@ class UnreadTalkCache
      * 获取用户指定好友的未读消息数
      *
      * @param int $user_id 用户ID
-     * @param int $friend_id 好友ID
+     * @param string $friend_id 好友ID
      * @return int
      */
-    public function get(int $user_id, int $friend_id)
+    public function get(int $user_id, string $friend_id)
     {
         return (int)$this->redis()->hget($this->_key($user_id), $friend_id);
     }
@@ -52,10 +51,10 @@ class UnreadTalkCache
      * 清除用户指定好友的未读消息
      *
      * @param int $user_id 用户ID
-     * @param int $friend_id 好友ID
+     * @param string $friend_id 好友ID
      * @return bool
      */
-    public function del(int $user_id, int $friend_id)
+    public function del(int $user_id, string $friend_id)
     {
         return (bool)$this->redis()->hdel($this->_key($user_id), $friend_id);
     }

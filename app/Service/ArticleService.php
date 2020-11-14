@@ -29,7 +29,7 @@ class ArticleService extends BaseService
             $join->on('article_class.id', '=', Db::raw('sub_join.class_id'));
         })->where('article_class.user_id', $user_id)
             ->orderBy('article_class.sort', 'asc')
-            ->get(['article_class.id', 'article_class.class_name', 'article_class.is_default', Db::raw('sub_join.count')])
+            ->get(['article_class.id', 'article_class.class_name', 'article_class.is_default', Db::raw('ifnull(sub_join.count,0) as count')])
             ->toArray();
     }
 
@@ -41,9 +41,9 @@ class ArticleService extends BaseService
      */
     public function getUserTags(int $user_id)
     {
-        $items = ArticleTag::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name'])->toArray();
+        $items = ArticleTag::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name',Db::raw('0 as count')])->toArray();
         array_walk($items, function ($item) use ($user_id) {
-            $item['count'] = Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
+            $item['count'] = (int)Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
         });
 
         return $items;

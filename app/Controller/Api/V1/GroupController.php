@@ -42,7 +42,6 @@ class GroupController extends CController
         $params = $this->request->all();
         $this->validate($params, [
             'group_name' => 'required',
-            'group_profile' => 'required',
             'uids' => 'required',
         ]);
 
@@ -51,7 +50,7 @@ class GroupController extends CController
         [$isTrue, $data] = $this->groupService->create($this->uid(), [
             'name' => $params['group_name'],
             'avatar' => $params['avatar'] ?? '',
-            'profile' => $params['group_profile']
+            'profile' => $params['group_profile'] ?? ''
         ], array_unique($friend_ids));
 
         if (!$isTrue) {
@@ -365,9 +364,9 @@ class GroupController extends CController
         // 判断是否是新增数据
         if (empty($data['notice_id'])) {
             $result = UsersGroupNotice::create([
-                'group_id' => $data['group_id'],
-                'title' => $data['title'],
-                'content' => $data['content'],
+                'group_id' => $params['group_id'],
+                'title' => $params['title'],
+                'content' => $params['content'],
                 'user_id' => $user_id,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
@@ -388,7 +387,7 @@ class GroupController extends CController
         ]);
 
         return $result
-            ? $this->response->success('修改群公告信息成功...')
+            ? $this->response->success([],'修改群公告信息成功...')
             : $this->response->fail('修改群公告信息成功...');
     }
 
@@ -412,7 +411,7 @@ class GroupController extends CController
             return $this->response->fail('非法操作...');
         }
 
-        $result = UsersGroupNotice::where('id', $params['group_id'])
+        $result = UsersGroupNotice::where('id', $params['notice_id'])
             ->where('group_id', $params['group_id'])
             ->update([
                 'is_delete' => 1,
@@ -420,7 +419,7 @@ class GroupController extends CController
             ]);
 
         return $result
-            ? $this->response->success('公告删除成功...')
+            ? $this->response->success([],'公告删除成功...')
             : $this->response->fail('公告删除失败...');
     }
 }

@@ -161,7 +161,7 @@ class ArticleController extends CController
         $lockKey = "article_class_sort:{$params['class_id']}_{$params['sort_type']}";
 
         // 获取Redis锁
-        if (RedisLock::lock($lockKey, 0, 5)) {
+        if (RedisLock::lock($lockKey, 0, 3)) {
             $isTrue = $this->articleService->articleClassSort($this->uid(), $params['class_id'], $params['sort_type']);
 
             // 释放Redis锁

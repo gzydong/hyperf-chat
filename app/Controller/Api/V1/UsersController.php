@@ -154,9 +154,9 @@ class UsersController extends CController
         $params = $this->request->inputs(['nickname', 'avatar', 'motto', 'gender']);
         $this->validate($params, [
             'nickname' => 'required',
-            'motto' => 'present|integer',
-            'gender' => 'required|integer',
-            'avatar' => 'url'
+            'motto' => 'present',
+            'gender' => 'required|in:0,1,2',
+            'avatar' => 'present|url'
         ]);
 
         $isTrue = User::where('id', $this->uid())->update($params);
@@ -193,10 +193,10 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['user_id', 'mobile']);
 
-        if (isset($params['user_id'])) {
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
             $this->validate($params, ['user_id' => 'present|integer']);
             $where['uid'] = $params['user_id'];
-        } else if (isset($params['mobile'])) {
+        } else if (isset($params['mobile']) && !empty($params['mobile'])) {
             $this->validate($params, ['mobile' => "present|regex:/^1[345789][0-9]{9}$/"]);
             $where['mobile'] = $params['mobile'];
         } else {
@@ -371,9 +371,9 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
         $this->validate($params, [
-            'mobile' => 'required',
+            'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
-            'sms_code' => 'required|integer',
+            'sms_code' => 'required|digits:6',
         ]);
 
         if (!$smsCodeService->check('change_mobile', $params['mobile'], $params['sms_code'])) {
@@ -404,9 +404,9 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['email', 'password', 'email_code']);
         $this->validate($params, [
-            'email' => 'required',
+            'email' => 'required|email',
             'password' => 'required',
-            'email_code' => 'required|integer',
+            'email_code' => 'required|digits:6',
         ]);
 
         $sendEmailCode = new SendEmailCode();

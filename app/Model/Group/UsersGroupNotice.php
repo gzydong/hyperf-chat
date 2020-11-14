@@ -36,7 +36,14 @@ class UsersGroupNotice extends BaseModel
      * @var array
      */
     protected $fillable = [
-
+        'group_id',
+        'user_id',
+        'title',
+        'content',
+        'is_delete',
+        'created_at',
+        'updated_at',
+        'deleted_at'
     ];
 
     /**

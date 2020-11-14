@@ -115,7 +115,7 @@ class AuthController extends CController
             'nickname' => "required",
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
-            'sms_code' => 'required|integer|max:999999',
+            'sms_code' => 'required|digits:6',
             'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
 
@@ -148,7 +148,7 @@ class AuthController extends CController
         $this->validate($params, [
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
-            'sms_code' => 'required|integer|max:999999',
+            'sms_code' => 'required|digits:6',
         ]);
 
         if (!$this->smsCodeService->check('forget_password', $params['mobile'], $params['sms_code'])) {
