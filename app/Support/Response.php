@@ -13,7 +13,7 @@ class Response
      * @Inject
      * @var ResponseInterface|mixed
      */
-    protected $response;
+    private $response;
 
     /**
      * @param $data

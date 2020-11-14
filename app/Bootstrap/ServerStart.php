@@ -2,9 +2,7 @@
 
 namespace App\Bootstrap;
 
-use App\Service\SocketFDService;
 use Hyperf\Framework\Bootstrap\ServerStartCallback;
-use Hashids\Hashids;
 use Swoole\Timer;
 use Hyperf\Redis\Redis;
 

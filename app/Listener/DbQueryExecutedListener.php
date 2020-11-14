@@ -43,7 +43,7 @@ class DbQueryExecutedListener implements ListenerInterface
     }
 
     /**
-     * @param QueryExecuted $event
+     * @param object|QueryExecuted $event
      */
     public function process(object $event)
     {

@@ -13,9 +13,9 @@ return [
     'handler' => [
         'http' => [
             Hyperf\HttpServer\Exception\Handler\HttpExceptionHandler::class,
-            App\Exception\Handler\AppExceptionHandler::class,
-            App\Exception\Handler\ValidateExceptionHandler::class,
             App\Exception\Handler\JwtAuthExceptionHandler::class,
+            App\Exception\Handler\ValidateExceptionHandler::class,
+            App\Exception\Handler\AppExceptionHandler::class,
         ],
     ],
 ];

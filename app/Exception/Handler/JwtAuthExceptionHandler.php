@@ -16,6 +16,8 @@ class JwtAuthExceptionHandler extends ExceptionHandler
 {
     public function handle(Throwable $throwable, ResponseInterface $response)
     {
+
+//        echo $throwable->getMessage();
         // 判断被捕获到的异常是希望被捕获的异常
         if ($throwable instanceof TokenValidException) {
             // 格式化输出
@@ -27,7 +29,6 @@ class JwtAuthExceptionHandler extends ExceptionHandler
 
             // 阻止异常冒泡
             $this->stopPropagation();
-
             return $response->withAddedHeader('content-type', 'application/json; charset=utf-8')->withStatus(401)->withBody(new SwooleStream($data));
         }
 
@@ -36,6 +37,9 @@ class JwtAuthExceptionHandler extends ExceptionHandler
 
     /**
      * 判断该异常处理器是否要对该异常进行处理
+     *
+     * @param Throwable $throwable
+     * @return bool
      */
     public function isValid(Throwable $throwable): bool
     {

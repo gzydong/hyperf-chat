@@ -16,6 +16,11 @@ use Throwable;
  */
 class ValidateExceptionHandler extends ExceptionHandler
 {
+    /**
+     * @param Throwable $throwable
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
     public function handle(Throwable $throwable, ResponseInterface $response)
     {
         // 判断被捕获到的异常是希望被捕获的异常
@@ -38,6 +43,9 @@ class ValidateExceptionHandler extends ExceptionHandler
 
     /**
      * 判断该异常处理器是否要对该异常进行处理
+     *
+     * @param Throwable $throwable
+     * @return bool
      */
     public function isValid(Throwable $throwable): bool
     {
