@@ -52,6 +52,6 @@ class EmoticonDetail extends BaseModel
         'emoticon_id' => 'integer',
         'user_id' => 'integer',
         'file_size' => 'integer',
-        'created_at' => 'datetime'
+        'created_at' => 'integer'
     ];
 }

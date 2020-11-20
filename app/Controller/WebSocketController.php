@@ -33,6 +33,12 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     private $jwt;
 
     /**
+     * @Inject
+     * @var Producer
+     */
+    private $producer;
+
+    /**
      * @inject
      * @var SocketFDService
      */
@@ -69,9 +75,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否为心跳检测
         if ($frame->data == 'PING') return;
 
-        $ip = config('ip_address');
-        $producer = container()->get(Producer::class);
-        $producer->produce(new ChatMessageProducer("我是来自[{$ip} 服务器的消息]，{$frame->data}"));
+        $this->producer->produce(new ChatMessageProducer("我是来自 xxxx 服务器的消息]，{$frame->data}"));
     }
 
     /**
@@ -85,8 +89,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     {
         $user_id = $this->socketFDService->findFdUserId($fd);
 
-        stdout_log()->notice("客户端FD:{$fd} 已关闭连接,用户ID为【{$user_id}】");
-        stdout_log()->notice('关闭时间：' . date('Y-m-d H:i:s'));
+        stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 
         // 解除fd关系
         $this->socketFDService->removeRelation($fd);

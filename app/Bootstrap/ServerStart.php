@@ -2,6 +2,8 @@
 
 namespace App\Bootstrap;
 
+use App\Support\Packet;
+use App\Support\SocketIOParser;
 use Hyperf\Framework\Bootstrap\ServerStartCallback;
 use Swoole\Timer;
 use Hyperf\Redis\Redis;

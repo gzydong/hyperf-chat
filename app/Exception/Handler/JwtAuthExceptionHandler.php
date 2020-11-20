@@ -16,8 +16,6 @@ class JwtAuthExceptionHandler extends ExceptionHandler
 {
     public function handle(Throwable $throwable, ResponseInterface $response)
     {
-
-//        echo $throwable->getMessage();
         // 判断被捕获到的异常是希望被捕获的异常
         if ($throwable instanceof TokenValidException) {
             // 格式化输出

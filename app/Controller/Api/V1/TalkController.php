@@ -155,8 +155,8 @@ class TalkController extends CController
         ]);
 
         return UsersChatList::topItem($this->uid(), $params['list_id'], $params['type'] == 1)
-            ? $this->response->success([], '对话列表置顶成功...')
-            : $this->response->fail('对话列表置顶失败...');
+            ? $this->response->success([], '对话列表置顶(或取消置顶)成功...')
+            : $this->response->fail('对话列表置顶(或取消置顶)失败...');
     }
 
     /**

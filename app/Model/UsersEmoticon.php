@@ -41,4 +41,14 @@ class UsersEmoticon extends BaseModel
         'id' => 'integer',
         'user_id' => 'integer'
     ];
+
+    /**
+     *
+     * @param  string $value
+     * @return string
+     */
+    public function getEmoticonIdsAttribute($value)
+    {
+        return explode(',', $value);
+    }
 }
