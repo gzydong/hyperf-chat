@@ -8,6 +8,8 @@ use App\Helper\PushMessageHelper;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsCode;
 use App\Model\Chat\ChatRecordsFile;
+use App\Model\User;
+use App\Model\Chat\ChatRecordsInvite;
 use App\Service\SocketFDService;
 use App\Service\SocketRoomService;
 use Hyperf\Amqp\Result;
@@ -112,6 +114,9 @@ class ChatMessageConsumer extends ConsumerMessage
             return Result::ACK;
         }
 
+        /**
+         * @var ChatRecord
+         */
         $result = ChatRecord::leftJoin('users', 'users.id', '=', 'chat_records.user_id')
             ->where('chat_records.id', $data['record_id'])
             ->first([
@@ -130,15 +135,39 @@ class ChatMessageConsumer extends ConsumerMessage
 
         $file = [];
         $code_block = [];
-        if ($result->msg_type == 2) {
-            $file = ChatRecordsFile::where('record_id', $result->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
-            $file = $file ? $file->toArray() : [];
-            if ($file) {
-                $file['file_url'] = get_media_url($file['save_dir']);
-            }
-        } else if ($result->msg_type == 5) {
-            $code_block = ChatRecordsCode::where('record_id', $result->id)->first(['record_id', 'code_lang', 'code']);
-            $code_block = $code_block ? $code_block->toArray() : [];
+        $forward = [];
+        $invite = [];
+        switch ($result->msg_type) {
+            case 2://文件消息
+                $file = ChatRecordsFile::where('record_id', $result->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
+                $file = $file ? $file->toArray() : [];
+                if ($file) {
+                    $file['file_url'] = get_media_url($file['save_dir']);
+                }
+                break;
+            case 3://入群消息/退群消息
+                $notifyInfo = ChatRecordsInvite::where('record_id', $result->id)->first([
+                    'record_id', 'type', 'operate_user_id', 'user_ids'
+                ]);
+
+                $userInfo = User::where('id', $notifyInfo->operate_user_id)->first(['nickname', 'id']);
+                $membersIds = explode(',', $notifyInfo->user_ids);
+
+                $invite = [
+                    'type' => $notifyInfo->type,
+                    'operate_user' => ['id' => $userInfo->id, 'nickname' => $userInfo->nickname],
+                    'users' => User::select('id', 'nickname')->whereIn('id', $membersIds)->get()->toArray()
+                ];
+
+                unset($notifyInfo, $userInfo, $membersIds);
+                break;
+            case 4://会话记录消息
+
+                break;
+            case 5://代码块消息
+                $code_block = ChatRecordsCode::where('record_id', $result->id)->first(['record_id', 'code_lang', 'code']);
+                $code_block = $code_block ? $code_block->toArray() : [];
+                break;
         }
 
         $msg = [
@@ -156,7 +185,9 @@ class ChatMessageConsumer extends ConsumerMessage
                 "created_at" => $result->created_at,
                 "content" => $result->content,
                 "file" => $file,
-                "code_block" => $code_block
+                "code_block" => $code_block,
+                'forward' => $forward,
+                'invite' => $invite
             ])
         ];
 

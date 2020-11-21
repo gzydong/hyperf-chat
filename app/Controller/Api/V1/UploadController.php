@@ -36,6 +36,23 @@ class UploadController extends CController
     private $splitUploadService;
 
     /**
+     * 图片文件流上传接口
+     *
+     * @RequestMapping(path="file-stream", methods="post")
+     *
+     */
+    public function fileStream()
+    {
+        $fileStream = $this->request->post('fileStream', '');
+        $data = base64_decode(str_replace(['data:image/png;base64,', ' '], ['', '+'], $fileStream));
+
+        $path = '/media/images/avatar/' . date('Ymd') . '/' . uniqid() . date('His') . '.png';
+        $this->uploadService->makeDirectory($this->uploadService->driver('/media/images/avatar/' . date('Ymd') . '/'));
+        @file_put_contents($this->uploadService->driver($path), $data);
+        return $this->response->success(['avatar' => get_media_url($path)]);
+    }
+    
+    /**
      * 获取拆分文件信息
      *
      * @RequestMapping(path="get-file-split-info", methods="get")

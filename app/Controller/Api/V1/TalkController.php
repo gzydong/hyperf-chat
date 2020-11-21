@@ -189,8 +189,8 @@ class TalkController extends CController
         $isTrue = UsersChatList::notDisturbItem($this->uid(), $params['receive_id'], $params['type'], $params['not_disturb']);
 
         return $isTrue
-            ? $this->response->success([], '对话列表置顶成功...')
-            : $this->response->fail('对话列表置顶失败...');
+            ? $this->response->success([], '免打扰设置成功...')
+            : $this->response->fail('免打扰设置失败...');
     }
 
     /**
@@ -279,19 +279,29 @@ class TalkController extends CController
             //转发方方式[1:逐条转发;2:合并转发]
             'forward_mode' => 'required|in:1,2',
             //转发的好友的ID
-            'receive_user_ids' => 'required|array',
+//            'receive_user_ids' => 'array',
             //转发的群聊ID
-            'receive_group_ids' => 'required|array',
+//            'receive_group_ids' => 'array',
         ]);
 
         $user_id = $this->uid();
-        $items = array_merge(
-            array_map(function ($friend_id) {
+
+        $receive_user_ids = $receive_group_ids = [];
+        if (isset($params['receive_user_ids']) && !empty($params['receive_user_ids'])) {
+            $receive_user_ids = array_map(function ($friend_id) {
                 return ['source' => 1, 'id' => $friend_id];
-            }, $params['receive_user_ids']),
-            array_map(function ($group_id) {
+            }, $params['receive_user_ids']);
+        }
+
+        if (isset($params['receive_group_ids']) && !empty($params['receive_group_ids'])) {
+            $receive_group_ids = array_map(function ($group_id) {
                 return ['source' => 2, 'id' => $group_id];
-            }, $params['receive_group_ids'])
+            }, $params['receive_group_ids']);
+        }
+
+        $items = array_merge(
+            $receive_user_ids,
+            $receive_group_ids
         );
 
         if ($params['forward_mode'] == 1) {//单条转发
@@ -304,14 +314,18 @@ class TalkController extends CController
             return $this->response->fail('转发失败...');
         }
 
-        if ($params['receive_user_ids']) {
-            foreach ($params['receive_user_ids'] as $v) {
-                $this->unreadTalkCache->setInc($v, $user_id);
+        if ($receive_user_ids) {
+            foreach ($receive_user_ids as $v) {
+                $this->unreadTalkCache->setInc($v['id'], $user_id);
             }
         }
 
-        //这里需要调用WebSocket推送接口
-        // ...
+        // ...消息推送队列
+        foreach ($ids as $value) {
+            $this->producer->produce(
+                new ChatMessageProducer($user_id, $value['receive_id'], $value['source'], $value['record_id'])
+            );
+        }
 
         return $this->response->success([], '转发成功...');
     }

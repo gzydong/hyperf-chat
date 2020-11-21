@@ -33,7 +33,7 @@ class ChatRecordsForward extends BaseModel
      * @var array
      */
     protected $fillable = [
-        'record_id', 'user_id', 'created_at'
+        'record_id', 'user_id', 'records_id','text','created_at'
     ];
 
     /**
@@ -45,6 +45,5 @@ class ChatRecordsForward extends BaseModel
         'id' => 'integer',
         'record_id' => 'integer',
         'user_id' => 'integer',
-        'created_at' => 'datetime'
     ];
 }

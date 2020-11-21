@@ -521,7 +521,7 @@ class TalkService extends BaseService
         if ($source == 2) {//群聊消息
             //判断是否是群聊成员
             if (!UsersGroup::isMember($receive_id, $user_id)) {
-                return [];
+                return false;
             }
 
             $sqlObj = $sqlObj->where('receive_id', $receive_id)->whereIn('msg_type', $msg_type)->where('source', 2)->where('is_revoke', 0);
@@ -591,7 +591,11 @@ class TalkService extends BaseService
                     throw new Exception('插入消息失败');
                 }
 
-                $insRecordIds[] = $res->id;
+                $insRecordIds[] = [
+                    'record_id' => $res->id,
+                    'receive_id' => $item['id'],
+                    'source' => $item['source']
+                ];
 
                 if (!ChatRecordsForward::create([
                     'record_id' => $res->id,

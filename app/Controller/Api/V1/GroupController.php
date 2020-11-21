@@ -3,6 +3,8 @@
 namespace App\Controller\Api\V1;
 
 use App\Model\UsersFriend;
+use App\Service\SocketRoomService;
+use Hyperf\Amqp\Producer;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -13,6 +15,7 @@ use App\Model\UsersChatList;
 use App\Model\Group\UsersGroup;
 use App\Model\Group\UsersGroupMember;
 use App\Model\Group\UsersGroupNotice;
+use App\Amqp\Producer\ChatMessageProducer;
 
 /**
  * Class GroupController
@@ -31,6 +34,18 @@ class GroupController extends CController
     public $groupService;
 
     /**
+     * @Inject
+     * @var Producer
+     */
+    private $producer;
+
+    /**
+     * @Inject
+     * @var SocketRoomService
+     */
+    private $socketRoomService;
+
+    /**
      * 创建群组
      *
      * @RequestMapping(path="create", methods="post")
@@ -47,7 +62,8 @@ class GroupController extends CController
 
         $friend_ids = array_filter(explode(',', $params['uids']));
 
-        [$isTrue, $data] = $this->groupService->create($this->uid(), [
+        $user_id = $this->uid();
+        [$isTrue, $data] = $this->groupService->create($user_id, [
             'name' => $params['group_name'],
             'avatar' => $params['avatar'] ?? '',
             'profile' => $params['group_profile'] ?? ''
@@ -57,8 +73,10 @@ class GroupController extends CController
             return $this->response->fail('创建群聊失败，请稍后再试...');
         }
 
-        //群聊创建成功后需要创建聊天室并发送消息通知
-        // ... 包装消息推送到队列
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $data['group_id'], 2, $data['record_id'])
+        );
 
         return $this->response->success([
             'group_id' => $data['group_id']
@@ -101,14 +119,23 @@ class GroupController extends CController
         ]);
 
         $uids = array_filter(explode(',', $params['uids']));
+        $uids = array_unique($uids);
 
-        [$isTrue, $record_id] = $this->groupService->invite($this->uid(), $params['group_id'], array_unique($uids));
+        $user_id = $this->uid();
+        [$isTrue, $record_id] = $this->groupService->invite($user_id, $params['group_id'], $uids);
         if (!$isTrue) {
             return $this->response->fail('邀请好友加入群聊失败...');
         }
 
-        // 推送入群消息
-        // ...
+        // 移出聊天室
+        foreach ($uids as $uid) {
+            $this->socketRoomService->addRoomMember($uid, $params['group_id']);
+        }
+
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $params['group_id'], 2, $record_id)
+        );
 
         return $this->response->success([], '好友已成功加入群聊...');
     }
@@ -125,13 +152,19 @@ class GroupController extends CController
             'group_id' => 'required|integer'
         ]);
 
-        [$isTrue, $record_id] = $this->groupService->quit($this->uid(), $params['group_id']);
+        $user_id = $this->uid();
+        [$isTrue, $record_id] = $this->groupService->quit($user_id, $params['group_id']);
         if (!$isTrue) {
             return $this->response->fail('退出群组失败...');
         }
 
-        // 推送消息通知
-        // ...
+        // 移出聊天室
+        $this->socketRoomService->delRoomMember($params['group_id'], $user_id);
+
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $params['group_id'], 2, $record_id)
+        );
 
         return $this->response->success([], '已成功退出群组...');
     }
@@ -178,13 +211,21 @@ class GroupController extends CController
             'members_ids' => 'required|array'
         ]);
 
-        [$isTrue, $record_id] = $this->groupService->removeMember($params['group_id'], $this->uid(), $params['members_ids']);
+        $user_id = $this->uid();
+        [$isTrue, $record_id] = $this->groupService->removeMember($params['group_id'], $user_id, $params['members_ids']);
         if (!$isTrue) {
             return $this->response->fail('群聊用户移除失败...');
         }
 
-        // 推送消息通知
-        // ...
+        // 移出聊天室
+        foreach ($params['members_ids'] as $uid) {
+            $this->socketRoomService->delRoomMember($params['group_id'], $uid);
+        }
+
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $params['group_id'], 2, $record_id)
+        );
 
         return $this->response->success([], '已成功退出群组...');
     }
@@ -387,7 +428,7 @@ class GroupController extends CController
         ]);
 
         return $result
-            ? $this->response->success([],'修改群公告信息成功...')
+            ? $this->response->success([], '修改群公告信息成功...')
             : $this->response->fail('修改群公告信息成功...');
     }
 
@@ -419,7 +460,7 @@ class GroupController extends CController
             ]);
 
         return $result
-            ? $this->response->success([],'公告删除成功...')
+            ? $this->response->success([], '公告删除成功...')
             : $this->response->fail('公告删除失败...');
     }
 }
