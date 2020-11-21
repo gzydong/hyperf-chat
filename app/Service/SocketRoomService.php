@@ -6,7 +6,7 @@ namespace App\Service;
 class SocketRoomService
 {
     const ROOM = 'ws:room';
-    
+
     /**
      * 获取房间名
      *
@@ -38,7 +38,7 @@ class SocketRoomService
      */
     public function addRoomMember(int $usr_id, $room)
     {
-        return redis()->sAdd($this->getRoomName($room), $room);
+        return redis()->sAdd($this->getRoomName($room), $usr_id);
     }
 
     /**

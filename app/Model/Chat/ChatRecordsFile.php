@@ -38,12 +38,34 @@ class ChatRecordsFile extends BaseModel
      *
      * @var array
      */
-    protected $fillable = [];
-
+    protected $fillable = [
+        'record_id',
+        'user_id',
+        'file_source',
+        'file_type',
+        'save_type',
+        'original_name',
+        'file_suffix',
+        'file_size',
+        'save_dir',
+        'is_delete',
+        'created_at'
+    ];
+    
     /**
      * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'record_id' => 'integer', 'user_id' => 'integer', 'file_source' => 'integer', 'file_type' => 'integer', 'save_type' => 'integer', 'file_size' => 'integer', 'is_delete' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = [
+        'id' => 'integer',
+        'record_id' => 'integer',
+        'user_id' => 'integer',
+        'file_source' => 'integer',
+        'file_type' => 'integer',
+        'save_type' => 'integer',
+        'file_size' => 'integer',
+        'is_delete' => 'integer',
+        'created_at' => 'datetime'
+    ];
 }

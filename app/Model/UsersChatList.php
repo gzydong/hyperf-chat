@@ -34,7 +34,17 @@ class UsersChatList extends BaseModel
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'type',
+        'uid',
+        'friend_id',
+        'group_id',
+        'status',
+        'is_top',
+        'not_disturb',
+        'created_at',
+        'updated_at'
+    ];
 
     /**
      * The attributes that should be cast to native types.

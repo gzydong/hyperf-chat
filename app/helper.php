@@ -151,7 +151,7 @@ function diff_date($day1, $day2)
  */
 function get_media_url(string $path)
 {
-    return '/' . $path;
+    return config('domain.img_url') . $path;
 }
 
 /**

@@ -4,16 +4,23 @@ namespace App\Controller\Api\V1;
 
 use App\Cache\LastMsgCache;
 use App\Cache\UnreadTalkCache;
+use App\Model\EmoticonDetail;
+use App\Model\FileSplitUpload;
 use App\Model\User;
 use App\Model\UsersChatList;
 use App\Model\UsersFriend;
 use App\Model\Group\UsersGroup;
 use App\Service\TalkService;
+use App\Service\UploadService;
+use Hyperf\Amqp\Producer;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Phper666\JWTAuth\Middleware\JWTAuthMiddleware;
+use Hyperf\Utils\Str;
+use Psr\Http\Message\ResponseInterface;
+use App\Amqp\Producer\ChatMessageProducer;
 
 /**
  * Class TalkController
@@ -36,6 +43,12 @@ class TalkController extends CController
      * @var UnreadTalkCache
      */
     public $unreadTalkCache;
+
+    /**
+     * @Inject
+     * @var Producer
+     */
+    private $producer;
 
     /**
      * 获取用户对话列表
@@ -437,10 +450,64 @@ class TalkController extends CController
      * 上传聊天对话图片（待优化）
      *
      * @RequestMapping(path="send-image", methods="post")
+     *
+     * @param UploadService $uploadService
+     * @return ResponseInterface
      */
-    public function sendImage()
+    public function sendImage(UploadService $uploadService)
     {
+        $params = $this->request->inputs(['source', 'receive_id']);
+        $this->validate($params, [
+            //消息来源（1：好友消息 2：群聊消息）
+            'source' => 'required|in:1,2',
+            'receive_id' => 'required|integer|min:1'
+        ]);
 
+        $file = $this->request->file('img');
+        if (!$file->isValid()) {
+            return $this->response->fail();
+        }
+
+        $ext = $file->getExtension();
+        if (!in_array($ext, ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
+            return $this->response->fail('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
+        }
+
+        //获取图片信息
+        $imgInfo = getimagesize($file->getRealPath());
+
+        $path = $uploadService->media($file, 'media/images/talks', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
+        if (!$path) {
+            return $this->response->fail();
+        }
+
+        $user_id = $this->uid();
+
+        // 创建图片消息记录
+        $record_id = $this->talkService->createImgMessage([
+            'source' => $params['source'],
+            'msg_type' => 2,
+            'user_id' => $user_id,
+            'receive_id' => $params['receive_id'],
+        ], [
+            'user_id' => $user_id,
+            'file_type' => 1,
+            'file_suffix' => $ext,
+            'file_size' => $file->getSize(),
+            'save_dir' => $path,
+            'original_name' => $file->getClientFilename(),
+        ]);
+
+        if (!$record_id) {
+            return $this->response->fail('图片上传失败');
+        }
+
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+        );
+
+        return $this->response->success();
     }
 
     /**
@@ -450,7 +517,37 @@ class TalkController extends CController
      */
     public function sendCodeBlock()
     {
+        $params = $this->request->inputs(['source', 'receive_id', 'lang', 'code']);
+        $this->validate($params, [
+            //消息来源（1：好友消息 2：群聊消息）
+            'source' => 'required|in:1,2',
+            'receive_id' => 'required|integer|min:1',
+            'lang' => 'required',
+            'code' => 'required'
+        ]);
 
+        $user_id = $this->uid();
+        $record_id = $this->talkService->createCodeMessage([
+            'source' => $params['source'],
+            'msg_type' => 5,
+            'user_id' => $user_id,
+            'receive_id' => $params['receive_id'],
+        ], [
+            'user_id' => $user_id,
+            'code_lang' => $params['lang'],
+            'code' => $params['code']
+        ]);
+
+        if (!$record_id) {
+            return $this->response->fail('消息发送失败');
+        }
+
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+        );
+
+        return $this->response->success();
     }
 
     /**
@@ -458,9 +555,57 @@ class TalkController extends CController
      *
      * @RequestMapping(path="send-file", methods="post")
      */
-    public function sendFile()
+    public function sendFile(UploadService $uploadService)
     {
+        $params = $this->request->inputs(['hash_name', 'receive_id', 'source']);
+        $this->validate($params, [
+            //消息来源（1：好友消息 2：群聊消息）
+            'source' => 'required|in:1,2',
+            'receive_id' => 'required|integer|min:1',
+            'hash_name' => 'required',
+        ]);
 
+        $user_id = $this->uid();
+
+        $file = FileSplitUpload::where('user_id', $user_id)->where('hash_name', $params['hash_name'])->where('file_type', 1)->first();
+        if (!$file || empty($file->save_dir)) {
+            return $this->response->fail('文件不存在...');
+        }
+
+        $file_hash_name = uniqid() . Str::random(10) . '.' . $file->file_ext;
+        $save_dir = "files/talks/" . date('Ymd') . '/' . $file_hash_name;
+
+        $uploadService->makeDirectory($uploadService->driver("files/talks/" . date('Ymd')));
+
+        // Copy Files
+        @copy($uploadService->driver($file->save_dir), $uploadService->driver($save_dir));
+
+        $record_id = $this->talkService->createFileMessage([
+            'source' => $params['source'],
+            'msg_type' => 2,
+            'user_id' => $user_id,
+            'receive_id' => $params['receive_id']
+        ], [
+            'user_id' => $user_id,
+            'file_source' => 1,
+            'file_type' => 4,
+            'original_name' => $file->original_name,
+            'file_suffix' => $file->file_ext,
+            'file_size' => $file->file_size,
+            'save_dir' => $save_dir,
+        ]);
+
+        if (!$record_id) {
+            return $this->response->fail('表情发送失败');
+        }
+
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+        );
+
+
+        return $this->response->success();
     }
 
     /**
@@ -470,6 +615,48 @@ class TalkController extends CController
      */
     public function sendEmoticon()
     {
+        $params = $this->request->inputs(['source', 'receive_id', 'emoticon_id']);
+        $this->validate($params, [
+            //消息来源（1：好友消息 2：群聊消息）
+            'source' => 'required|in:1,2',
+            'receive_id' => 'required|integer|min:1',
+            'emoticon_id' => 'required|integer|min:1',
+        ]);
 
+        $user_id = $this->uid();
+        $emoticon = EmoticonDetail::where('id', $params['emoticon_id'])->where('user_id', $user_id)->first([
+            'url',
+            'file_suffix',
+            'file_size'
+        ]);
+
+        if (!$emoticon) {
+            return $this->response->fail('表情不存在...');
+        }
+
+        $record_id = $this->talkService->createEmoticonMessage([
+            'source' => $params['source'],
+            'msg_type' => 2,
+            'user_id' => $user_id,
+            'receive_id' => $params['receive_id'],
+        ], [
+            'user_id' => $user_id,
+            'file_type' => 1,
+            'file_suffix' => $emoticon->file_suffix,
+            'file_size' => $emoticon->file_size,
+            'save_dir' => $emoticon->url,
+            'original_name' => '表情',
+        ]);
+
+        if (!$record_id) {
+            return $this->response->fail('表情发送失败');
+        }
+
+        // ...消息推送队列
+        $this->producer->produce(
+            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+        );
+
+        return $this->response->success();
     }
 }

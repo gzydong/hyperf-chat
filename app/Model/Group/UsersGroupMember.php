@@ -71,4 +71,15 @@ class UsersGroupMember extends BaseModel
     {
         return self::where('group_id', $group_id)->where('user_id', $user_id)->value('visit_card');
     }
+
+    /**
+     * 获取用户的所有群ID
+     *
+     * @param int $user_id
+     * @return array
+     */
+    public static function getUserGroupIds(int $user_id)
+    {
+        return self::where('user_id', $user_id)->where('status', 0)->pluck('group_id')->toArray();
+    }
 }

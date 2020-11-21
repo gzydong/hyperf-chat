@@ -55,7 +55,6 @@ class ChatRecord extends BaseModel
         'msg_type' => 'integer',
         'user_id' => 'integer',
         'receive_id' => 'integer',
-        'is_revoke' => 'integer',
-        'created_at' => 'datetime'
+        'is_revoke' => 'integer'
     ];
 }

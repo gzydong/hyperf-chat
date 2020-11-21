@@ -80,7 +80,7 @@ class EmoticonService extends BaseService
     public function getInstallIds(int $user_id)
     {
         $result = UsersEmoticon::where('user_id', $user_id)->value('emoticon_ids');
-        return $result ? explode(',', $result) : [];
+        return $result ? array_filter($result) : [];
     }
 
     /**

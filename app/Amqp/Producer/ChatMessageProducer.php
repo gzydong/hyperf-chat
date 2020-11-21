@@ -14,15 +14,14 @@ class ChatMessageProducer extends ProducerMessage
 
     public $type = Type::FANOUT;
 
-    public function __construct($data)
+    public function __construct($sender, $receive, $source, $record_id)
     {
         $message = [
             'uuid' => $this->uuid(),
-            'method' => '', //
-            'sender' => '',  //发送者ID
-            'receive' => '',  //接收者ID
-            'receiveType' => '', //接收者类型 1:好友;2:群组
-            'message' => $data
+            'sender' => intval($sender),  //发送者ID
+            'receive' => intval($receive),  //接收者ID
+            'source' => intval($source), //接收者类型 1:好友;2:群组
+            'record_id' => intval($record_id)
         ];
 
         $this->payload = $message;

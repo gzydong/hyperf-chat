@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
@@ -82,7 +83,7 @@ class ArticleController extends CController
         }
 
         return $this->response->success(
-            $this->articleService->getUserArticleList($user_id, $page, 10000, $params)
+            $this->articleService->getUserArticleList($user_id, intval($page), 10000, $params)
         );
     }
 

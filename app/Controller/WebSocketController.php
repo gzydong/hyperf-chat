@@ -3,11 +3,15 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Cache\LastMsgCache;
+use App\Cache\UnreadTalkCache;
+use App\Model\Chat\ChatRecord;
+use App\Model\Group\UsersGroupMember;
+use App\Service\SocketRoomService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
-use Hyperf\Utils\Codec\Json;
 use Phper666\JWTAuth\JWT;
 use Swoole\Http\Request;
 use Swoole\Websocket\Frame;
@@ -45,6 +49,12 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     private $socketFDService;
 
     /**
+     * @inject
+     * @var SocketRoomService
+     */
+    private $socketRoomService;
+
+    /**
      * 连接创建成功回调事件
      *
      * @param Response|Server $server
@@ -54,14 +64,16 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     {
         $token = $request->get['token'] ?? '';
         $userInfo = $this->jwt->getParserData($token);
-        stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} | data:" . Json::encode($userInfo));
-        stdout_log()->notice('连接时间：' . date('Y-m-d H:i:s'));
+        stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
 
         // 绑定fd与用户关系
         $this->socketFDService->bindRelation($request->fd, $userInfo['user_id']);
 
-        $ip = config('ip_address');
-        $server->push($request->fd, "成功连接[{$ip}],IM 服务器");
+        // 加入群聊
+        $groupIds = UsersGroupMember::getUserGroupIds($userInfo['user_id']);
+        foreach ($groupIds as $group_id) {
+            $this->socketRoomService->addRoomMember($userInfo['user_id'], $group_id);
+        }
     }
 
     /**
@@ -75,7 +87,59 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否为心跳检测
         if ($frame->data == 'PING') return;
 
-        $this->producer->produce(new ChatMessageProducer("我是来自 xxxx 服务器的消息]，{$frame->data}"));
+        // 当前用户ID
+        $user_id = $this->socketFDService->findFdUserId($frame->fd);
+
+        [$event, $data] = array_values(json_decode($frame->data, true));
+        if ($user_id != $data['send_user']) {
+            return;
+        }
+
+        //验证消息类型 私聊|群聊
+        if (!in_array($data['source_type'], [1, 2])) {
+            return;
+        }
+
+        //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
+//        if ($data['source_type'] == 1) {//私信
+//            //判断发送者和接受者是否是好友关系
+//            if (!UsersFriend::isFriend(intval($data['send_user']), intval($data['receive_user']))) {
+//                return;
+//            }
+//        } else if ($data['source_type'] == 2) {//群聊
+//            //判断是否属于群成员
+//            if (!UsersGroup::isMember(intval($data['receive_user']), intval($data['send_user']))) {
+//                return;
+//            }
+//        }
+
+        $result = ChatRecord::create([
+            'source' => $data['source_type'],
+            'msg_type' => 1,
+            'user_id' => $data['send_user'],
+            'receive_id' => $data['receive_user'],
+            'content' => htmlspecialchars($data['text_message']),
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        if (!$result) return;
+
+        // 判断是否私聊
+        if ($data['source_type'] == 1) {
+            $msg_text = mb_substr($result->content, 0, 30);
+            // 缓存最后一条消息
+            LastMsgCache::set([
+                'text' => $msg_text,
+                'created_at' => $result->created_at
+            ], intval($data['receive_user']), intval($data['send_user']));
+
+            // 设置好友消息未读数
+            make(UnreadTalkCache::class)->setInc(intval($result->receive_id), strval($result->user_id));
+        }
+
+        $this->producer->produce(
+            new ChatMessageProducer($data['send_user'], $data['receive_user'], $data['source_type'], $result->id)
+        );
     }
 
     /**

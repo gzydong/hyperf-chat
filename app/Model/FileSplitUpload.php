@@ -37,8 +37,19 @@ class FileSplitUpload extends BaseModel
      * @var array
      */
     protected $fillable = [
-
+        'file_type',
+        'user_id',
+        'hash_name',
+        'original_name',
+        'split_index',
+        'split_num',
+        'save_dir',
+        'file_ext',
+        'file_size',
+        'is_delete',
+        'upload_at'
     ];
+
 
     /**
      * The attributes that should be cast to native types.
