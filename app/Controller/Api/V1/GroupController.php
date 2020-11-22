@@ -105,6 +105,8 @@ class GroupController extends CController
             return $this->response->fail('群组解散失败...');
         }
 
+        $this->socketRoomService->delRoom($params['group_id']);
+
         // ... 推送群消息
 
         return $this->response->success([], '群组解散成功...');

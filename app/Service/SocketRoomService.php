@@ -51,4 +51,15 @@ class SocketRoomService
     {
         return redis()->sRem($this->getRoomName($room), $members);
     }
+
+    /**
+     * 删除房间
+     *
+     * @param string|int $room 房间名
+     * @return int
+     */
+    public function delRoom($room)
+    {
+        return redis()->del($this->getRoomName($room));
+    }
 }

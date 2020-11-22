@@ -129,7 +129,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     {
         $user_id = $this->socketFDService->findFdUserId($fd);
 
-        // stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
+        stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 
         // 解除fd关系
         $this->socketFDService->removeRelation($fd);
