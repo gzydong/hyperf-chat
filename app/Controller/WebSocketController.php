@@ -3,11 +3,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Cache\LastMsgCache;
-use App\Cache\UnreadTalkCache;
-use App\Model\Chat\ChatRecord;
-use App\Model\Group\UsersGroupMember;
-use App\Service\SocketRoomService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
@@ -16,11 +11,14 @@ use Phper666\JWTAuth\JWT;
 use Swoole\Http\Request;
 use Swoole\Websocket\Frame;
 use Hyperf\Amqp\Producer;
-use App\Amqp\Producer\ChatMessageProducer;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Server;
 use App\Traits\WebSocketTrait;
 use App\Service\SocketFDService;
+use App\Service\MessageHandleService;
+use App\Service\SocketRoomService;
+use App\Model\Group\UsersGroupMember;
+use App\Amqp\Producer\ChatMessageProducer;
 
 /**
  * Class WebSocketController
@@ -55,6 +53,17 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     private $socketRoomService;
 
     /**
+     * @inject
+     * @var MessageHandleService
+     */
+    private $messageHandleService;
+
+    const EVENTS = [
+        'event_talk' => 'onTalk',
+        'event_keyboard' => 'onKeyboard',
+    ];
+
+    /**
      * 连接创建成功回调事件
      *
      * @param Response|Server $server
@@ -66,6 +75,9 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $userInfo = $this->jwt->getParserData($token);
         stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
 
+        // 判断是否存在异地登录
+        $isOnline = $this->socketFDService->isOnlineAll(intval($userInfo['user_id']));
+
         // 绑定fd与用户关系
         $this->socketFDService->bindRelation($request->fd, $userInfo['user_id']);
 
@@ -73,6 +85,17 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $groupIds = UsersGroupMember::getUserGroupIds($userInfo['user_id']);
         foreach ($groupIds as $group_id) {
             $this->socketRoomService->addRoomMember($userInfo['user_id'], $group_id);
+        }
+
+        if (!$isOnline) {
+            // 推送消息至队列
+            $this->producer->produce(
+                new ChatMessageProducer('event_online_status', [
+                    'user_id' => $userInfo['user_id'],
+                    'status' => 1,
+                    'notify' => '好友上线通知...'
+                ])
+            );
         }
     }
 
@@ -87,59 +110,12 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否为心跳检测
         if ($frame->data == 'PING') return;
 
-        // 当前用户ID
-        $user_id = $this->socketFDService->findFdUserId($frame->fd);
-
         [$event, $data] = array_values(json_decode($frame->data, true));
-        if ($user_id != $data['send_user']) {
+
+        if (isset(self::EVENTS[$event])) {
+            $this->messageHandleService->{self::EVENTS[$event]}($server, $frame, $data);
             return;
         }
-
-        //验证消息类型 私聊|群聊
-        if (!in_array($data['source_type'], [1, 2])) {
-            return;
-        }
-
-        //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
-//        if ($data['source_type'] == 1) {//私信
-//            //判断发送者和接受者是否是好友关系
-//            if (!UsersFriend::isFriend(intval($data['send_user']), intval($data['receive_user']))) {
-//                return;
-//            }
-//        } else if ($data['source_type'] == 2) {//群聊
-//            //判断是否属于群成员
-//            if (!UsersGroup::isMember(intval($data['receive_user']), intval($data['send_user']))) {
-//                return;
-//            }
-//        }
-
-        $result = ChatRecord::create([
-            'source' => $data['source_type'],
-            'msg_type' => 1,
-            'user_id' => $data['send_user'],
-            'receive_id' => $data['receive_user'],
-            'content' => htmlspecialchars($data['text_message']),
-            'created_at' => date('Y-m-d H:i:s'),
-        ]);
-
-        if (!$result) return;
-
-        // 判断是否私聊
-        if ($data['source_type'] == 1) {
-            $msg_text = mb_substr($result->content, 0, 30);
-            // 缓存最后一条消息
-            LastMsgCache::set([
-                'text' => $msg_text,
-                'created_at' => $result->created_at
-            ], intval($data['receive_user']), intval($data['send_user']));
-
-            // 设置好友消息未读数
-            make(UnreadTalkCache::class)->setInc(intval($result->receive_id), strval($result->user_id));
-        }
-
-        $this->producer->produce(
-            new ChatMessageProducer($data['send_user'], $data['receive_user'], $data['source_type'], $result->id)
-        );
     }
 
     /**
@@ -153,18 +129,23 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
     {
         $user_id = $this->socketFDService->findFdUserId($fd);
 
-        stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
+        // stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 
         // 解除fd关系
         $this->socketFDService->removeRelation($fd);
 
         // 判断是否存在异地登录
         $isOnline = $this->socketFDService->isOnlineAll(intval($user_id));
+        // ... 不存在异地登录，推送下线通知消息
         if (!$isOnline) {
-            // ... 不存在异地登录，推送下线通知消息
-            // ... 包装推送消息至队列
-        } else {
-            stdout_log()->notice("用户:{$user_id} 存在异地登录...");
+            // 推送消息至队列
+            $this->producer->produce(
+                new ChatMessageProducer('event_online_status', [
+                    'user_id' => $user_id,
+                    'status' => 0,
+                    'notify' => '好友离线通知通知...'
+                ])
+            );
         }
     }
 }

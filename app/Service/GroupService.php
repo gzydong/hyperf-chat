@@ -266,6 +266,8 @@ class GroupService extends BaseService
                     throw new Exception('添加群通知记录失败2  : quitGroupChat');
                 }
 
+                UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+
                 $record_id = $result->id;
             }
 
@@ -320,6 +322,10 @@ class GroupService extends BaseService
 
             if (!$result2) {
                 throw new Exception('添加群通知记录失败2');
+            }
+
+            foreach ($member_ids as $member_id) {
+                UsersChatList::where('uid', $member_id)->where('group_id', $group_id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
             }
 
             Db::commit();

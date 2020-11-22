@@ -227,6 +227,14 @@ class TalkController extends CController
         ]);
 
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
+        if($isTrue){
+            $this->producer->produce(
+                new ChatMessageProducer('event_revoke_talk', [
+                    'record_id' => $params['record_id']
+                ])
+            );
+        }
+
 
         return $isTrue
             ? $this->response->success([], $message)
@@ -323,7 +331,12 @@ class TalkController extends CController
         // ...消息推送队列
         foreach ($ids as $value) {
             $this->producer->produce(
-                new ChatMessageProducer($user_id, $value['receive_id'], $value['source'], $value['record_id'])
+                new ChatMessageProducer('event_talk', [
+                    'sender' => $user_id,  //发送者ID
+                    'receive' => intval($value['receive_id']),  //接收者ID
+                    'source' => intval($value['source']), //接收者类型 1:好友;2:群组
+                    'record_id' => $value['record_id']
+                ])
             );
         }
 
@@ -518,7 +531,12 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($params['receive_id']),  //接收者ID
+                'source' => intval($params['source']), //接收者类型 1:好友;2:群组
+                'record_id' => $record_id
+            ])
         );
 
         return $this->response->success();
@@ -558,7 +576,12 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($params['receive_id']),  //接收者ID
+                'source' => intval($params['source']), //接收者类型 1:好友;2:群组
+                'record_id' => $record_id
+            ])
         );
 
         return $this->response->success();
@@ -615,7 +638,12 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($params['receive_id']),  //接收者ID
+                'source' => intval($params['source']), //接收者类型 1:好友;2:群组
+                'record_id' => $record_id
+            ])
         );
 
 
@@ -668,7 +696,12 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $params['receive_id'], $params['source'], $record_id)
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($params['receive_id']),  //接收者ID
+                'source' => intval($params['source']), //接收者类型 1:好友;2:群组
+                'record_id' => $record_id
+            ])
         );
 
         return $this->response->success();

@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace App\Amqp\Consumer;
 
+use App\Model\UsersFriend;
+use Hyperf\Amqp\Annotation\Consumer;
+use Hyperf\Amqp\Result;
+use Hyperf\Amqp\Message\ConsumerMessage;
+use Hyperf\Redis\Redis;
+use Hyperf\Amqp\Message\Type;
+use Hyperf\Amqp\Builder\QueueBuilder;
+use PhpAmqpLib\Message\AMQPMessage;
+use App\Model\User;
 use App\Helper\PushMessageHelper;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsCode;
 use App\Model\Chat\ChatRecordsFile;
-use App\Model\User;
 use App\Model\Chat\ChatRecordsInvite;
 use App\Service\SocketFDService;
 use App\Service\SocketRoomService;
-use Hyperf\Amqp\Result;
-use Hyperf\Amqp\Annotation\Consumer;
-use Hyperf\Amqp\Message\ConsumerMessage;
-use Hyperf\Redis\Redis;
-use PhpAmqpLib\Message\AMQPMessage;
-use Hyperf\Amqp\Message\Type;
-use Hyperf\Amqp\Builder\QueueBuilder;
 
 /**
  * @Consumer(name="聊天消息消费者",enable=true)
@@ -56,9 +57,17 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     private $socketRoomService;
 
+    const EVENTS = [
+        'event_talk' => 'onConsumeTalk',
+        'event_keyboard' => 'onConsumeKeyboard',
+        'event_online_status' => 'onConsumeOnlineStatus',
+        'event_revoke_talk' => 'onConsumeRevokeTalk',
+    ];
+
     /**
      * ChatMessageConsumer constructor.
      * @param SocketFDService $socketFDService
+     * @param SocketRoomService $socketRoomService
      */
     public function __construct(SocketFDService $socketFDService, SocketRoomService $socketRoomService)
     {
@@ -88,6 +97,22 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function consumeMessage($data, AMQPMessage $message): string
     {
+        if (isset($data['event'])) {
+            return $this->{self::EVENTS[$data['event']]}($data, $message);
+        }
+
+        return Result::ACK;
+    }
+
+    /**
+     * 对话聊天消息
+     *
+     * @param array $data 队列消息
+     * @param AMQPMessage $message
+     * @return string
+     */
+    public function onConsumeTalk(array $data, AMQPMessage $message)
+    {
         $redis = container()->get(Redis::class);
 
         //[加锁]防止消息重复消费
@@ -96,13 +121,13 @@ class ChatMessageConsumer extends ConsumerMessage
             return Result::ACK;
         }
 
-        $source = $data['source'];
+        $source = $data['data']['source'];
 
-        $fids = $this->socketFDService->findUserFds($data['sender']);
+        $fids = $this->socketFDService->findUserFds($data['data']['sender']);
         if ($source == 1) {// 私聊
-            $fids = array_merge($fids, $this->socketFDService->findUserFds($data['receive']));
+            $fids = array_merge($fids, $this->socketFDService->findUserFds($data['data']['receive']));
         } else if ($source == 2) {//群聊
-            $userIds = $this->socketRoomService->getRoomMembers(strval($data['receive']));
+            $userIds = $this->socketRoomService->getRoomMembers(strval($data['data']['receive']));
             foreach ($userIds as $uid) {
                 $fids = array_merge($fids, $this->socketFDService->findUserFds(intval($uid)));
             }
@@ -118,7 +143,7 @@ class ChatMessageConsumer extends ConsumerMessage
          * @var ChatRecord
          */
         $result = ChatRecord::leftJoin('users', 'users.id', '=', 'chat_records.user_id')
-            ->where('chat_records.id', $data['record_id'])
+            ->where('chat_records.id', $data['data']['record_id'])
             ->first([
                 'chat_records.id',
                 'chat_records.source',
@@ -132,6 +157,10 @@ class ChatMessageConsumer extends ConsumerMessage
                 'users.nickname',
                 'users.avatar as avatar',
             ]);
+
+        if (!$result) {
+            return Result::ACK;
+        }
 
         $file = [];
         $code_block = [];
@@ -171,9 +200,9 @@ class ChatMessageConsumer extends ConsumerMessage
         }
 
         $msg = [
-            'send_user' => $data['sender'],
-            'receive_user' => $data['receive'],
-            'source_type' => $data['source'],
+            'send_user' => $data['data']['sender'],
+            'receive_user' => $data['data']['receive'],
+            'source_type' => $data['data']['source'],
             'data' => PushMessageHelper::formatTalkMsg([
                 'id' => $result->id,
                 'msg_type' => $result->msg_type,
@@ -195,11 +224,99 @@ class ChatMessageConsumer extends ConsumerMessage
         foreach ($fids as $fd) {
             $fd = intval($fd);
             if ($server->exist($fd)) {
-                $server->push($fd, json_encode(['chat_message', $msg]));
+                $server->push($fd, json_encode(['event_talk', $msg]));
             }
         }
 
-        unset($fids, $result, $msg);
+        return Result::ACK;
+    }
+
+    /**
+     * 键盘输入事件消息
+     *
+     * @param array $data 队列消息
+     * @param AMQPMessage $message
+     * @return string
+     */
+    public function onConsumeKeyboard(array $data, AMQPMessage $message)
+    {
+        $fds = $this->socketFDService->findUserFds($data['data']['receive_user']);
+        $server = server();
+        foreach ($fds as $fd) {
+            $fd = intval($fd);
+            if ($server->exist($fd)) {
+                $server->push($fd, json_encode(['event_keyboard', $data['data']]));
+            }
+        }
+
+        return Result::ACK;
+    }
+
+    /**
+     * 用户上线或下线消息
+     *
+     * @param array $data 队列消息
+     * @param AMQPMessage $message
+     * @return string
+     */
+    public function onConsumeOnlineStatus(array $data, AMQPMessage $message)
+    {
+        $user_id = $data['data']['user_id'];
+        $friends = UsersFriend::getFriendIds(intval($user_id));
+
+        $fds = [];
+        foreach ($friends as $friend_id) {
+            $fds = array_merge($fds, $this->socketFDService->findUserFds(intval($friend_id)));
+        }
+
+        $fds = array_unique($fds);
+        $server = server();
+        foreach ($fds as $fd) {
+            $fd = intval($fd);
+            if ($server->exist($fd)) {
+                $server->push($fd, json_encode(['event_online_status', $data['data']]));
+            }
+        }
+
+        return Result::ACK;
+    }
+
+    /**
+     * 撤销聊天消息
+     *
+     * @param array $data 队列消息
+     * @param AMQPMessage $message
+     * @return string
+     */
+    public function onConsumeRevokeTalk(array $data, AMQPMessage $message)
+    {
+        $record = ChatRecord::where('id', $data['data']['record_id'])->first(['id', 'source', 'user_id', 'receive_id']);
+
+        $fds = [];
+        if ($record->source == 1) {
+            $fds = array_merge($fds, $this->socketFDService->findUserFds($record->user_id));
+            $fds = array_merge($fds, $this->socketFDService->findUserFds($record->receive_id));
+        } else if ($record->source == 2) {
+            $userIds = $this->socketRoomService->getRoomMembers(strval($record->receive_id));
+            foreach ($userIds as $uid) {
+                $fds = array_merge($fds, $this->socketFDService->findUserFds(intval($uid)));
+            }
+        }
+
+        $fds = array_unique($fds);
+        $server = server();
+        foreach ($fds as $fd) {
+            $fd = intval($fd);
+            if ($server->exist($fd)) {
+                $server->push($fd, json_encode(['event_revoke_talk', [
+                    'record_id' => $record->id,
+                    'source' => $record->source,
+                    'user_id' => $record->user_id,
+                    'receive_id' => $record->receive_id,
+                ]]));
+            }
+        }
+
         return Result::ACK;
     }
 }

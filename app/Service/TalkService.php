@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Cache\FriendRemarkCache;
 use App\Cache\LastMsgCache;
+use App\Cache\UnreadTalkCache;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsCode;
 use App\Model\Chat\ChatRecordsFile;
@@ -48,7 +49,11 @@ class TalkService extends BaseService
             return [];
         }
 
-        $rows = array_map(function ($item) use ($user_id) {
+
+        $socketFDService = make(SocketFDService::class);
+        $runIdAll = $socketFDService->getServerRunIdAll();
+
+        $rows = array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {
             $data['id'] = $item['id'];
             $data['type'] = $item['type'];
             $data['friend_id'] = $item['friend_id'];
@@ -66,14 +71,13 @@ class TalkService extends BaseService
             if ($item['type'] == 1) {
                 $data['name'] = $item['nickname'];
                 $data['avatar'] = $item['user_avatar'];
-//                $data['unread_num'] = app('unread.talk')->get($user_id, $item['friend_id']);
-//                $data['online'] = app('client.manage')->isOnline($item['friend_id']);
+                $data['unread_num'] = make(UnreadTalkCache::class)->get($user_id, $item['friend_id']);
+                $data['online'] = $socketFDService->isOnlineAll($item['friend_id'], $runIdAll);
 
                 $remark = FriendRemarkCache::get($user_id, $item['friend_id']);
                 if ($remark) {
                     $data['remark_name'] = $remark;
                 } else {
-
                     $info = UsersFriend::select('user1', 'user2', 'user1_remark', 'user2_remark')
                         ->where('user1', ($user_id < $item['friend_id']) ? $user_id : $item['friend_id'])
                         ->where('user2', ($user_id < $item['friend_id']) ? $item['friend_id'] : $user_id)->first();
@@ -89,7 +93,6 @@ class TalkService extends BaseService
             }
 
             $records = LastMsgCache::get($item['type'] == 1 ? $item['friend_id'] : $item['group_id'], $item['type'] == 1 ? $user_id : 0);
-
             if ($records) {
                 $data['msg_text'] = $records['text'];
                 $data['updated_at'] = $records['created_at'];

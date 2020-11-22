@@ -14,14 +14,31 @@ class ChatMessageProducer extends ProducerMessage
 
     public $type = Type::FANOUT;
 
-    public function __construct($sender, $receive, $source, $record_id)
+    const EVENTS = [
+        'event_talk',
+        'event_keyboard',
+        'event_online_status',
+        'event_revoke_talk'
+    ];
+
+    /**
+     * 初始化处理...
+     *
+     * @param string $event 事件名
+     * @param array $data 数据
+     * @param array $options 其它参数
+     */
+    public function __construct(string $event, array $data, array $options = [])
     {
+        if (!in_array($event, self::EVENTS)) {
+            new \Exception('事件名未注册...');
+        }
+
         $message = [
-            'uuid' => $this->uuid(),
-            'sender' => intval($sender),  //发送者ID
-            'receive' => intval($receive),  //接收者ID
-            'source' => intval($source), //接收者类型 1:好友;2:群组
-            'record_id' => intval($record_id)
+            'uuid' => $this->uuid(),// 自定义消息ID
+            'event' => $event,
+            'data' => $data,
+            'options' => $options
         ];
 
         $this->payload = $message;

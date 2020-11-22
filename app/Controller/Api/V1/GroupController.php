@@ -75,7 +75,12 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $data['group_id'], 2, $data['record_id'])
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($data['group_id']),  //接收者ID
+                'source' => 2, //接收者类型 1:好友;2:群组
+                'record_id' => intval($data['record_id'])
+            ])
         );
 
         return $this->response->success([
@@ -134,7 +139,12 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $params['group_id'], 2, $record_id)
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($params['group_id']),  //接收者ID
+                'source' => 2, //接收者类型 1:好友;2:群组
+                'record_id' => $record_id
+            ])
         );
 
         return $this->response->success([], '好友已成功加入群聊...');
@@ -163,7 +173,12 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $params['group_id'], 2, $record_id)
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($params['group_id']),  //接收者ID
+                'source' => 2, //接收者类型 1:好友;2:群组
+                'record_id' => $record_id
+            ])
         );
 
         return $this->response->success([], '已成功退出群组...');
@@ -224,7 +239,12 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer($user_id, $params['group_id'], 2, $record_id)
+            new ChatMessageProducer('event_talk', [
+                'sender' => $user_id,  //发送者ID
+                'receive' => intval($params['group_id']),  //接收者ID
+                'source' => 2, //接收者类型 1:好友;2:群组
+                'record_id' => $record_id
+            ])
         );
 
         return $this->response->success([], '已成功退出群组...');
