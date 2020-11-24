@@ -19,6 +19,6 @@ return [
         CorsMiddleware::class
     ],
     'ws' => [
-
+        WebSocketAuthMiddleware::class
     ]
 ];

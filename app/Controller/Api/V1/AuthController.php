@@ -11,7 +11,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
 use Phper666\JWTAuth\JWT;
-use Phper666\JWTAuth\Middleware\JWTAuthMiddleware;
+use App\Middleware\JWTAuthMiddleware;
 
 /**
  * 授权相关控制器

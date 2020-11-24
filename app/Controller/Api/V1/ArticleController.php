@@ -9,7 +9,7 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
-use Phper666\JWTAuth\Middleware\JWTAuthMiddleware;
+use App\Middleware\JWTAuthMiddleware;
 
 /**
  * Class ArticleController
@@ -100,7 +100,7 @@ class ArticleController extends CController
 
         return $this->response->success(
             $this->articleService->getArticleDetail(
-                $this->request->input('article_id'),
+                (int)$this->request->input('article_id'),
                 $this->uid()
             )
         );
@@ -139,7 +139,7 @@ class ArticleController extends CController
             'class_id' => 'required|integer'
         ]);
 
-        if (!$this->articleService->delArticleClass($this->uid(), $params['class_id'])) {
+        if (!$this->articleService->delArticleClass($this->uid(), (int)$params['class_id'])) {
             return $this->response->fail('笔记分类删除失败...');
         }
 
@@ -163,7 +163,7 @@ class ArticleController extends CController
 
         // 获取Redis锁
         if (RedisLock::lock($lockKey, 0, 3)) {
-            $isTrue = $this->articleService->articleClassSort($this->uid(), $params['class_id'], $params['sort_type']);
+            $isTrue = $this->articleService->articleClassSort($this->uid(), (int)$params['class_id'], (int)$params['sort_type']);
 
             // 释放Redis锁
             RedisLock::release($lockKey, 0);
@@ -189,7 +189,7 @@ class ArticleController extends CController
             'toid' => 'required|integer'
         ]);
 
-        $isTrue = $this->articleService->mergeArticleClass($this->uid(), $params['class_id'], $params['toid']);
+        $isTrue = $this->articleService->mergeArticleClass($this->uid(), (int)$params['class_id'], (int)$params['toid']);
 
         return $isTrue
             ? $this->response->success([], '合并完成...')
@@ -211,7 +211,7 @@ class ArticleController extends CController
 
         $id = $this->articleService->editArticleTag(
             $this->uid(),
-            $this->request->post('tag_id', 0),
+            (int)$this->request->post('tag_id', 0),
             $this->request->post('tag_name', '')
         );
 
@@ -232,7 +232,7 @@ class ArticleController extends CController
             'tag_id' => 'required|integer|min:0'
         ]);
 
-        $isTrue = $this->articleService->delArticleTags($this->uid(), $params['tag_id']);
+        $isTrue = $this->articleService->delArticleTags($this->uid(), (int)$params['tag_id']);
 
         return $isTrue
             ? $this->response->success([], '笔记标签删除完成...')
@@ -255,7 +255,7 @@ class ArticleController extends CController
             'md_content' => 'required',
         ]);
 
-        $id = $this->articleService->editArticle($this->uid(), $params['article_id'], [
+        $id = $this->articleService->editArticle($this->uid(), (int)$params['article_id'], [
             'title' => $params['title'],
             'abstract' => mb_substr(strip_tags($params['content']), 0, 200),
             'class_id' => $params['class_id'],
@@ -281,7 +281,7 @@ class ArticleController extends CController
             'article_id' => 'required|integer|min:0'
         ]);
 
-        $isTrue = $this->articleService->updateArticleStatus($this->uid(), $params['article_id'], 2);
+        $isTrue = $this->articleService->updateArticleStatus($this->uid(), (int)$params['article_id'], 2);
 
         return $isTrue
             ? $this->response->success([], '笔记删除成功...')
@@ -300,7 +300,7 @@ class ArticleController extends CController
             'article_id' => 'required|integer|min:0'
         ]);
 
-        $isTrue = $this->articleService->updateArticleStatus($this->uid(), $params['article_id'], 1);
+        $isTrue = $this->articleService->updateArticleStatus($this->uid(), (int)$params['article_id'], 1);
         return $isTrue
             ? $this->response->success([], '笔记恢复成功...')
             : $this->response->fail('笔记恢复失败...');
@@ -355,8 +355,8 @@ class ArticleController extends CController
 
         $isTrue = $this->articleService->setAsteriskArticle(
             $this->uid(),
-            $params['article_id'],
-            $params['type']
+            (int)$params['article_id'],
+            (int)$params['type']
         );
 
         return $isTrue
@@ -377,7 +377,7 @@ class ArticleController extends CController
             'tags' => 'required|array'
         ]);
 
-        $isTrue = $this->articleService->updateArticleTag($this->uid(), $params['article_id'], $params['tags']);
+        $isTrue = $this->articleService->updateArticleTag($this->uid(), (int)$params['article_id'], $params['tags']);
         return $isTrue
             ? $this->response->success([], 'success...')
             : $this->response->fail('编辑失败...');
@@ -395,7 +395,7 @@ class ArticleController extends CController
             'article_id' => 'required|integer|min:0'
         ]);
 
-        $isTrue = $this->articleService->foreverDelArticle($this->uid(), $params['article_id']);
+        $isTrue = $this->articleService->foreverDelArticle($this->uid(), (int)$params['article_id']);
 
         return $isTrue
             ? $this->response->success([], '笔记删除成功...')
@@ -425,7 +425,7 @@ class ArticleController extends CController
             'annex_id' => 'required|integer|min:0'
         ]);
 
-        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), $params['annex_id'], 2);
+        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), (int)$params['annex_id'], 2);
 
         return $isTrue
             ? $this->response->success([], '笔记附件删除成功...')
@@ -444,7 +444,7 @@ class ArticleController extends CController
             'annex_id' => 'required|integer|min:0'
         ]);
 
-        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), $params['annex_id'], 1);
+        $isTrue = $this->articleService->updateArticleAnnexStatus($this->uid(), (int)$params['annex_id'], 1);
 
         return $isTrue
             ? $this->response->success([], '笔记附件恢复成功...')
@@ -487,7 +487,7 @@ class ArticleController extends CController
             'annex_id' => 'required|integer|min:0'
         ]);
 
-        $isTrue = $this->articleService->foreverDelAnnex($this->uid(), $params['annex_id']);
+        $isTrue = $this->articleService->foreverDelAnnex($this->uid(), (int)$params['annex_id']);
 
         return $isTrue
             ? $this->response->success([], '笔记附件删除成功...')

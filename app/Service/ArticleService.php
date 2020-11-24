@@ -164,11 +164,11 @@ class ArticleService extends BaseService
      * 编辑笔记分类
      *
      * @param int $uid 用户ID
-     * @param int $class_id 分类ID
+     * @param int|string $class_id 分类ID
      * @param string $class_name 分类名
      * @return bool|int
      */
-    public function editArticleClass(int $uid, int $class_id, string $class_name)
+    public function editArticleClass(int $uid, $class_id, string $class_name)
     {
         if ($class_id) {
             if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->update(['class_name' => $class_name])) {

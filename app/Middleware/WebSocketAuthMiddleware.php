@@ -12,6 +12,11 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * WebSocket token 授权验证中间件
+ *
+ * @package App\Middleware
+ */
 class WebSocketAuthMiddleware implements MiddlewareInterface
 {
     /**

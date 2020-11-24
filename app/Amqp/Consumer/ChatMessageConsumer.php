@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Amqp\Consumer;
 
+use App\Model\Chat\ChatRecordsForward;
 use App\Model\UsersFriend;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Result;
@@ -191,6 +192,15 @@ class ChatMessageConsumer extends ConsumerMessage
                 unset($notifyInfo, $userInfo, $membersIds);
                 break;
             case 4://会话记录消息
+                $forward = ['num' => 0,'list' => []];
+
+                $forwardInfo = ChatRecordsForward::where('record_id', $result->id)->first(['records_id', 'text']);
+                if ($forwardInfo) {
+                    $forward = [
+                        'num' => substr_count($forwardInfo->records_id, ',') + 1,
+                        'list' => json_decode($forwardInfo->text, true) ?? []
+                    ];
+                }
 
                 break;
             case 5://代码块消息

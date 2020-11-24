@@ -9,7 +9,7 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
-use Phper666\JWTAuth\Middleware\JWTAuthMiddleware;
+use App\Middleware\JWTAuthMiddleware;
 
 /**
  * 上传控制器
@@ -51,7 +51,7 @@ class UploadController extends CController
         @file_put_contents($this->uploadService->driver($path), $data);
         return $this->response->success(['avatar' => get_media_url($path)]);
     }
-    
+
     /**
      * 获取拆分文件信息
      *
