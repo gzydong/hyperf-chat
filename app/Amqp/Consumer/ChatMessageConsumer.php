@@ -23,6 +23,8 @@ use App\Service\SocketFDService;
 use App\Service\SocketRoomService;
 
 /**
+ * 消息推送消费者队列
+ *
  * @Consumer(name="聊天消息消费者",enable=true)
  */
 class ChatMessageConsumer extends ConsumerMessage
@@ -58,11 +60,24 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     private $socketRoomService;
 
+    /**
+     * 推送的消息类型推送绑定事件方法
+     */
     const EVENTS = [
+        // 聊天消息事件
         'event_talk' => 'onConsumeTalk',
+
+        // 键盘输入事件
         'event_keyboard' => 'onConsumeKeyboard',
+
+        // 用户在线状态事件
         'event_online_status' => 'onConsumeOnlineStatus',
+
+        // 聊天消息推送事件
         'event_revoke_talk' => 'onConsumeRevokeTalk',
+
+        // 好友申请相关事件
+        'event_friend_apply' => 'onConsumeFriendApply'
     ];
 
     /**
@@ -192,7 +207,7 @@ class ChatMessageConsumer extends ConsumerMessage
                 unset($notifyInfo, $userInfo, $membersIds);
                 break;
             case 4://会话记录消息
-                $forward = ['num' => 0,'list' => []];
+                $forward = ['num' => 0, 'list' => []];
 
                 $forwardInfo = ChatRecordsForward::where('record_id', $result->id)->first(['records_id', 'text']);
                 if ($forwardInfo) {
@@ -300,6 +315,7 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeRevokeTalk(array $data, AMQPMessage $message)
     {
+        /** @var ChatRecord */
         $record = ChatRecord::where('id', $data['data']['record_id'])->first(['id', 'source', 'user_id', 'receive_id']);
 
         $fds = [];
@@ -324,6 +340,28 @@ class ChatMessageConsumer extends ConsumerMessage
                     'user_id' => $record->user_id,
                     'receive_id' => $record->receive_id,
                 ]]));
+            }
+        }
+
+        return Result::ACK;
+    }
+
+    /**
+     * 好友申请消息
+     *
+     * @param array $data
+     * @param AMQPMessage $message
+     */
+    public function onConsumeFriendApply(array $data, AMQPMessage $message)
+    {
+        $fds = $this->socketFDService->findUserFds($data['data']['receive']);
+
+        $fds = array_unique($fds);
+        $server = server();
+        foreach ($fds as $fd) {
+            $fd = intval($fd);
+            if ($server->exist($fd)) {
+                $server->push($fd, json_encode(['event_friend_apply', $data['data']]));
             }
         }
 

@@ -18,6 +18,8 @@ use App\Support\SendEmailCode;
 use App\Service\FriendService;
 use App\Service\UserService;
 use App\Service\SocketFDService;
+use App\Amqp\Producer\ChatMessageProducer;
+use Hyperf\Amqp\Producer;
 
 /**
  * Class UsersController
@@ -46,6 +48,12 @@ class UsersController extends CController
      * @var SocketFDService
      */
     private $socketFDService;
+
+    /**
+     * @Inject
+     * @var Producer
+     */
+    private $producer;
 
     /**
      * 获取我的好友列表
@@ -247,12 +255,27 @@ class UsersController extends CController
             return $this->response->fail('用户不存在...');
         }
 
-        if (!$this->friendService->addFriendApply($this->uid(), $params['friend_id'], $params['remarks'])) {
+        $user_id = $this->uid();
+        if (!$this->friendService->addFriendApply($user_id, (int)$params['friend_id'], $params['remarks'])) {
             return $this->response->fail('发送好友申请失败...');
         }
 
+        // 好友申请未读消息数自增
+        ApplyNumCache::setInc((int)$params['friend_id']);
+
         //判断对方是否在线。如果在线发送消息通知
-        // ...
+        if ($this->socketFDService->isOnlineAll((int)$params['friend_id'])) {
+            $this->producer->produce(
+                new ChatMessageProducer('event_friend_apply', [
+                    'sender' => $user_id,
+                    'receive' => (int)$params['friend_id'],
+                    'type' => 1,
+                    'status' => 1,
+                    'remark' => ''
+                ])
+            );
+        }
+
 
         return $this->response->success([], '发送好友申请成功...');
     }
@@ -270,15 +293,25 @@ class UsersController extends CController
             'remarks' => 'present',
         ]);
 
-        $isTrue = $this->friendService->handleFriendApply($this->uid(), $params['apply_id'], $params['remarks']);
-        //判断是否是同意添加好友
-        if ($isTrue) {
-            //... 推送处理消息
+        $isTrue = $this->friendService->handleFriendApply($this->uid(), (int)$params['apply_id'], $params['remarks']);
+        if (!$isTrue) {
+            return $this->response->fail('处理失败...');
         }
 
-        return $isTrue
-            ? $this->response->success([], '处理成功...')
-            : $this->response->fail('处理失败...');
+        //判断对方是否在线。如果在线发送消息通知
+//        if ($this->socketFDService->isOnlineAll((int)$params['friend_id'])) {
+//            $this->producer->produce(
+//                new ChatMessageProducer('event_friend_apply', [
+//                    'sender' => $user_id,
+//                    'receive' => (int)$params['friend_id'],
+//                    'type' => 1,
+//                    'status' => 1,
+//                    'remark' => ''
+//                ])
+//            );
+//        }
+
+        return $this->response->success([], '处理成功...');
     }
 
     /**
@@ -293,7 +326,7 @@ class UsersController extends CController
             'apply_id' => 'required|integer',
         ]);
 
-        $isTrue = $this->friendService->delFriendApply($this->uid(), $params['apply_id']);
+        $isTrue = $this->friendService->delFriendApply($this->uid(), (int)$params['apply_id']);
         return $isTrue
             ? $this->response->success([], '删除成功...')
             : $this->response->fail('删除失败...');

@@ -598,4 +598,31 @@ class ArticleService extends BaseService
 
         return $info->delete();
     }
+
+    /**
+     * 添加笔记附件
+     *
+     * @param int $user_id 用户id
+     * @param int $article_id 笔记ID
+     * @param array $annex 笔记附件信息
+     * @return bool
+     */
+    public function insertArticleAnnex(int $user_id, int $article_id, array $annex)
+    {
+        if (!Article::where('id', $article_id)->where('user_id', $user_id)->exists()) {
+            return false;
+        }
+
+        $result = ArticleAnnex::create([
+            'user_id' => $user_id,
+            'article_id' => $article_id,
+            'file_suffix' => $annex['file_suffix'],
+            'file_size' => $annex['file_size'],
+            'save_dir' => $annex['save_dir'],
+            'original_name' => $annex['original_name'],
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return $result ? $result->id : false;
+    }
 }

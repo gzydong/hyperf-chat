@@ -18,7 +18,8 @@ class ChatMessageProducer extends ProducerMessage
         'event_talk',
         'event_keyboard',
         'event_online_status',
-        'event_revoke_talk'
+        'event_revoke_talk',
+        'event_friend_apply'
     ];
 
     /**

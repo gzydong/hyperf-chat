@@ -35,7 +35,16 @@ class UsersFriend extends BaseModel
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'user1',
+        'user2',
+        'user1_remark',
+        'user2_remark',
+        'active',
+        'status',
+        'agree_time',
+        'created_at'
+    ];
 
     /**
      * The attributes that should be cast to native types.

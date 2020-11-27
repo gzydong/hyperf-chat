@@ -30,7 +30,7 @@ class ApplyNumCache
      */
     public static function setInc(int $user_id)
     {
-        return redis()->hincrby(self::KEY, $user_id, 1);
+        return redis()->hincrby(self::KEY, strval($user_id), 1);
     }
 
     /**

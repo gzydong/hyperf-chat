@@ -183,7 +183,7 @@ class AuthController extends CController
     /**
      * 发送验证码
      *
-     * @RequestMapping(path="send-code", methods="post")
+     * @RequestMapping(path="send-verify-code", methods="post")
      *
      * @return \Psr\Http\Message\ResponseInterface
      */

@@ -23,6 +23,7 @@ class ServerStart extends ServerStartCallback
     {
         stdout_log()->info(sprintf('服务运行ID : %s', SERVER_RUN_ID));
 
+        // 维护服务运行状态
         $this->setTimeOut();
         Timer::tick(15000, function () {
             $this->setTimeOut();

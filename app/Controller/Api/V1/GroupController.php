@@ -54,23 +54,30 @@ class GroupController extends CController
      */
     public function create()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['group_name', 'uids']);
         $this->validate($params, [
             'group_name' => 'required',
             'uids' => 'required',
         ]);
 
         $friend_ids = array_filter(explode(',', $params['uids']));
+        $friend_ids = array_unique($friend_ids);
 
         $user_id = $this->uid();
         [$isTrue, $data] = $this->groupService->create($user_id, [
             'name' => $params['group_name'],
             'avatar' => $params['avatar'] ?? '',
             'profile' => $params['group_profile'] ?? ''
-        ], array_unique($friend_ids));
+        ], $friend_ids);
 
         if (!$isTrue) {
             return $this->response->fail('创建群聊失败，请稍后再试...');
+        }
+
+        // 加入聊天室
+        $friend_ids[] = $user_id;
+        foreach ($friend_ids as $uid) {
+            $this->socketRoomService->addRoomMember($uid, $data['group_id']);
         }
 
         // ...消息推送队列
@@ -134,7 +141,7 @@ class GroupController extends CController
             return $this->response->fail('邀请好友加入群聊失败...');
         }
 
-        // 移出聊天室
+        // 加入聊天室
         foreach ($uids as $uid) {
             $this->socketRoomService->addRoomMember($uid, $params['group_id']);
         }

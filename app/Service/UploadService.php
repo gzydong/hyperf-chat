@@ -39,7 +39,7 @@ class UploadService extends BaseService
     public function media(UploadedFile $file, string $dir, string $filename)
     {
         $save_dir = $this->driver($dir);
-        $this->makeDirectory($dir);
+        $this->makeDirectory($save_dir);
 
         $file->moveTo(sprintf('%s/%s', $save_dir, $filename));
         return $file->isMoved() ? sprintf('/%s/%s', trim($dir, '/'), $filename) : false;

@@ -4,12 +4,14 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Service\ArticleService;
+use App\Service\UploadService;
 use App\Support\RedisLock;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
+use Hyperf\Utils\Str;
 
 /**
  * Class ArticleController
@@ -26,6 +28,12 @@ class ArticleController extends CController
      * @var ArticleService
      */
     private $articleService;
+
+    /**
+     * @inject
+     * @var UploadService
+     */
+    private $uploadService;
 
     /**
      * 获取笔记分类列表
@@ -313,7 +321,27 @@ class ArticleController extends CController
      */
     public function uploadArticleImage()
     {
+        $file = $this->request->file('image');
+        if (!$file->isValid()) {
+            return $this->response->fail();
+        }
 
+        $ext = $file->getExtension();
+        if (!in_array($ext, ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
+            return $this->response->fail('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
+        }
+
+        //获取图片信息
+        $imgInfo = getimagesize($file->getRealPath());
+
+        $path = $this->uploadService->media($file, 'media/images/notes/', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
+        if (!$path) {
+            return $this->response->fail();
+        }
+
+        return $this->response->success([
+            'save_path' => get_media_url($path)
+        ]);
     }
 
     /**
@@ -409,8 +437,41 @@ class ArticleController extends CController
      */
     public function uploadArticleAnnex()
     {
+        $params = $this->request->inputs(['article_id']);
+        $this->validate($params, [
+            'article_id' => 'required|integer|min:0'
+        ]);
+
         $file = $this->request->file('annex');
-        $file->isValid();
+        if (!$file->isValid()) {
+            return $this->response->fail('上传文件验证失败...');
+        }
+
+        $annex = [
+            'file_suffix' => $file->getExtension(),
+            'file_size' => $file->getSize(),
+            'save_dir' => '',
+            'original_name' => $file->getClientFilename()
+        ];
+
+        $path = $this->uploadService->media($file,
+            'files/notes/' . date('Ymd'),
+            "[{$annex['file_suffix']}]" . uniqid() . Str::random(16) . '.' . 'tmp'
+        );
+
+        if (!$path) {
+            return $this->response->fail();
+        }
+
+        $annex['save_dir'] = $path;
+        $insId = $this->articleService->insertArticleAnnex($this->uid(), (int)$params['article_id'], $annex);
+        if (!$insId) {
+            return $this->response->fail('附件上传失败，请稍后再试...');
+        }
+
+        $annex['id'] = $insId;
+
+        return $this->response->success($annex, '笔记附件上传成功...');
     }
 
     /**
