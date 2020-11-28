@@ -120,7 +120,7 @@ class AuthController extends CController
         ]);
 
         if (!$this->smsCodeService->check('user_register', $params['mobile'], $params['sms_code'])) {
-            //return $this->response->fail('验证码填写错误...');
+            return $this->response->fail('验证码填写错误...');
         }
 
         $isTrue = $this->userService->register([
@@ -133,7 +133,9 @@ class AuthController extends CController
             return $this->response->fail('账号注册失败...');
         }
 
+        // 删除验证码缓存
         $this->smsCodeService->delCode('user_register', $params['mobile']);
+
         return $this->response->success([], '账号注册成功...');
     }
 
@@ -156,12 +158,14 @@ class AuthController extends CController
         }
 
         $isTrue = $this->userService->resetPassword($params['mobile'], $params['password']);
-        if ($isTrue) {
-            $this->smsCodeService->delCode('forget_password', $params['mobile']);
-            return $this->response->success([], '账号注册成功...');
+        if (!$isTrue) {
+            return $this->response->fail('重置密码失败...', ResponseCode::FAIL);
         }
 
-        return $this->response->fail('重置密码失败...', ResponseCode::FAIL);
+        // 删除验证码缓存
+        $this->smsCodeService->delCode('forget_password', $params['mobile']);
+
+        return $this->response->success([], '账号注册成功...');
     }
 
     /**
@@ -177,7 +181,7 @@ class AuthController extends CController
                 'token' => $this->jwt->refreshToken(),
                 'expire' => $this->jwt->getTTL()
             ]
-        ], '刷新 Token 成功...');
+        ]);
     }
 
     /**
@@ -211,12 +215,12 @@ class AuthController extends CController
 
         $data = ['is_debug' => true];
         [$isTrue, $result] = $this->smsCodeService->send($params['type'], $params['mobile']);
-        if ($isTrue) {
-            // 测试环境下直接返回验证码
-            $data['sms_code'] = $result['data']['code'];
-        } else {
+        if (!$isTrue) {
             // ... 处理发送失败逻辑，当前默认发送成功
         }
+        
+        // 测试环境下直接返回验证码
+        $data['sms_code'] = $result['data']['code'];
 
         return $this->response->success($data, '验证码发送成功...');
     }

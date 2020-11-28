@@ -37,9 +37,17 @@ class ArticleAnnex extends BaseModel
      * @var array
      */
     protected $fillable = [
-        'user_id', 'article_id', 'file_size', 'status', 'created_at'
+        'user_id',
+        'article_id',
+        'file_suffix',
+        'file_size',
+        'save_dir',
+        'original_name',
+        'status',
+        'created_at',
+        'deleted_at'
     ];
-
+    
     /**
      * The attributes that should be cast to native types.
      *

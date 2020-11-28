@@ -299,7 +299,7 @@ class UsersController extends CController
         }
 
         //判断对方是否在线。如果在线发送消息通知
-//        if ($this->socketFDService->isOnlineAll((int)$params['friend_id'])) {
+        if ($this->socketFDService->isOnlineAll((int)$params['friend_id'])) {
 //            $this->producer->produce(
 //                new ChatMessageProducer('event_friend_apply', [
 //                    'sender' => $user_id,
@@ -309,7 +309,7 @@ class UsersController extends CController
 //                    'remark' => ''
 //                ])
 //            );
-//        }
+        }
 
         return $this->response->success([], '处理成功...');
     }

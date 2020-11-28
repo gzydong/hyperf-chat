@@ -27,7 +27,8 @@ class CController extends AbstractController
      * @return int
      */
     public function uid(){
-        $data = container()->get(JWT::class)->getParserData();
+        $token = request()->getQueryParams()['token']??null;
+        $data = container()->get(JWT::class)->getParserData($token);
         return $data['user_id'];
     }
 }

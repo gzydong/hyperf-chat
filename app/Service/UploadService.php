@@ -42,6 +42,12 @@ class UploadService extends BaseService
         $this->makeDirectory($save_dir);
 
         $file->moveTo(sprintf('%s/%s', $save_dir, $filename));
+
+        if ($file->isMoved()) {
+            // 修改文集权限
+            @chmod(sprintf('%s/%s', $save_dir, $filename), 0644);
+        }
+
         return $file->isMoved() ? sprintf('/%s/%s', trim($dir, '/'), $filename) : false;
     }
 }

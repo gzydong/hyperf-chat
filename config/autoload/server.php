@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 /**
  * This file is part of Hyperf.
  *
@@ -9,6 +10,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 use Hyperf\Server\Server;
 use Hyperf\Server\SwooleEvent;
 
@@ -37,7 +39,7 @@ return [
                 SwooleEvent::ON_MESSAGE => [Hyperf\WebSocketServer\Server::class, 'onMessage'],
                 SwooleEvent::ON_CLOSE => [Hyperf\WebSocketServer\Server::class, 'onClose'],
             ],
-            'settings'=>[
+            'settings' => [
                 //设置心跳检测
                 'heartbeat_idle_time' => 70,
                 'heartbeat_check_interval' => 30,
@@ -46,7 +48,7 @@ return [
     ],
     'settings' => [
         'enable_coroutine' => true,
-        'worker_num' => 1,
+        'worker_num' => swoole_cpu_num() * 4,
         'pid_file' => BASE_PATH . '/runtime/hyperf.pid',
         'open_tcp_nodelay' => true,
         'max_coroutine' => 100000,
@@ -54,7 +56,7 @@ return [
         'max_request' => 10000,
         'socket_buffer_size' => 3 * 1024 * 1024,
         'buffer_output_size' => 3 * 1024 * 1024,
-        'package_max_length'=> 10 * 1024 * 1024,
+        'package_max_length' => 10 * 1024 * 1024,
     ],
     'callbacks' => [
         //自定义启动前事件
