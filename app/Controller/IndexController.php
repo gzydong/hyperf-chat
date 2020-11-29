@@ -27,11 +27,4 @@ class IndexController extends AbstractController
             'message' => "Hello {$user}.",
         ];
     }
-
-    public function upload(ResponseInterface $response)
-    {
-        return [
-            'method' => 'upload',
-        ];
-    }
 }

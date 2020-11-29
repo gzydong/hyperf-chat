@@ -2,24 +2,24 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Cache\ApplyNumCache;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
+use Hyperf\Amqp\Producer;
 use App\Constants\ResponseCode;
 use App\Helper\Hash;
 use App\Model\User;
 use App\Model\UsersChatList;
 use App\Model\UsersFriend;
-use App\Service\SmsCodeService;
 use App\Support\SendEmailCode;
 use App\Service\FriendService;
 use App\Service\UserService;
-use App\Service\SocketFDService;
+use App\Service\SocketClientService;
+use App\Service\SmsCodeService;
 use App\Amqp\Producer\ChatMessageProducer;
-use Hyperf\Amqp\Producer;
+use App\Cache\ApplyNumCache;
 
 /**
  * Class UsersController
@@ -45,9 +45,9 @@ class UsersController extends CController
 
     /**
      * @inject
-     * @var SocketFDService
+     * @var SocketClientService
      */
-    private $socketFDService;
+    private $socketClientService;
 
     /**
      * @Inject
@@ -64,9 +64,9 @@ class UsersController extends CController
     {
         $rows = UsersFriend::getUserFriends($this->uid());
 
-        $runArr = $this->socketFDService->getServerRunIdAll();
+        $runArr = $this->socketClientService->getServerRunIdAll();
         foreach ($rows as $k => $row) {
-            $rows[$k]['online'] = $this->socketFDService->isOnlineAll($row['id'], $runArr);
+            $rows[$k]['online'] = $this->socketClientService->isOnlineAll($row['id'], $runArr);
         }
 
         return $this->response->success($rows);
@@ -264,7 +264,7 @@ class UsersController extends CController
         ApplyNumCache::setInc((int)$params['friend_id']);
 
         //判断对方是否在线。如果在线发送消息通知
-        if ($this->socketFDService->isOnlineAll((int)$params['friend_id'])) {
+        if ($this->socketClientService->isOnlineAll((int)$params['friend_id'])) {
             $this->producer->produce(
                 new ChatMessageProducer('event_friend_apply', [
                     'sender' => $user_id,
@@ -299,7 +299,7 @@ class UsersController extends CController
         }
 
         //判断对方是否在线。如果在线发送消息通知
-        if ($this->socketFDService->isOnlineAll((int)$params['friend_id'])) {
+        if ($this->socketClientService->isOnlineAll((int)$params['friend_id'])) {
 //            $this->producer->produce(
 //                new ChatMessageProducer('event_friend_apply', [
 //                    'sender' => $user_id,

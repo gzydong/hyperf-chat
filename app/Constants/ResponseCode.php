@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: admin
- * Date: 2020/11/4
- * Time: 11:43
- */
-
 namespace App\Constants;
 
 use Hyperf\Constants\AbstractConstants;

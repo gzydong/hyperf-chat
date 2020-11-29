@@ -2,14 +2,14 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\ResponseCode;
-use App\Model\Emoticon;
-use App\Model\EmoticonDetail;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
+use App\Constants\ResponseCode;
+use App\Model\Emoticon;
+use App\Model\EmoticonDetail;
 use App\Service\EmoticonService;
 
 /**

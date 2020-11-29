@@ -2,8 +2,6 @@
 
 namespace App\Bootstrap;
 
-use App\Support\Packet;
-use App\Support\SocketIOParser;
 use Hyperf\Framework\Bootstrap\ServerStartCallback;
 use Swoole\Timer;
 use Hyperf\Redis\Redis;
@@ -24,13 +22,16 @@ class ServerStart extends ServerStartCallback
         stdout_log()->info(sprintf('服务运行ID : %s', SERVER_RUN_ID));
 
         // 维护服务运行状态
-        $this->setTimeOut();
+        $this->setRunIdTime();
         Timer::tick(15000, function () {
-            $this->setTimeOut();
+            $this->setRunIdTime();
         });
     }
 
-    public function setTimeOut()
+    /**
+     * 更新运行ID时间
+     */
+    public function setRunIdTime()
     {
         container()->get(Redis::class)->hset('SERVER_RUN_ID', SERVER_RUN_ID, time());
     }

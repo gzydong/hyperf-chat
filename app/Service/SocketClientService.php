@@ -9,7 +9,7 @@ use Hyperf\Redis\Redis;
  *
  * @package App\Service
  */
-class SocketFDService
+class SocketClientService
 {
     /**
      * fd与用户绑定(使用hash 做处理)
@@ -117,7 +117,10 @@ class SocketFDService
      */
     public function findUserFds(int $user_id, $run_id = SERVER_RUN_ID)
     {
-        return $this->redis->smembers(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id));
+        $arr = $this->redis->smembers(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id));
+        return $arr ? array_map(function ($fd) {
+            return (int)$fd;
+        }, $arr) : [];
     }
 
     /**

@@ -2,9 +2,9 @@
 
 namespace App\Controller\Api\V1;
 
+use Hyperf\Di\Annotation\Inject;
 use App\Controller\AbstractController;
 use App\Support\Response;
-use Hyperf\Di\Annotation\Inject;
 use Phper666\JWTAuth\JWT;
 
 /**

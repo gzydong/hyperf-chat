@@ -8,19 +8,18 @@ use Hyperf\Amqp\Message\ProducerMessage;
 use Hyperf\Amqp\Message\Type;
 use Hyperf\Utils\Str;
 
+/**
+ * 消息生产者
+ *
+ * @package App\Amqp\Producer
+ */
 class ChatMessageProducer extends ProducerMessage
 {
-    public $exchange = 'im.message.fanout';
-
+    // 交换机类型
     public $type = Type::FANOUT;
 
-    const EVENTS = [
-        'event_talk',
-        'event_keyboard',
-        'event_online_status',
-        'event_revoke_talk',
-        'event_friend_apply'
-    ];
+    // 交换机名称
+    public $exchange = 'im.message.fanout';
 
     /**
      * 初始化处理...
@@ -31,10 +30,6 @@ class ChatMessageProducer extends ProducerMessage
      */
     public function __construct(string $event, array $data, array $options = [])
     {
-        if (!in_array($event, self::EVENTS)) {
-            new \Exception('事件名未注册...');
-        }
-
         $message = [
             'uuid' => $this->uuid(),// 自定义消息ID
             'event' => $event,
@@ -46,12 +41,12 @@ class ChatMessageProducer extends ProducerMessage
     }
 
     /**
-     * 生成唯一ID
+     * 生成唯一的消息ID
      *
      * @return string
      */
     private function uuid()
     {
-        return Str::random() . rand(100000, 999999) . uniqid();
+        return Str::random() . mt_rand(100000, 999999) . uniqid();
     }
 }

@@ -2,20 +2,20 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Model\UsersFriend;
-use App\Service\SocketRoomService;
-use Hyperf\Amqp\Producer;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use App\Service\GroupService;
+use Hyperf\Amqp\Producer;
+use App\Model\UsersFriend;
 use App\Model\UsersChatList;
 use App\Model\Group\UsersGroup;
 use App\Model\Group\UsersGroupMember;
 use App\Model\Group\UsersGroupNotice;
 use App\Amqp\Producer\ChatMessageProducer;
+use App\Service\SocketRoomService;
+use App\Service\GroupService;
 
 /**
  * Class GroupController

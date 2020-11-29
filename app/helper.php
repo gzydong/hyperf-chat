@@ -29,6 +29,8 @@ function redis()
 
 /**
  * server 实例 基于 swoole server
+ *
+ * @return \Swoole\Coroutine\Server|\Swoole\Server
  */
 function server()
 {
@@ -70,6 +72,9 @@ function stdout_log()
 
 /**
  * 文件日志
+ *
+ * @param string $name
+ * @return \Psr\Log\LoggerInterface
  */
 function logger(string $name = 'APP')
 {
@@ -164,7 +169,7 @@ function get_media_url(string $path)
  */
 function create_image_name(string $ext, int $width, int $height)
 {
-    return uniqid() . Str::random(18) . uniqid() . '_' . $width . 'x' . $height . '.' . $ext;
+    return uniqid() . Str::random(16) . uniqid() . '_' . $width . 'x' . $height . '.' . $ext;
 }
 
 /**

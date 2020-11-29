@@ -48,7 +48,7 @@ abstract class AbstractController
     protected $validationFactory;
 
     /**
-     * 自定义验证器
+     * 自定义控制器验证器
      *
      * @param mixed ...$arg
      */

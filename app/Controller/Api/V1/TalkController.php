@@ -2,8 +2,14 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Cache\LastMsgCache;
-use App\Cache\UnreadTalkCache;
+use Hyperf\Di\Annotation\Inject;
+use Hyperf\HttpServer\Annotation\Controller;
+use Hyperf\HttpServer\Annotation\RequestMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
+use App\Middleware\JWTAuthMiddleware;
+use Hyperf\Amqp\Producer;
+use Hyperf\Utils\Str;
+use Psr\Http\Message\ResponseInterface;
 use App\Model\EmoticonDetail;
 use App\Model\FileSplitUpload;
 use App\Model\User;
@@ -12,15 +18,9 @@ use App\Model\UsersFriend;
 use App\Model\Group\UsersGroup;
 use App\Service\TalkService;
 use App\Service\UploadService;
-use Hyperf\Amqp\Producer;
-use Hyperf\Di\Annotation\Inject;
-use Hyperf\HttpServer\Annotation\Controller;
-use Hyperf\HttpServer\Annotation\RequestMapping;
-use Hyperf\HttpServer\Annotation\Middleware;
-use App\Middleware\JWTAuthMiddleware;
-use Hyperf\Utils\Str;
-use Psr\Http\Message\ResponseInterface;
 use App\Amqp\Producer\ChatMessageProducer;
+use App\Cache\LastMsgCache;
+use App\Cache\UnreadTalkCache;
 
 /**
  * Class TalkController
@@ -227,7 +227,7 @@ class TalkController extends CController
         ]);
 
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
-        if($isTrue){
+        if ($isTrue) {
             $this->producer->produce(
                 new ChatMessageProducer('event_revoke_talk', [
                     'record_id' => $params['record_id']
@@ -379,7 +379,7 @@ class TalkController extends CController
 
         return $this->response->success([
             'rows' => $result,
-            'record_id' => $result ? $result[count($result) - 1]['id'] : 0,
+            'record_id' => $result ? end($result)['id'] : 0,
             'limit' => $limit
         ]);
     }
@@ -448,7 +448,7 @@ class TalkController extends CController
 
         return $this->response->success([
             'rows' => $result,
-            'record_id' => $result ? $result[count($result) - 1]['id'] : 0,
+            'record_id' => $result ? end($result)['id'] : 0,
             'limit' => $limit
         ]);
     }

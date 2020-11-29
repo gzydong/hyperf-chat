@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Amqp\Consumer;
 
-use App\Model\Chat\ChatRecordsForward;
-use App\Model\UsersFriend;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Result;
 use Hyperf\Amqp\Message\ConsumerMessage;
@@ -14,18 +12,20 @@ use Hyperf\Amqp\Message\Type;
 use Hyperf\Amqp\Builder\QueueBuilder;
 use PhpAmqpLib\Message\AMQPMessage;
 use App\Model\User;
-use App\Helper\PushMessageHelper;
+use App\Model\UsersFriend;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsCode;
 use App\Model\Chat\ChatRecordsFile;
 use App\Model\Chat\ChatRecordsInvite;
-use App\Service\SocketFDService;
+use App\Model\Chat\ChatRecordsForward;
+use App\Service\SocketClientService;
 use App\Service\SocketRoomService;
+use App\Helper\PushMessageHelper;
 
 /**
  * 消息推送消费者队列
  *
- * @Consumer(name="聊天消息消费者",enable=true)
+ * @Consumer(name="ConsumerChat",enable=true)
  */
 class ChatMessageConsumer extends ConsumerMessage
 {
@@ -51,9 +51,9 @@ class ChatMessageConsumer extends ConsumerMessage
     public $routingKey = 'consumer:im:message';
 
     /**
-     * @var SocketFDService
+     * @var SocketClientService
      */
-    private $socketFDService;
+    private $socketClientService;
 
     /**
      * @var SocketRoomService
@@ -82,14 +82,14 @@ class ChatMessageConsumer extends ConsumerMessage
 
     /**
      * ChatMessageConsumer constructor.
-     * @param SocketFDService $socketFDService
+     * @param SocketClientService $socketClientService
      * @param SocketRoomService $socketRoomService
      */
-    public function __construct(SocketFDService $socketFDService, SocketRoomService $socketRoomService)
+    public function __construct(SocketClientService $socketClientService, SocketRoomService $socketRoomService)
     {
-        $this->socketFDService = $socketFDService;
+        $this->socketClientService = $socketClientService;
         $this->socketRoomService = $socketRoomService;
-        $this->setQueue('queue:im-message:' . SERVER_RUN_ID);
+        $this->setQueue('queue:im:message:' . SERVER_RUN_ID);
     }
 
     /**
@@ -139,19 +139,19 @@ class ChatMessageConsumer extends ConsumerMessage
 
         $source = $data['data']['source'];
 
-        $fids = $this->socketFDService->findUserFds($data['data']['sender']);
+        $fds = $this->socketClientService->findUserFds($data['data']['sender']);
         if ($source == 1) {// 私聊
-            $fids = array_merge($fids, $this->socketFDService->findUserFds($data['data']['receive']));
+            $fds = array_merge($fds, $this->socketClientService->findUserFds($data['data']['receive']));
         } else if ($source == 2) {//群聊
             $userIds = $this->socketRoomService->getRoomMembers(strval($data['data']['receive']));
             foreach ($userIds as $uid) {
-                $fids = array_merge($fids, $this->socketFDService->findUserFds(intval($uid)));
+                $fds = array_merge($fds, $this->socketClientService->findUserFds(intval($uid)));
             }
         }
 
         // 去重
-        $fids = array_unique($fids);
-        if (empty($fids)) {
+        $fds = array_unique($fds);
+        if (empty($fds)) {
             return Result::ACK;
         }
 
@@ -245,12 +245,12 @@ class ChatMessageConsumer extends ConsumerMessage
             ])
         ];
 
-        $server = server();
-        foreach ($fids as $fd) {
-            $fd = intval($fd);
-            if ($server->exist($fd)) {
-                $server->push($fd, json_encode(['event_talk', $msg]));
-            }
+        unset($result, $file, $code_block, $forward, $invite);
+
+        $server = websocket();
+        $notify = json_encode(['event_talk', $msg]);
+        foreach ($fds as $fd) {
+            $server->exist($fd) && $server->push($fd, $notify);
         }
 
         return Result::ACK;
@@ -265,13 +265,11 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeKeyboard(array $data, AMQPMessage $message)
     {
-        $fds = $this->socketFDService->findUserFds($data['data']['receive_user']);
-        $server = server();
+        $fds = $this->socketClientService->findUserFds($data['data']['receive_user']);
+        $server = websocket();
+        $notify = json_encode(['event_keyboard', $data['data']]);
         foreach ($fds as $fd) {
-            $fd = intval($fd);
-            if ($server->exist($fd)) {
-                $server->push($fd, json_encode(['event_keyboard', $data['data']]));
-            }
+            $server->exist($fd) && $server->push($fd, $notify);
         }
 
         return Result::ACK;
@@ -291,16 +289,14 @@ class ChatMessageConsumer extends ConsumerMessage
 
         $fds = [];
         foreach ($friends as $friend_id) {
-            $fds = array_merge($fds, $this->socketFDService->findUserFds(intval($friend_id)));
+            $fds = array_merge($fds, $this->socketClientService->findUserFds(intval($friend_id)));
         }
 
         $fds = array_unique($fds);
-        $server = server();
+        $server = websocket();
+        $notify = json_encode(['event_online_status', $data['data']]);
         foreach ($fds as $fd) {
-            $fd = intval($fd);
-            if ($server->exist($fd)) {
-                $server->push($fd, json_encode(['event_online_status', $data['data']]));
-            }
+            $server->exist($fd) && $server->push($fd, $notify);
         }
 
         return Result::ACK;
@@ -320,27 +316,26 @@ class ChatMessageConsumer extends ConsumerMessage
 
         $fds = [];
         if ($record->source == 1) {
-            $fds = array_merge($fds, $this->socketFDService->findUserFds($record->user_id));
-            $fds = array_merge($fds, $this->socketFDService->findUserFds($record->receive_id));
+            $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$record->user_id));
+            $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$record->receive_id));
         } else if ($record->source == 2) {
             $userIds = $this->socketRoomService->getRoomMembers(strval($record->receive_id));
             foreach ($userIds as $uid) {
-                $fds = array_merge($fds, $this->socketFDService->findUserFds(intval($uid)));
+                $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$uid));
             }
         }
 
         $fds = array_unique($fds);
-        $server = server();
+        $server = websocket();
+        $notify = json_encode(['event_revoke_talk', [
+            'record_id' => $record->id,
+            'source' => $record->source,
+            'user_id' => $record->user_id,
+            'receive_id' => $record->receive_id,
+        ]]);
+
         foreach ($fds as $fd) {
-            $fd = intval($fd);
-            if ($server->exist($fd)) {
-                $server->push($fd, json_encode(['event_revoke_talk', [
-                    'record_id' => $record->id,
-                    'source' => $record->source,
-                    'user_id' => $record->user_id,
-                    'receive_id' => $record->receive_id,
-                ]]));
-            }
+            $server->exist($fd) && $server->push($fd, $notify);
         }
 
         return Result::ACK;
@@ -349,20 +344,19 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 好友申请消息
      *
-     * @param array $data
+     * @param array $data 队列消息
      * @param AMQPMessage $message
+     * @return string
      */
     public function onConsumeFriendApply(array $data, AMQPMessage $message)
     {
-        $fds = $this->socketFDService->findUserFds($data['data']['receive']);
-
+        $fds = $this->socketClientService->findUserFds($data['data']['receive']);
         $fds = array_unique($fds);
-        $server = server();
+
+        $server = websocket();
+        $notify = json_encode(['event_friend_apply', $data['data']]);
         foreach ($fds as $fd) {
-            $fd = intval($fd);
-            if ($server->exist($fd)) {
-                $server->push($fd, json_encode(['event_friend_apply', $data['data']]));
-            }
+            $server->exist($fd) && $server->push($fd, $notify);
         }
 
         return Result::ACK;

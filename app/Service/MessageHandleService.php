@@ -1,19 +1,18 @@
 <?php
 
-
 namespace App\Service;
 
 use Hyperf\Di\Annotation\Inject;
+use Hyperf\Amqp\Producer;
+use Swoole\Http\Response;
+use Swoole\WebSocket\Frame;
+use Swoole\WebSocket\Server;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\LastMsgCache;
 use App\Cache\UnreadTalkCache;
 use App\Model\Chat\ChatRecord;
 use App\Model\Group\UsersGroup;
 use App\Model\UsersFriend;
-use Hyperf\Amqp\Producer;
-use Swoole\Http\Response;
-use Swoole\WebSocket\Frame;
-use Swoole\WebSocket\Server;
 
 class MessageHandleService
 {
@@ -25,9 +24,15 @@ class MessageHandleService
 
     /**
      * @inject
-     * @var SocketFDService
+     * @var SocketClientService
      */
-    private $socketFDService;
+    private $socketClientService;
+
+    /**
+     * @Inject
+     * @var UnreadTalkCache
+     */
+    private $unreadTalkCache;
 
     /**
      * 对话消息
@@ -39,9 +44,7 @@ class MessageHandleService
      */
     public function onTalk($server, Frame $frame, $data)
     {
-        // 当前用户ID
-        $user_id = $this->socketFDService->findFdUserId($frame->fd);
-
+        $user_id = $this->socketClientService->findFdUserId($frame->fd);
         if ($user_id != $data['send_user']) {
             return;
         }
@@ -73,7 +76,9 @@ class MessageHandleService
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        if (!$result) return;
+        if (!$result) {
+            return;
+        }
 
         // 判断是否私聊
         if ($data['source_type'] == 1) {
@@ -85,7 +90,7 @@ class MessageHandleService
             ], intval($data['receive_user']), intval($data['send_user']));
 
             // 设置好友消息未读数
-            make(UnreadTalkCache::class)->setInc(intval($result->receive_id), strval($result->user_id));
+            $this->unreadTalkCache->setInc(intval($result->receive_id), strval($result->user_id));
         }
 
         $this->producer->produce(
@@ -96,8 +101,6 @@ class MessageHandleService
                 'record_id' => $result->id
             ])
         );
-
-        return true;
     }
 
     /**
@@ -116,7 +119,5 @@ class MessageHandleService
                 'receive_user' => intval($data['receive_user']),  //接收者ID
             ])
         );
-
-        return true;
     }
 }

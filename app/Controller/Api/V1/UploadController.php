@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use App\Service\SplitUploadService;
-use App\Service\UploadService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
+use App\Service\SplitUploadService;
+use App\Service\UploadService;
 
 /**
  * 上传控制器

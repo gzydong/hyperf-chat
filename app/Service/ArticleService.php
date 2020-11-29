@@ -11,6 +11,11 @@ use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
 use Exception;
 
+/**
+ * 笔记服务层
+ *
+ * @package App\Service
+ */
 class ArticleService extends BaseService
 {
     use PagingTrait;
@@ -41,7 +46,7 @@ class ArticleService extends BaseService
      */
     public function getUserTags(int $user_id)
     {
-        $items = ArticleTag::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name',Db::raw('0 as count')])->toArray();
+        $items = ArticleTag::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name', Db::raw('0 as count')])->toArray();
         array_walk($items, function ($item) use ($user_id) {
             $item['count'] = (int)Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
         });

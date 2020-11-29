@@ -2,16 +2,16 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\ResponseCode;
-use App\Model\User;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
+use App\Middleware\JWTAuthMiddleware;
+use Phper666\JWTAuth\JWT;
+use App\Constants\ResponseCode;
+use App\Model\User;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
-use Phper666\JWTAuth\JWT;
-use App\Middleware\JWTAuthMiddleware;
 
 /**
  * 授权相关控制器
@@ -218,7 +218,7 @@ class AuthController extends CController
         if (!$isTrue) {
             // ... 处理发送失败逻辑，当前默认发送成功
         }
-        
+
         // 测试环境下直接返回验证码
         $data['sms_code'] = $result['data']['code'];
 

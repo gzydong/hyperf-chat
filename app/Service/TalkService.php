@@ -50,7 +50,7 @@ class TalkService extends BaseService
         }
 
 
-        $socketFDService = make(SocketFDService::class);
+        $socketFDService = make(SocketClientService::class);
         $runIdAll = $socketFDService->getServerRunIdAll();
 
         $rows = array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {

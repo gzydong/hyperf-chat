@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Service\SocketFDService;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Psr\Container\ContainerInterface;
+use App\Service\SocketClientService;
 
 /**
  * @Command
@@ -34,12 +34,13 @@ class RemoveWsCacheCommand extends HyperfCommand
 
     public function handle()
     {
-        $socket = new SocketFDService();
-
-        $arr= $socket->getServerRunIdAll(2);
-
-        foreach ($arr as $run_id=>$value){
-            $socket->removeRedisCache($run_id);
+        $socket = new SocketClientService();
+        $this->line('此过程可能耗时较长，请耐心等待!', 'info');
+        $arr = $socket->getServerRunIdAll(2);
+        foreach ($arr as $run_id => $value) {
+            go(function () use ($socket, $run_id) {
+                $socket->removeRedisCache($run_id);
+            });
         }
 
         $this->line('缓存已清除!', 'info');

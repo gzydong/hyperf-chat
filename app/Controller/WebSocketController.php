@@ -7,14 +7,13 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
-use Phper666\JWTAuth\JWT;
+use Hyperf\Amqp\Producer;
 use Swoole\Http\Request;
 use Swoole\Websocket\Frame;
-use Hyperf\Amqp\Producer;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Server;
-use App\Traits\WebSocketTrait;
-use App\Service\SocketFDService;
+use Phper666\JWTAuth\JWT;
+use App\Service\SocketClientService;
 use App\Service\MessageHandleService;
 use App\Service\SocketRoomService;
 use App\Model\Group\UsersGroupMember;
@@ -26,8 +25,6 @@ use App\Amqp\Producer\ChatMessageProducer;
  */
 class WebSocketController implements OnMessageInterface, OnOpenInterface, OnCloseInterface
 {
-    use WebSocketTrait;
-
     /**
      * @Inject
      * @var JWT
@@ -42,9 +39,9 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
     /**
      * @inject
-     * @var SocketFDService
+     * @var SocketClientService
      */
-    private $socketFDService;
+    private $socketClientService;
 
     /**
      * @inject
@@ -58,6 +55,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     private $messageHandleService;
 
+    // 消息事件绑定
     const EVENTS = [
         'event_talk' => 'onTalk',
         'event_keyboard' => 'onKeyboard',
@@ -76,10 +74,10 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
 
         // 判断是否存在异地登录
-        $isOnline = $this->socketFDService->isOnlineAll(intval($userInfo['user_id']));
+        $isOnline = $this->socketClientService->isOnlineAll(intval($userInfo['user_id']));
 
         // 绑定fd与用户关系
-        $this->socketFDService->bindRelation($request->fd, $userInfo['user_id']);
+        $this->socketClientService->bindRelation($request->fd, $userInfo['user_id']);
 
         // 加入群聊
         $groupIds = UsersGroupMember::getUserGroupIds($userInfo['user_id']);
@@ -113,7 +111,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         [$event, $data] = array_values(json_decode($frame->data, true));
 
         if (isset(self::EVENTS[$event])) {
-            $this->messageHandleService->{self::EVENTS[$event]}($server, $frame, $data);
+            call_user_func_array([$this->messageHandleService, self::EVENTS[$event]], [$server, $frame, $data]);
             return;
         }
     }
@@ -127,16 +125,15 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onClose($server, int $fd, int $reactorId): void
     {
-        $user_id = $this->socketFDService->findFdUserId($fd);
+        $user_id = $this->socketClientService->findFdUserId($fd);
 
         stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 
         // 解除fd关系
-        $this->socketFDService->removeRelation($fd);
+        $this->socketClientService->removeRelation($fd);
 
         // 判断是否存在异地登录
-        $isOnline = $this->socketFDService->isOnlineAll(intval($user_id));
-        // ... 不存在异地登录，推送下线通知消息
+        $isOnline = $this->socketClientService->isOnlineAll(intval($user_id));
         if (!$isOnline) {
             // 推送消息至队列
             $this->producer->produce(
