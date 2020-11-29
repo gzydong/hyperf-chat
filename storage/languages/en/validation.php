@@ -174,4 +174,6 @@ return [
 
     'chinese_word' => 'The :attribute must contain valid characters(chinese/english character, number, underscore)',
     'sequential_array' => 'The :attribute must be sequential array',
+
+    'ids' => ' :attribute 字段 ids 格式不正确',
 ];

@@ -103,7 +103,7 @@ class ArticleController extends CController
     public function getArticleDetail()
     {
         $this->validate($this->request->all(), [
-            'article_id' => 'required|integer',
+            'article_id' => 'required|integer'
         ]);
 
         return $this->response->success(
@@ -124,7 +124,7 @@ class ArticleController extends CController
         $params = $this->request->all();
         $this->validate($params, [
             'class_id' => 'required|integer',
-            'class_name' => 'required',
+            'class_name' => 'required'
         ]);
 
         $class_id = $this->articleService->editArticleClass($this->uid(), $params['class_id'], $params['class_name']);
@@ -260,7 +260,7 @@ class ArticleController extends CController
             'class_id' => 'required|integer|min:0',
             'title' => 'required|max:255',
             'content' => 'required',
-            'md_content' => 'required',
+            'md_content' => 'required'
         ]);
 
         $id = $this->articleService->editArticle($this->uid(), (int)$params['article_id'], [
@@ -309,6 +309,7 @@ class ArticleController extends CController
         ]);
 
         $isTrue = $this->articleService->updateArticleStatus($this->uid(), (int)$params['article_id'], 1);
+
         return $isTrue
             ? $this->response->success([], '笔记恢复成功...')
             : $this->response->fail('笔记恢复失败...');
@@ -406,6 +407,7 @@ class ArticleController extends CController
         ]);
 
         $isTrue = $this->articleService->updateArticleTag($this->uid(), (int)$params['article_id'], $params['tags']);
+
         return $isTrue
             ? $this->response->success([], 'success...')
             : $this->response->fail('编辑失败...');

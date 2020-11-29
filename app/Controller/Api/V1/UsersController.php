@@ -35,13 +35,13 @@ class UsersController extends CController
      * @Inject
      * @var FriendService
      */
-    protected $friendService;
+    private $friendService;
 
     /**
      * @Inject
      * @var UserService
      */
-    protected $userService;
+    private $userService;
 
     /**
      * @inject
@@ -140,7 +140,7 @@ class UsersController extends CController
                 'nickname' => $userInfo->nickname,
                 'avatar' => $userInfo->avatar,
                 'motto' => $userInfo->motto,
-                'gender' => $userInfo->gender,
+                'gender' => $userInfo->gender
             ],
             'setting' => [
                 'theme_mode' => '',
@@ -187,6 +187,7 @@ class UsersController extends CController
         ]);
 
         $isTrue = User::where('id', $this->uid())->update(['avatar' => $params['avatar']]);
+
         return $isTrue
             ? $this->response->success([], '头像修改成功...')
             : $this->response->fail('头像修改失败...');
@@ -228,10 +229,11 @@ class UsersController extends CController
         $params = $this->request->inputs(['friend_id', 'remarks']);
         $this->validate($params, [
             'friend_id' => 'required|integer',
-            'remarks' => "required",
+            'remarks' => "required"
         ]);
 
         $isTrue = $this->friendService->editFriendRemark($this->uid(), $params['friend_id'], $params['remarks']);
+
         return $isTrue
             ? $this->response->success([], '备注修改成功...')
             : $this->response->fail('备注修改失败...');
@@ -247,7 +249,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['friend_id', 'remarks']);
         $this->validate($params, [
             'friend_id' => 'required|integer',
-            'remarks' => 'present',
+            'remarks' => 'present'
         ]);
 
         $user = $this->userService->findById($params['friend_id']);
@@ -276,7 +278,6 @@ class UsersController extends CController
             );
         }
 
-
         return $this->response->success([], '发送好友申请成功...');
     }
 
@@ -290,7 +291,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['apply_id', 'remarks']);
         $this->validate($params, [
             'apply_id' => 'required|integer',
-            'remarks' => 'present',
+            'remarks' => 'present'
         ]);
 
         $isTrue = $this->friendService->handleFriendApply($this->uid(), (int)$params['apply_id'], $params['remarks']);
@@ -323,7 +324,7 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['apply_id']);
         $this->validate($params, [
-            'apply_id' => 'required|integer',
+            'apply_id' => 'required|integer'
         ]);
 
         $isTrue = $this->friendService->delFriendApply($this->uid(), (int)$params['apply_id']);
@@ -342,7 +343,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['page', 'page_size']);
         $this->validate($params, [
             'page' => 'present|integer',
-            'page_size' => 'present|integer',
+            'page_size' => 'present|integer'
         ]);
 
         $page = $this->request->input('page', 1);
@@ -376,7 +377,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['old_password', 'new_password']);
         $this->validate($params, [
             'old_password' => 'required',
-            'new_password' => 'required',
+            'new_password' => 'required'
         ]);
 
         $userInfo = $this->userService->findById($this->uid(), ['id', 'password', 'mobile']);
@@ -406,7 +407,7 @@ class UsersController extends CController
         $this->validate($params, [
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
-            'sms_code' => 'required|digits:6',
+            'sms_code' => 'required|digits:6'
         ]);
 
         if (!$smsCodeService->check('change_mobile', $params['mobile'], $params['sms_code'])) {
@@ -425,6 +426,7 @@ class UsersController extends CController
 
         // 清除缓存信息
         $smsCodeService->delCode('change_mobile', $params['mobile']);
+
         return $this->response->success([], '手机号更换成功...');
     }
 
@@ -439,7 +441,7 @@ class UsersController extends CController
         $this->validate($params, [
             'email' => 'required|email',
             'password' => 'required',
-            'email_code' => 'required|digits:6',
+            'email_code' => 'required|digits:6'
         ]);
 
         $sendEmailCode = new SendEmailCode();
@@ -459,6 +461,7 @@ class UsersController extends CController
         }
 
         $sendEmailCode->delCode(SendEmailCode::CHANGE_EMAIL, $params['email']);
+
         return $this->response->success([], '邮箱设置成功...');
     }
 
@@ -474,7 +477,7 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['mobile']);
         $this->validate($params, [
-            'mobile' => "present|regex:/^1[345789][0-9]{9}$/",
+            'mobile' => "present|regex:/^1[345789][0-9]{9}$/"
         ]);
 
         $user_id = $this->uid();
@@ -488,11 +491,13 @@ class UsersController extends CController
 
         $data = ['is_debug' => true];
         [$isTrue, $result] = $smsCodeService->send('change_mobile', $params['mobile']);
-        if ($isTrue) {
-            $data['sms_code'] = $result['data']['code'];
-        } else {
+        if (!$isTrue) {
             // ... 处理发送失败逻辑，当前默认发送成功
+            return $this->response->fail('验证码发送失败');
         }
+
+        // 测试环境下直接返回验证码
+        $data['sms_code'] = $result['data']['code'];
 
         return $this->response->success($data, '验证码发送成功...');
     }
@@ -509,7 +514,7 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['email']);
         $this->validate($params, [
-            'email' => "required|email",
+            'email' => "required|email"
         ]);
 
         $isTrue = $sendEmailCode->send(SendEmailCode::CHANGE_EMAIL, '绑定邮箱', $params['email']);

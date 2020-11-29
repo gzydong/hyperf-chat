@@ -287,9 +287,9 @@ class TalkController extends CController
             //转发方方式[1:逐条转发;2:合并转发]
             'forward_mode' => 'required|in:1,2',
             //转发的好友的ID
-//            'receive_user_ids' => 'array',
+            //'receive_user_ids' => 'array',
             //转发的群聊ID
-//            'receive_group_ids' => 'array',
+            //'receive_group_ids' => 'array',
         ]);
 
         $user_id = $this->uid();

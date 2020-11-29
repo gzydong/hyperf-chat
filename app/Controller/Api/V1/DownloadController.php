@@ -37,7 +37,7 @@ class DownloadController extends CController
     {
         $params = $this->request->inputs(['cr_id']);
         $this->validate($params, [
-            'cr_id' => 'required|integer',
+            'cr_id' => 'required|integer'
         ]);
 
         $recordsInfo = ChatRecord::select(['msg_type', 'source', 'user_id', 'receive_id'])->where('id', $params['cr_id'])->first();
@@ -81,7 +81,7 @@ class DownloadController extends CController
     {
         $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [
-            'annex_id' => 'required|integer',
+            'annex_id' => 'required|integer'
         ]);
 
         $info = ArticleAnnex::select(['save_dir', 'original_name'])

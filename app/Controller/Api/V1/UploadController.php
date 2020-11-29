@@ -39,7 +39,6 @@ class UploadController extends CController
      * 图片文件流上传接口
      *
      * @RequestMapping(path="file-stream", methods="post")
-     *
      */
     public function fileStream()
     {
@@ -56,7 +55,6 @@ class UploadController extends CController
      * 获取拆分文件信息
      *
      * @RequestMapping(path="get-file-split-info", methods="get")
-     *
      */
     public function getFileSplitInfo()
     {
@@ -72,6 +70,7 @@ class UploadController extends CController
     }
 
     /**
+     * 文件拆分上传接口
      *
      * @RequestMapping(path="file-subarea-upload", methods="post")
      *

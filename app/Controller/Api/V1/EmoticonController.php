@@ -11,6 +11,7 @@ use App\Constants\ResponseCode;
 use App\Model\Emoticon;
 use App\Model\EmoticonDetail;
 use App\Service\EmoticonService;
+use App\Service\UploadService;
 
 /**
  * Class EmoticonController
@@ -26,7 +27,7 @@ class EmoticonController extends CController
      * @Inject
      * @var EmoticonService
      */
-    public $emoticonService;
+    private $emoticonService;
 
     /**
      * 获取用户表情包列表
@@ -91,7 +92,7 @@ class EmoticonController extends CController
         $params = $this->request->all();
         $this->validate($params, [
             'emoticon_id' => 'required|integer',
-            'type' => 'required|in:1,2',
+            'type' => 'required|in:1,2'
         ]);
 
         $user_id = $this->uid();
@@ -131,8 +132,11 @@ class EmoticonController extends CController
      * 自定义上传表情包
      *
      * @RequestMapping(path="upload-emoticon", methods="post")
+     *
+     * @param UploadService $uploadService
+     * @return \Psr\Http\Message\ResponseInterface
      */
-    public function uploadEmoticon()
+    public function uploadEmoticon(UploadService $uploadService)
     {
         $file = $this->request->file('emoticon');
         if (!$file->isValid()) {
@@ -150,14 +154,16 @@ class EmoticonController extends CController
             );
         }
 
-        $save_path = '';
-
-        $user_id = $this->uid();
+        // 读取图片信息
         $imgInfo = getimagesize($file->getPath());
-        $filename = create_image_name($ext, $imgInfo[0], $imgInfo[1]);
+
+        $save_path = $uploadService->media($file, 'media/images/emoticon', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
+        if (!$save_path) {
+            return $this->response->fail('图片上传失败');
+        }
 
         $result = EmoticonDetail::create([
-            'user_id' => $user_id,
+            'user_id' => $this->uid(),
             'url' => $save_path,
             'file_suffix' => $ext,
             'file_size' => $file->getSize(),
@@ -181,7 +187,7 @@ class EmoticonController extends CController
      */
     public function collectEmoticon()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['record_id']);
         $this->validate($params, [
             'record_id' => 'required|integer'
         ]);
@@ -204,15 +210,13 @@ class EmoticonController extends CController
      */
     public function delCollectEmoticon()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['ids']);
         $this->validate($params, [
-            'ids' => 'required'
+            'ids' => 'required|ids'
         ]);
 
-        $ids = explode(',', trim($params['ids']));
-
-        return $this->emoticonService->deleteCollect($this->uid(), $ids) ?
-            $this->response->success([], 'success') :
-            $this->response->fail('fail');
+        return $this->emoticonService->deleteCollect($this->uid(), parse_ids($params['ids'])) ?
+            $this->response->success([]) :
+            $this->response->fail();
     }
 }

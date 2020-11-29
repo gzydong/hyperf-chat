@@ -31,7 +31,7 @@ class GroupController extends CController
      * @Inject
      * @var GroupService
      */
-    public $groupService;
+    private $groupService;
 
     /**
      * @Inject
@@ -57,11 +57,10 @@ class GroupController extends CController
         $params = $this->request->inputs(['group_name', 'uids']);
         $this->validate($params, [
             'group_name' => 'required',
-            'uids' => 'required',
+            'uids' => 'required|ids'
         ]);
 
-        $friend_ids = array_filter(explode(',', $params['uids']));
-        $friend_ids = array_unique($friend_ids);
+        $friend_ids = parse_ids($params['uids']);
 
         $user_id = $this->uid();
         [$isTrue, $data] = $this->groupService->create($user_id, [
@@ -92,7 +91,7 @@ class GroupController extends CController
 
         return $this->response->success([
             'group_id' => $data['group_id']
-        ], '群聊创建成功...');
+        ]);
     }
 
     /**
@@ -104,7 +103,7 @@ class GroupController extends CController
     {
         $params = $this->request->inputs(['group_id']);
         $this->validate($params, [
-            'group_id' => 'required|integer',
+            'group_id' => 'required|integer'
         ]);
 
         $isTrue = $this->groupService->dismiss($params['group_id'], $this->uid());
@@ -129,11 +128,10 @@ class GroupController extends CController
         $params = $this->request->inputs(['group_id', 'uids']);
         $this->validate($params, [
             'group_id' => 'required|integer',
-            'uids' => 'required',
+            'uids' => 'required|ids'
         ]);
 
-        $uids = array_filter(explode(',', $params['uids']));
-        $uids = array_unique($uids);
+        $uids = parse_ids($params['uids']);
 
         $user_id = $this->uid();
         [$isTrue, $record_id] = $this->groupService->invite($user_id, $params['group_id'], $uids);
@@ -205,7 +203,7 @@ class GroupController extends CController
             'group_id' => 'required|integer',
             'group_name' => 'required',
             'group_profile' => 'required',
-            'avatar' => 'required',
+            'avatar' => 'required'
         ]);
 
         $result = UsersGroup::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
@@ -421,7 +419,7 @@ class GroupController extends CController
             'group_id' => 'required|integer',
             'notice_id' => 'required|integer',
             'title' => 'required',
-            'content' => 'required',
+            'content' => 'required'
         ]);
 
         $user_id = $this->uid();

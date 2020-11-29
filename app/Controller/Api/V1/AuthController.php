@@ -7,7 +7,6 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use Phper666\JWTAuth\JWT;
 use App\Constants\ResponseCode;
 use App\Model\User;
 use App\Service\UserService;
@@ -28,12 +27,6 @@ class AuthController extends CController
 
     /**
      * @Inject
-     * @var JWT
-     */
-    private $jwt;
-
-    /**
-     * @Inject
      * @var SmsCodeService
      */
     private $smsCodeService;
@@ -43,7 +36,6 @@ class AuthController extends CController
      *
      * @RequestMapping(path="login", methods="post")
      *
-     * @param JWT $jwt
      * @return \Psr\Http\Message\ResponseInterface
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
@@ -61,7 +53,7 @@ class AuthController extends CController
         );
 
         if (!$userInfo) {
-            return $this->response->fail('账号不存在或密码填写错误...', ResponseCode::FAIL);
+            return $this->response->fail('账号不存在或密码填写错误...');
         }
 
         try {
@@ -85,7 +77,7 @@ class AuthController extends CController
                 'motto' => $userInfo['motto'],
                 'email' => $userInfo['email'],
             ]
-        ], '登录成功...');
+        ]);
     }
 
     /**
@@ -154,12 +146,12 @@ class AuthController extends CController
         ]);
 
         if (!$this->smsCodeService->check('forget_password', $params['mobile'], $params['sms_code'])) {
-            return $this->response->fail('验证码填写错误...', ResponseCode::FAIL);
+            return $this->response->fail('验证码填写错误');
         }
 
         $isTrue = $this->userService->resetPassword($params['mobile'], $params['password']);
         if (!$isTrue) {
-            return $this->response->fail('重置密码失败...', ResponseCode::FAIL);
+            return $this->response->fail('重置密码失败');
         }
 
         // 删除验证码缓存
@@ -217,6 +209,7 @@ class AuthController extends CController
         [$isTrue, $result] = $this->smsCodeService->send($params['type'], $params['mobile']);
         if (!$isTrue) {
             // ... 处理发送失败逻辑，当前默认发送成功
+            return $this->response->fail('验证码发送失败');
         }
 
         // 测试环境下直接返回验证码

@@ -22,13 +22,20 @@ class CController extends AbstractController
     protected $response;
 
     /**
+     * @Inject
+     * @var JWT
+     */
+    protected $jwt;
+
+    /**
      * 获取当前登录用户ID
      *
      * @return int
      */
-    public function uid(){
-        $token = request()->getQueryParams()['token']??null;
-        $data = container()->get(JWT::class)->getParserData($token);
+    public function uid()
+    {
+        $token = request()->getQueryParams()['token'] ?? null;
+        $data = $this->jwt->getParserData($token);
         return $data['user_id'];
     }
 }

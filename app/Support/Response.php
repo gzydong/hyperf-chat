@@ -46,7 +46,7 @@ class Response
      *
      * @return PsrResponseInterface
      */
-    public function fail($message = 'FAIL', $data = [], $code = ResponseCode::FAIL)
+    public function fail($message = 'fail', $data = [], $code = ResponseCode::FAIL)
     {
         return $this->response->json(compact('code', 'message', 'data'));
     }

@@ -198,3 +198,22 @@ function arraysSort(array $array, $field, $sort = SORT_DESC)
     array_multisort(array_column($array, $field), $sort, $array);
     return $array;
 }
+
+
+/**
+ * 判断0或正整数
+ *
+ * @param string $int 验证字符串
+ * @param bool $isZero 判断是否可为0
+ * @return bool
+ */
+function check_int($int, $isZero = false)
+{
+    $reg = $isZero ? '/^[+]{0,1}(\d+)$/' : '/^[1-9]\d*$/';
+    return is_numeric($int) && preg_match($reg, $int);
+}
+
+function parse_ids($ids)
+{
+    return array_unique(explode(',', trim($ids)));
+}
