@@ -247,7 +247,7 @@ class ChatMessageConsumer extends ConsumerMessage
 
         unset($result, $file, $code_block, $forward, $invite);
 
-        $server = websocket();
+        $server = server();
         $notify = json_encode(['event_talk', $msg]);
         foreach ($fds as $fd) {
             $server->exist($fd) && $server->push($fd, $notify);
@@ -266,7 +266,7 @@ class ChatMessageConsumer extends ConsumerMessage
     public function onConsumeKeyboard(array $data, AMQPMessage $message)
     {
         $fds = $this->socketClientService->findUserFds($data['data']['receive_user']);
-        $server = websocket();
+        $server = server();
         $notify = json_encode(['event_keyboard', $data['data']]);
         foreach ($fds as $fd) {
             $server->exist($fd) && $server->push($fd, $notify);
@@ -293,7 +293,7 @@ class ChatMessageConsumer extends ConsumerMessage
         }
 
         $fds = array_unique($fds);
-        $server = websocket();
+        $server = server();
         $notify = json_encode(['event_online_status', $data['data']]);
         foreach ($fds as $fd) {
             $server->exist($fd) && $server->push($fd, $notify);
@@ -326,7 +326,7 @@ class ChatMessageConsumer extends ConsumerMessage
         }
 
         $fds = array_unique($fds);
-        $server = websocket();
+        $server = server();
         $notify = json_encode(['event_revoke_talk', [
             'record_id' => $record->id,
             'source' => $record->source,
@@ -353,7 +353,7 @@ class ChatMessageConsumer extends ConsumerMessage
         $fds = $this->socketClientService->findUserFds($data['data']['receive']);
         $fds = array_unique($fds);
 
-        $server = websocket();
+        $server = server();
         $notify = json_encode(['event_friend_apply', $data['data']]);
         foreach ($fds as $fd) {
             $server->exist($fd) && $server->push($fd, $notify);
