@@ -66,32 +66,29 @@ class ArticleController extends CController
      */
     public function getArticleList()
     {
-        $this->validate($this->request->all(), [
+        $params1 = $this->request->inputs(['keyword', 'find_type', 'cid', 'page']);
+        $this->validate($params1, [
+            // 搜索关键词
             'keyword' => "present",
+            // 查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章 6:关键词搜索
             'find_type' => 'required|in:0,1,2,3,4,5,6',
+            // 分类ID
             'cid' => 'present|integer|min:-1',
             'page' => 'present|integer|min:1'
         ]);
 
-        // 查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章 6:关键词搜索
-        $findType = $this->request->input('find_type', 0);
-        $keyword = $this->request->input('keyword', '');// 搜索关键词
-        $cid = $this->request->input('cid', -1);// 分类ID
-        $page = $this->request->input('page', 1);
-        $user_id = $this->uid();
-
         $params = [];
-        $params['find_type'] = $findType;
-        if (in_array($findType, [3, 4])) {
-            $params['class_id'] = $cid;
+        $params['find_type'] = $params1['find_type'];
+        if (in_array($params1['find_type'], [3, 4])) {
+            $params['class_id'] = $params1['cid'];
         }
 
-        if (!empty($keyword)) {
-            $params['keyword'] = $keyword;
+        if (!empty($params1['keyword'])) {
+            $params['keyword'] = $params1['keyword'];
         }
 
         return $this->response->success(
-            $this->articleService->getUserArticleList($user_id, intval($page), 10000, $params)
+            $this->articleService->getUserArticleList($this->uid(), 1, 10000, $params)
         );
     }
 
@@ -102,15 +99,13 @@ class ArticleController extends CController
      */
     public function getArticleDetail()
     {
-        $this->validate($this->request->inputs(['article_id']), [
+        $params = $this->request->inputs(['article_id']);
+        $this->validate($params, [
             'article_id' => 'required|integer'
         ]);
 
         return $this->response->success(
-            $this->articleService->getArticleDetail(
-                (int)$this->request->input('article_id'),
-                $this->uid()
-            )
+            $this->articleService->getArticleDetail((int)$params['article_id'], $this->uid())
         );
     }
 
@@ -170,11 +165,11 @@ class ArticleController extends CController
         $lockKey = "article_class_sort:{$params['class_id']}_{$params['sort_type']}";
 
         // 获取Redis锁
-        if (RedisLock::lock($lockKey, 0, 3)) {
+        if (RedisLock::lock($lockKey, 1, 3)) {
             $isTrue = $this->articleService->articleClassSort($this->uid(), (int)$params['class_id'], (int)$params['sort_type']);
 
             // 释放Redis锁
-            RedisLock::release($lockKey, 0);
+            RedisLock::release($lockKey, 1);
         } else {
             $isTrue = false;
         }
@@ -217,11 +212,7 @@ class ArticleController extends CController
             'tag_name' => 'required'
         ]);
 
-        $id = $this->articleService->editArticleTag(
-            $this->uid(),
-            (int)$this->request->post('tag_id', 0),
-            $this->request->post('tag_name', '')
-        );
+        $id = $this->articleService->editArticleTag($this->uid(), (int)$params['tag_id'], $params['tag_name']);
 
         return $id
             ? $this->response->success(['id' => $id])

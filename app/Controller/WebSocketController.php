@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Hyperf\Di\Annotation\Inject;
+use App\Constants\SocketConstants;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
@@ -57,8 +58,8 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
     // 消息事件绑定
     const EVENTS = [
-        'event_talk' => 'onTalk',
-        'event_keyboard' => 'onKeyboard',
+        SocketConstants::EVENT_TALK => 'onTalk',
+        SocketConstants::EVENT_KEYBOARD => 'onKeyboard',
     ];
 
     /**
@@ -88,7 +89,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         if (!$isOnline) {
             // 推送消息至队列
             $this->producer->produce(
-                new ChatMessageProducer('event_online_status', [
+                new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
                     'user_id' => $userInfo['user_id'],
                     'status' => 1,
                     'notify' => '好友上线通知...'
@@ -137,7 +138,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         if (!$isOnline) {
             // 推送消息至队列
             $this->producer->produce(
-                new ChatMessageProducer('event_online_status', [
+                new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
                     'user_id' => $user_id,
                     'status' => 0,
                     'notify' => '好友离线通知通知...'

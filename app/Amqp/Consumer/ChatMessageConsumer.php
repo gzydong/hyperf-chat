@@ -20,6 +20,7 @@ use App\Model\Chat\ChatRecordsInvite;
 use App\Model\Chat\ChatRecordsForward;
 use App\Service\SocketClientService;
 use App\Service\SocketRoomService;
+use App\Constants\SocketConstants;
 
 /**
  * 消息推送消费者队列
@@ -33,7 +34,7 @@ class ChatMessageConsumer extends ConsumerMessage
      *
      * @var string
      */
-    public $exchange = 'im.message.fanout';
+    public $exchange = SocketConstants::CONSUMER_MESSAGE_EXCHANGE;
 
     /**
      * 交换机类型
@@ -60,23 +61,25 @@ class ChatMessageConsumer extends ConsumerMessage
     private $socketRoomService;
 
     /**
-     * 推送的消息类型推送绑定事件方法
+     * 消息事件与回调事件绑定
+     *
+     * @var array
      */
     const EVENTS = [
         // 聊天消息事件
-        'event_talk' => 'onConsumeTalk',
+        SocketConstants::EVENT_TALK => 'onConsumeTalk',
 
         // 键盘输入事件
-        'event_keyboard' => 'onConsumeKeyboard',
+        SocketConstants::EVENT_KEYBOARD => 'onConsumeKeyboard',
 
         // 用户在线状态事件
-        'event_online_status' => 'onConsumeOnlineStatus',
+        SocketConstants::EVENT_ONLINE_STATUS => 'onConsumeOnlineStatus',
 
         // 聊天消息推送事件
-        'event_revoke_talk' => 'onConsumeRevokeTalk',
+        SocketConstants::EVENT_REVOKE_TALK => 'onConsumeRevokeTalk',
 
         // 好友申请相关事件
-        'event_friend_apply' => 'onConsumeFriendApply'
+        SocketConstants::EVENT_FRIEND_APPLY => 'onConsumeFriendApply'
     ];
 
     /**
@@ -88,6 +91,8 @@ class ChatMessageConsumer extends ConsumerMessage
     {
         $this->socketClientService = $socketClientService;
         $this->socketRoomService = $socketRoomService;
+
+        // 动态设置 Rabbit MQ 消费队列名称
         $this->setQueue('queue:im_message:' . SERVER_RUN_ID);
     }
 
@@ -113,6 +118,15 @@ class ChatMessageConsumer extends ConsumerMessage
     public function consumeMessage($data, AMQPMessage $message): string
     {
         if (isset($data['event'])) {
+            $redis = container()->get(Redis::class);
+
+            //[加锁]防止消息重复消费
+            $lockName = sprintf('ws:message-lock:%s:%s', SERVER_RUN_ID, $data['uuid']);
+            if (!$redis->rawCommand('SET', $lockName, 1, 'NX', 'EX', 60)) {
+                return Result::ACK;
+            }
+
+            // 调用对应事件绑定的回调方法
             return $this->{self::EVENTS[$data['event']]}($data, $message);
         }
 
@@ -128,14 +142,6 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeTalk(array $data, AMQPMessage $message): string
     {
-        $redis = container()->get(Redis::class);
-
-        //[加锁]防止消息重复消费
-        $lockName = sprintf('ws:message-lock:%s:%s', SERVER_RUN_ID, $data['uuid']);
-        if (!$redis->rawCommand('SET', $lockName, 1, 'NX', 'EX', 60)) {
-            return Result::ACK;
-        }
-
         $source = $data['data']['source'];
 
         $fds = $this->socketClientService->findUserFds($data['data']['sender']);
@@ -144,7 +150,7 @@ class ChatMessageConsumer extends ConsumerMessage
         } else if ($source == 2) {//群聊
             $userIds = $this->socketRoomService->getRoomMembers(strval($data['data']['receive']));
             foreach ($userIds as $uid) {
-                $fds = array_merge($fds, $this->socketClientService->findUserFds(intval($uid)));
+                $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$uid));
             }
         }
 
@@ -241,7 +247,7 @@ class ChatMessageConsumer extends ConsumerMessage
 
         unset($result, $file, $code_block, $forward, $invite);
 
-        $this->socketPushNotify($fds, json_encode(['event_talk', $notify]));
+        $this->socketPushNotify($fds, json_encode([SocketConstants::EVENT_TALK, $notify]));
 
         return Result::ACK;
     }
@@ -257,7 +263,7 @@ class ChatMessageConsumer extends ConsumerMessage
     {
         $fds = $this->socketClientService->findUserFds($data['data']['receive_user']);
 
-        $this->socketPushNotify($fds, json_encode(['event_keyboard', $data['data']]));
+        $this->socketPushNotify($fds, json_encode([SocketConstants::EVENT_KEYBOARD, $data['data']]));
 
         return Result::ACK;
     }
@@ -278,7 +284,7 @@ class ChatMessageConsumer extends ConsumerMessage
             $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$friend_id));
         }
 
-        $this->socketPushNotify(array_unique($fds), json_encode(['event_online_status', $data['data']]));
+        $this->socketPushNotify(array_unique($fds), json_encode([SocketConstants::EVENT_ONLINE_STATUS, $data['data']]));
 
         return Result::ACK;
     }
@@ -308,7 +314,7 @@ class ChatMessageConsumer extends ConsumerMessage
 
         $this->socketPushNotify(
             array_unique($fds),
-            json_encode(['event_revoke_talk', [
+            json_encode([SocketConstants::EVENT_REVOKE_TALK, [
                 'record_id' => $record->id,
                 'source' => $record->source,
                 'user_id' => $record->user_id,
@@ -330,7 +336,7 @@ class ChatMessageConsumer extends ConsumerMessage
     {
         $fds = $this->socketClientService->findUserFds($data['data']['receive']);
 
-        $this->socketPushNotify(array_unique($fds), json_encode(['event_friend_apply', $data['data']]));
+        $this->socketPushNotify(array_unique($fds), json_encode([SocketConstants::EVENT_FRIEND_APPLY, $data['data']]));
 
         return Result::ACK;
     }

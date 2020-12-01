@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Amqp\Producer;
 
+use App\Constants\SocketConstants;
 use Hyperf\Amqp\Message\ProducerMessage;
 use Hyperf\Amqp\Message\Type;
 use Hyperf\Utils\Str;
@@ -15,14 +16,22 @@ use Hyperf\Utils\Str;
  */
 class ChatMessageProducer extends ProducerMessage
 {
-    // 交换机类型
+    /**
+     * 交换机类型
+     *
+     * @var string
+     */
     public $type = Type::FANOUT;
 
-    // 交换机名称
-    public $exchange = 'im.message.fanout';
+    /**
+     * 交换机名称
+     *
+     * @var string
+     */
+    public $exchange = SocketConstants::CONSUMER_MESSAGE_EXCHANGE;
 
     /**
-     * 初始化处理...
+     * 实例化处理
      *
      * @param string $event 事件名
      * @param array $data 数据

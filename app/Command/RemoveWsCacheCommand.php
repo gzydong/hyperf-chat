@@ -36,7 +36,10 @@ class RemoveWsCacheCommand extends HyperfCommand
     {
         $socket = new SocketClientService();
         $this->line('此过程可能耗时较长，请耐心等待!', 'info');
+
+        // 获取所有已停止运行的服务ID
         $arr = $socket->getServerRunIdAll(2);
+
         foreach ($arr as $run_id => $value) {
             go(function () use ($socket, $run_id) {
                 $socket->removeRedisCache($run_id);

@@ -101,9 +101,9 @@ class AuthController extends CController
     {
         $params = $this->request->all();
         $this->validate($params, [
-            'nickname' => "required",
+            'nickname' => "required|max:20",
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
-            'password' => 'required',
+            'password' => 'required|max:16',
             'sms_code' => 'required|digits:6',
             'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
@@ -135,10 +135,10 @@ class AuthController extends CController
      */
     public function forget()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
         $this->validate($params, [
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
-            'password' => 'required',
+            'password' => 'required|max:16',
             'sms_code' => 'required|digits:6',
         ]);
 
@@ -182,7 +182,7 @@ class AuthController extends CController
      */
     public function sendVerifyCode()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['type', 'mobile']);
         $this->validate($params, [
             'type' => "required",
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/"

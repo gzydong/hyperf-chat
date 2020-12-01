@@ -34,9 +34,7 @@ class UserService extends BaseService
      */
     public function login(string $mobile, string $password)
     {
-        $user = User::where('mobile', $mobile)->first();
-
-        if (!$user) {
+        if (!$user = User::where('mobile', $mobile)->first()) {
             return false;
         }
 
@@ -55,12 +53,12 @@ class UserService extends BaseService
      */
     public function register(array $data)
     {
+        Db::beginTransaction();
         try {
             $data['password'] = create_password($data['password']);
             $data['created_at'] = date('Y-m-d H:i:s');
 
             $result = User::create($data);
-
 
             // 创建用户的默认笔记分类
             ArticleClass::create([
@@ -70,7 +68,10 @@ class UserService extends BaseService
                 'sort' => 1,
                 'created_at' => time()
             ]);
+
+            Db::commit();
         } catch (\Exception $e) {
+            Db::rollBack();
             $result = false;
         }
 
@@ -98,8 +99,7 @@ class UserService extends BaseService
      */
     public function changeMobile(int $user_id, string $mobile)
     {
-        $uid = User::where('mobile', $mobile)->value('id');
-        if ($uid) {
+        if (User::where('mobile', $mobile)->value('id')) {
             return [false, '手机号已被他人绑定'];
         }
 
