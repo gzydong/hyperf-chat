@@ -235,7 +235,6 @@ class TalkController extends CController
             );
         }
 
-
         return $isTrue
             ? $this->response->success([], $message)
             : $this->response->fail($message);
@@ -292,8 +291,6 @@ class TalkController extends CController
             //'receive_group_ids' => 'array',
         ]);
 
-        $user_id = $this->uid();
-
         $receive_user_ids = $receive_group_ids = [];
         if (isset($params['receive_user_ids']) && !empty($params['receive_user_ids'])) {
             $receive_user_ids = array_map(function ($friend_id) {
@@ -307,11 +304,9 @@ class TalkController extends CController
             }, $params['receive_group_ids']);
         }
 
-        $items = array_merge(
-            $receive_user_ids,
-            $receive_group_ids
-        );
+        $items = array_merge($receive_user_ids, $receive_group_ids);
 
+        $user_id = $this->uid();
         if ($params['forward_mode'] == 1) {//单条转发
             $ids = $this->talkService->forwardRecords($user_id, $params['receive_id'], $params['records_ids']);
         } else {//合并转发
@@ -646,7 +641,6 @@ class TalkController extends CController
             ])
         );
 
-
         return $this->response->success();
     }
 
@@ -667,9 +661,7 @@ class TalkController extends CController
 
         $user_id = $this->uid();
         $emoticon = EmoticonDetail::where('id', $params['emoticon_id'])->where('user_id', $user_id)->first([
-            'url',
-            'file_suffix',
-            'file_size'
+            'url','file_suffix','file_size'
         ]);
 
         if (!$emoticon) {

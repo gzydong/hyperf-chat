@@ -20,7 +20,6 @@ use App\Model\Chat\ChatRecordsInvite;
 use App\Model\Chat\ChatRecordsForward;
 use App\Service\SocketClientService;
 use App\Service\SocketRoomService;
-use App\Helper\PushMessageHelper;
 
 /**
  * 消息推送消费者队列
@@ -89,7 +88,7 @@ class ChatMessageConsumer extends ConsumerMessage
     {
         $this->socketClientService = $socketClientService;
         $this->socketRoomService = $socketRoomService;
-        $this->setQueue('queue:im:message:' . SERVER_RUN_ID);
+        $this->setQueue('queue:im_message:' . SERVER_RUN_ID);
     }
 
     /**
@@ -127,7 +126,7 @@ class ChatMessageConsumer extends ConsumerMessage
      * @param AMQPMessage $message
      * @return string
      */
-    public function onConsumeTalk(array $data, AMQPMessage $message)
+    public function onConsumeTalk(array $data, AMQPMessage $message): string
     {
         $redis = container()->get(Redis::class);
 
@@ -149,9 +148,8 @@ class ChatMessageConsumer extends ConsumerMessage
             }
         }
 
-        // 去重
-        $fds = array_unique($fds);
-        if (empty($fds)) {
+        // 客户端ID去重
+        if (!$fds = array_unique($fds)) {
             return Result::ACK;
         }
 
@@ -174,9 +172,7 @@ class ChatMessageConsumer extends ConsumerMessage
                 'users.avatar as avatar',
             ]);
 
-        if (!$result) {
-            return Result::ACK;
-        }
+        if (!$result) return Result::ACK;
 
         $file = [];
         $code_block = [];
@@ -186,9 +182,8 @@ class ChatMessageConsumer extends ConsumerMessage
             case 2://文件消息
                 $file = ChatRecordsFile::where('record_id', $result->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
                 $file = $file ? $file->toArray() : [];
-                if ($file) {
-                    $file['file_url'] = get_media_url($file['save_dir']);
-                }
+                $file && $file['file_url'] = get_media_url($file['save_dir']);
+
                 break;
             case 3://入群消息/退群消息
                 $notifyInfo = ChatRecordsInvite::where('record_id', $result->id)->first([
@@ -196,15 +191,14 @@ class ChatMessageConsumer extends ConsumerMessage
                 ]);
 
                 $userInfo = User::where('id', $notifyInfo->operate_user_id)->first(['nickname', 'id']);
-                $membersIds = explode(',', $notifyInfo->user_ids);
 
                 $invite = [
                     'type' => $notifyInfo->type,
                     'operate_user' => ['id' => $userInfo->id, 'nickname' => $userInfo->nickname],
-                    'users' => User::select('id', 'nickname')->whereIn('id', $membersIds)->get()->toArray()
+                    'users' => User::select('id', 'nickname')->whereIn('id', parse_ids($notifyInfo->user_ids))->get()->toArray()
                 ];
 
-                unset($notifyInfo, $userInfo, $membersIds);
+                unset($notifyInfo, $userInfo);
                 break;
             case 4://会话记录消息
                 $forward = ['num' => 0, 'list' => []];
@@ -224,11 +218,11 @@ class ChatMessageConsumer extends ConsumerMessage
                 break;
         }
 
-        $msg = [
+        $notify = [
             'send_user' => $data['data']['sender'],
             'receive_user' => $data['data']['receive'],
             'source_type' => $data['data']['source'],
-            'data' => PushMessageHelper::formatTalkMsg([
+            'data' => $this->formatTalkMessage([
                 'id' => $result->id,
                 'msg_type' => $result->msg_type,
                 'source' => $result->source,
@@ -247,11 +241,7 @@ class ChatMessageConsumer extends ConsumerMessage
 
         unset($result, $file, $code_block, $forward, $invite);
 
-        $server = server();
-        $notify = json_encode(['event_talk', $msg]);
-        foreach ($fds as $fd) {
-            $server->exist($fd) && $server->push($fd, $notify);
-        }
+        $this->socketPushNotify($fds, json_encode(['event_talk', $notify]));
 
         return Result::ACK;
     }
@@ -263,14 +253,11 @@ class ChatMessageConsumer extends ConsumerMessage
      * @param AMQPMessage $message
      * @return string
      */
-    public function onConsumeKeyboard(array $data, AMQPMessage $message)
+    public function onConsumeKeyboard(array $data, AMQPMessage $message): string
     {
         $fds = $this->socketClientService->findUserFds($data['data']['receive_user']);
-        $server = server();
-        $notify = json_encode(['event_keyboard', $data['data']]);
-        foreach ($fds as $fd) {
-            $server->exist($fd) && $server->push($fd, $notify);
-        }
+
+        $this->socketPushNotify($fds, json_encode(['event_keyboard', $data['data']]));
 
         return Result::ACK;
     }
@@ -282,22 +269,16 @@ class ChatMessageConsumer extends ConsumerMessage
      * @param AMQPMessage $message
      * @return string
      */
-    public function onConsumeOnlineStatus(array $data, AMQPMessage $message)
+    public function onConsumeOnlineStatus(array $data, AMQPMessage $message): string
     {
-        $user_id = $data['data']['user_id'];
-        $friends = UsersFriend::getFriendIds(intval($user_id));
+        $friends = UsersFriend::getFriendIds((int)$data['data']['user_id']);
 
         $fds = [];
         foreach ($friends as $friend_id) {
-            $fds = array_merge($fds, $this->socketClientService->findUserFds(intval($friend_id)));
+            $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$friend_id));
         }
 
-        $fds = array_unique($fds);
-        $server = server();
-        $notify = json_encode(['event_online_status', $data['data']]);
-        foreach ($fds as $fd) {
-            $server->exist($fd) && $server->push($fd, $notify);
-        }
+        $this->socketPushNotify(array_unique($fds), json_encode(['event_online_status', $data['data']]));
 
         return Result::ACK;
     }
@@ -309,7 +290,7 @@ class ChatMessageConsumer extends ConsumerMessage
      * @param AMQPMessage $message
      * @return string
      */
-    public function onConsumeRevokeTalk(array $data, AMQPMessage $message)
+    public function onConsumeRevokeTalk(array $data, AMQPMessage $message): string
     {
         /** @var ChatRecord */
         $record = ChatRecord::where('id', $data['data']['record_id'])->first(['id', 'source', 'user_id', 'receive_id']);
@@ -325,18 +306,15 @@ class ChatMessageConsumer extends ConsumerMessage
             }
         }
 
-        $fds = array_unique($fds);
-        $server = server();
-        $notify = json_encode(['event_revoke_talk', [
-            'record_id' => $record->id,
-            'source' => $record->source,
-            'user_id' => $record->user_id,
-            'receive_id' => $record->receive_id,
-        ]]);
-
-        foreach ($fds as $fd) {
-            $server->exist($fd) && $server->push($fd, $notify);
-        }
+        $this->socketPushNotify(
+            array_unique($fds),
+            json_encode(['event_revoke_talk', [
+                'record_id' => $record->id,
+                'source' => $record->source,
+                'user_id' => $record->user_id,
+                'receive_id' => $record->receive_id,
+            ]])
+        );
 
         return Result::ACK;
     }
@@ -348,17 +326,60 @@ class ChatMessageConsumer extends ConsumerMessage
      * @param AMQPMessage $message
      * @return string
      */
-    public function onConsumeFriendApply(array $data, AMQPMessage $message)
+    public function onConsumeFriendApply(array $data, AMQPMessage $message): string
     {
         $fds = $this->socketClientService->findUserFds($data['data']['receive']);
-        $fds = array_unique($fds);
 
-        $server = server();
-        $notify = json_encode(['event_friend_apply', $data['data']]);
-        foreach ($fds as $fd) {
-            $server->exist($fd) && $server->push($fd, $notify);
-        }
+        $this->socketPushNotify(array_unique($fds), json_encode(['event_friend_apply', $data['data']]));
 
         return Result::ACK;
+    }
+
+    /**
+     * WebSocket 消息推送
+     *
+     * @param $fds
+     * @param $message
+     */
+    private function socketPushNotify($fds, $message)
+    {
+        $server = server();
+        foreach ($fds as $fd) {
+            $server->exist($fd) && $server->push($fd, $message);
+        }
+    }
+
+    /**
+     * 格式化对话的消息体
+     *
+     * @param array $data 对话的消息
+     * @return array
+     */
+    private function formatTalkMessage(array $data)
+    {
+        $message = [
+            "id" => 0,//消息记录ID
+            "source" => 1,//消息来源[1:好友私信;2:群聊]
+            "msg_type" => 1,
+            "user_id" => 0,//发送者用户ID
+            "receive_id" => 0,//接收者ID[好友ID或群ID]
+            "content" => '',//文本消息
+            "is_revoke" => 0,//消息是否撤销
+
+            // 发送消息人的信息
+            "nickname" => "",
+            "avatar" => "",
+
+            // 不同的消息类型
+            "file" => [],
+            "code_block" => [],
+            "forward" => [],
+            "invite" => [],
+
+            // 消息创建时间
+            "created_at" => "",
+        ];
+
+        return array_merge($message, array_intersect_key($data, $message));
     }
 }

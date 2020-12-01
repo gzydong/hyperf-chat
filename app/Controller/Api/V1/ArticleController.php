@@ -102,7 +102,7 @@ class ArticleController extends CController
      */
     public function getArticleDetail()
     {
-        $this->validate($this->request->all(), [
+        $this->validate($this->request->inputs(['article_id']), [
             'article_id' => 'required|integer'
         ]);
 
@@ -121,7 +121,7 @@ class ArticleController extends CController
      */
     public function editArticleClass()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['class_id', 'class_name']);
         $this->validate($params, [
             'class_id' => 'required|integer',
             'class_name' => 'required'
@@ -142,7 +142,7 @@ class ArticleController extends CController
      */
     public function delArticleClass()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['class_id']);
         $this->validate($params, [
             'class_id' => 'required|integer'
         ]);
@@ -161,7 +161,7 @@ class ArticleController extends CController
      */
     public function articleClassSort()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['class_id', 'sort_type']);
         $this->validate($params, [
             'class_id' => 'required|integer',
             'sort_type' => 'required|in:1,2'
@@ -191,7 +191,7 @@ class ArticleController extends CController
      */
     public function mergeArticleClass()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['class_id', 'toid']);
         $this->validate($params, [
             'class_id' => 'required|integer',
             'toid' => 'required|integer'
@@ -211,7 +211,7 @@ class ArticleController extends CController
      */
     public function editArticleTags()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['tag_id', 'tag_name']);
         $this->validate($params, [
             'tag_id' => 'required|integer|min:0',
             'tag_name' => 'required'
@@ -235,7 +235,7 @@ class ArticleController extends CController
      */
     public function delArticleTags()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['tag_id']);
         $this->validate($params, [
             'tag_id' => 'required|integer|min:0'
         ]);
@@ -284,7 +284,7 @@ class ArticleController extends CController
      */
     public function deleteArticle()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0'
         ]);
@@ -303,7 +303,7 @@ class ArticleController extends CController
      */
     public function recoverArticle()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0'
         ]);
@@ -352,7 +352,7 @@ class ArticleController extends CController
      */
     public function moveArticle()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['article_id', 'class_id']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
             'class_id' => 'required|integer|min:0'
@@ -376,7 +376,7 @@ class ArticleController extends CController
      */
     public function setAsteriskArticle()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['article_id', 'type']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
             'type' => 'required|in:1,2'
@@ -400,7 +400,7 @@ class ArticleController extends CController
      */
     public function updateArticleTag()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['article_id', 'tags']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
             'tags' => 'required|array'
@@ -420,7 +420,7 @@ class ArticleController extends CController
      */
     public function foreverDelArticle()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0'
         ]);
@@ -483,7 +483,7 @@ class ArticleController extends CController
      */
     public function deleteArticleAnnex()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [
             'annex_id' => 'required|integer|min:0'
         ]);
@@ -545,7 +545,7 @@ class ArticleController extends CController
      */
     public function foreverDelAnnex()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [
             'annex_id' => 'required|integer|min:0'
         ]);

@@ -42,10 +42,13 @@ class JWTAuthMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $isValidToken = true;
+        $isValidToken = false;
 
         // 获取请求token
-        $token = $request->getHeaderLine('Authorization') ?? $this->request->input('token', '');
+        $token = $request->getHeaderLine('Authorization');
+        if (empty($token)) {
+            $token = $this->request->input('token', '');
+        }
 
         if (!empty($token)) {
             try {
@@ -62,7 +65,6 @@ class JWTAuthMiddleware implements MiddlewareInterface
             return $this->response->withStatus(401)->json([
                 'code' => 401,
                 'message' => 'Token authentication does not pass',
-                'data' => []
             ]);
         }
 

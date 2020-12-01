@@ -41,17 +41,14 @@ class AuthController extends CController
      */
     public function login()
     {
-        $this->validate($this->request->all(), [
+        $params = $this->request->inputs(['mobile', 'password', 'platform']);
+        $this->validate($params, [
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
             'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
 
-        $userInfo = $this->userService->login(
-            $this->request->input('mobile'),
-            $this->request->input('password')
-        );
-
+        $userInfo = $this->userService->login($params['mobile'], $params['password']);
         if (!$userInfo) {
             return $this->response->fail('账号不存在或密码填写错误...');
         }
@@ -59,7 +56,7 @@ class AuthController extends CController
         try {
             $token = $this->jwt->getToken([
                 'user_id' => $userInfo['id'],
-                'platform' => $this->request->input('platform'),
+                'platform' => $params['platform'],
             ]);
         } catch (\Exception $exception) {
             return $this->response->error('登录异常，请稍后再试...');

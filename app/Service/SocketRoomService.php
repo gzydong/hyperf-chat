@@ -46,6 +46,7 @@ class SocketRoomService
      *
      * @param string|array $room 房间名
      * @param string|array $members 用户ID
+     * @return int
      */
     public function delRoomMember($room, $members)
     {

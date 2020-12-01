@@ -79,7 +79,7 @@ class UsersController extends CController
      */
     public function removeFriend()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['friend_id']);
         $this->validate($params, [
             'friend_id' => 'required|integer'
         ]);
@@ -162,7 +162,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['nickname', 'avatar', 'motto', 'gender']);
         $this->validate($params, [
             'nickname' => 'required',
-            'motto' => 'present',
+            'motto' => 'present|max:100',
             'gender' => 'required|in:0,1,2',
             'avatar' => 'present|url'
         ]);
@@ -294,6 +294,7 @@ class UsersController extends CController
             'remarks' => 'present'
         ]);
 
+        $user_id = $this->uid();
         $isTrue = $this->friendService->handleFriendApply($this->uid(), (int)$params['apply_id'], $params['remarks']);
         if (!$isTrue) {
             return $this->response->fail('处理失败...');
@@ -301,15 +302,16 @@ class UsersController extends CController
 
         //判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll((int)$params['friend_id'])) {
-//            $this->producer->produce(
-//                new ChatMessageProducer('event_friend_apply', [
-//                    'sender' => $user_id,
-//                    'receive' => (int)$params['friend_id'],
-//                    'type' => 1,
-//                    'status' => 1,
-//                    'remark' => ''
-//                ])
-//            );
+            // 待修改
+            $this->producer->produce(
+                new ChatMessageProducer('event_friend_apply', [
+                    'sender' => $user_id,
+                    'receive' => (int)$params['friend_id'],
+                    'type' => 1,
+                    'status' => 1,
+                    'remark' => ''
+                ])
+            );
         }
 
         return $this->response->success([], '处理成功...');
@@ -377,7 +379,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['old_password', 'new_password']);
         $this->validate($params, [
             'old_password' => 'required',
-            'new_password' => 'required'
+            'new_password' => 'required|min:6|max:16'
         ]);
 
         $userInfo = $this->userService->findById($this->uid(), ['id', 'password', 'mobile']);

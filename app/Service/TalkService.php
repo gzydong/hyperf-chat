@@ -133,9 +133,7 @@ class TalkService extends BaseService
      */
     public function handleChatRecords(array $rows)
     {
-        if (empty($rows)) {
-            return [];
-        }
+        if (empty($rows)) return [];
 
         $files = $codes = $forwards = $invites = [];
         foreach ($rows as $value) {
@@ -205,7 +203,7 @@ class TalkService extends BaseService
                         ];
 
                         if ($rows[$k]['invite']['type'] == 1 || $rows[$k]['invite']['type'] == 3) {
-                            $rows[$k]['invite']['users'] = User::select('id', 'nickname')->whereIn('id', explode(',', $invites[$row['id']]['user_ids']))->get()->toArray();
+                            $rows[$k]['invite']['users'] = User::select('id', 'nickname')->whereIn('id', parse_ids($invites[$row['id']]['user_ids']))->get()->toArray();
                         } else {
                             $rows[$k]['invite']['users'] = $rows[$k]['invite']['operate_user'];
                         }

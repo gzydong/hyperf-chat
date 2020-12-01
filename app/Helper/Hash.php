@@ -2,6 +2,11 @@
 
 namespace App\Helper;
 
+/**
+ * Hash 密码加密辅助类
+ *
+ * @package App\Helper
+ */
 class Hash
 {
     /**
