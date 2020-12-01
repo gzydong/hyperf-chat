@@ -11,11 +11,11 @@ declare(strict_types=1);
  */
 return [
     'default' => [
-        'host' => '47.105.180.123',
-        'port' => 5672,
-        'user' => 'yuandong',
-        'password' => 'yuandong',
-        'vhost' => 'im',
+        'host' => env('AMQP_HOST','127.0.0.1'),
+        'port' => intval(env('AMQP_PORT',5672)),
+        'user' => env('AMQP_USER','guest'),
+        'password' => env('AMQP_PASSWORD','guest'),
+        'vhost' => env('AMQP_VHOST','/'),
         'pool' => [
             'min_connections' => 1,
             'max_connections' => 10,

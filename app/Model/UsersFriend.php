@@ -93,16 +93,27 @@ SQL;
      *
      * @param int $user_id1 用户1
      * @param int $user_id2 用户2
+     * @param bool $cache 是否读取缓存
      * @return bool
      */
-    public static function isFriend(int $user_id1, int $user_id2)
+    public static function isFriend(int $user_id1, int $user_id2, bool $cache = false)
     {
         // 比较大小交换位置
         if ($user_id1 > $user_id2) {
             [$user_id1, $user_id2] = [$user_id2, $user_id1];
         }
 
-        return self::where('user1', $user_id1)->where('user2', $user_id2)->where('status', 1)->exists();
+        $cacheKey = "good_friends:{$user_id1}_$user_id2";
+        if ($cache && redis()->get($cacheKey)) {
+            return true;
+        }
+
+        $isTrue = self::where('user1', $user_id1)->where('user2', $user_id2)->where('status', 1)->exists();
+        if ($isTrue) {
+            redis()->setex($cacheKey, 60 * 5, 1);
+        }
+
+        return $isTrue;
     }
 
     /**
