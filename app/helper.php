@@ -1,5 +1,11 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Common function method
+|--------------------------------------------------------------------------
+*/
+
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Logger\LoggerFactory;
@@ -13,6 +19,8 @@ use Hyperf\Redis\Redis;
 
 /**
  * 容器实例
+ *
+ * @return \Psr\Container\ContainerInterface
  */
 function container()
 {
@@ -21,6 +29,8 @@ function container()
 
 /**
  * Redis 客户端实例
+ *
+ * @return Redis|mixed
  */
 function redis()
 {
@@ -36,7 +46,6 @@ function server()
 {
     return container()->get(ServerFactory::class)->getServer()->getServer();
 }
-
 
 /**
  * websocket frame 实例
@@ -82,7 +91,9 @@ function logger(string $name = 'APP')
 }
 
 /**
- * http 请求实例
+ * Http 请求实例
+ *
+ * @return mixed|ServerRequestInterface
  */
 function request()
 {
@@ -91,21 +102,12 @@ function request()
 
 /**
  * 请求响应
+ *
+ * @return ResponseInterface|mixed
  */
 function response()
 {
     return container()->get(ResponseInterface::class);
-}
-
-/**
- * 获取加密后的密码字符
- *
- * @param string $password
- * @return bool|false|null|string
- */
-function create_password(string $password)
-{
-    return password_hash($password, PASSWORD_DEFAULT);
 }
 
 /**
@@ -147,7 +149,6 @@ function diff_date($day1, $day2)
     return ceil(($second1 - $second2) / 86400);
 }
 
-
 /**
  * 获取媒体文件url
  *
@@ -188,9 +189,11 @@ function replace_url_link(string $str)
 
 /**
  * 二维数组排序
+ *
  * @param array $array 数组
  * @param string $field 排序字段
  * @param int $sort 排序方式
+ *
  * @return array
  */
 function arraysSort(array $array, $field, $sort = SORT_DESC)
@@ -199,12 +202,12 @@ function arraysSort(array $array, $field, $sort = SORT_DESC)
     return $array;
 }
 
-
 /**
  * 判断0或正整数
  *
  * @param string $int 验证字符串
  * @param bool $isZero 判断是否可为0
+ *
  * @return bool
  */
 function check_int($int, $isZero = false)
@@ -213,6 +216,13 @@ function check_int($int, $isZero = false)
     return is_numeric($int) && preg_match($reg, $int);
 }
 
+/**
+ * 解析英文逗号',' 拼接的 ID 字符串
+ *
+ * @param string $ids 字符串(例如; "1,2,3,4,5,6")
+ *
+ * @return array
+ */
 function parse_ids($ids)
 {
     return array_unique(explode(',', trim($ids)));

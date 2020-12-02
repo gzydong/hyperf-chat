@@ -126,7 +126,6 @@ class GroupService extends BaseService
 
         Db::beginTransaction();
         try {
-
             UsersGroup::where('id', $group_id)->update(['status' => 1]);
             UsersGroupMember::where('group_id', $group_id)->update(['status' => 1]);
             Db::commit();
@@ -217,8 +216,6 @@ class GroupService extends BaseService
             Db::commit();
         } catch (\Exception $e) {
             Db::rollBack();
-
-            logger()->error($e);
             return [false, 0];
         }
 

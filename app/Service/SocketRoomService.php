@@ -2,7 +2,12 @@
 
 namespace App\Service;
 
-
+/**
+ * 聊天室房间服务
+ *
+ * Class SocketRoomService
+ * @package App\Service
+ */
 class SocketRoomService
 {
     const ROOM = 'ws:room';

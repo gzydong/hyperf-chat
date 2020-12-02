@@ -509,7 +509,8 @@ class TalkService extends BaseService
      * @param int $source 消息来源  1:好友消息 2:群聊消息
      * @param array $records_ids 转发消息的记录ID
      * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' => 1,'id' => 1658]] 二维数组
-     * @return array
+     *
+     * @return array|bool
      */
     public function mergeForwardRecords(int $user_id, int $receive_id, int $source, $records_ids, array $receive_ids)
     {
@@ -556,25 +557,27 @@ class TalkService extends BaseService
 
         $jsonText = [];
         foreach ($rows as $row) {
-            if ($row->msg_type == 1) {
-                $jsonText[] = [
-                    'nickname' => $row->nickname,
-                    'text' => mb_substr(str_replace(PHP_EOL, "", $row->content), 0, 30)
-                ];
-            } else if ($row->msg_type == 2) {
-                $jsonText[] = [
-                    'nickname' => $row->nickname,
-                    'text' => '【文件消息】'
-                ];
-            } else if ($row->msg_type == 5) {
-                $jsonText[] = [
-                    'nickname' => $row->nickname,
-                    'text' => '【代码消息】'
-                ];
+            switch ($row->msg_type) {
+                case 1:
+                    $jsonText[] = [
+                        'nickname' => $row->nickname,
+                        'text' => mb_substr(str_replace(PHP_EOL, "", $row->content), 0, 30)
+                    ];
+                    break;
+                case 2:
+                    $jsonText[] = [
+                        'nickname' => $row->nickname,
+                        'text' => '【文件消息】'
+                    ];
+                    break;
+                case 3:
+                    $jsonText[] = [
+                        'nickname' => $row->nickname,
+                        'text' => '【代码消息】'
+                    ];
+                    break;
             }
         }
-
-        $jsonText = json_encode($jsonText);
 
         $insRecordIds = [];
         Db::beginTransaction();
@@ -602,7 +605,7 @@ class TalkService extends BaseService
                     'record_id' => $res->id,
                     'user_id' => $user_id,
                     'records_id' => implode(',', $records_ids),
-                    'text' => $jsonText,
+                    'text' => json_encode($jsonText),
                     'created_at' => date('Y-m-d H:i:s'),
                 ])) {
                     throw new Exception('插入转发消息失败');

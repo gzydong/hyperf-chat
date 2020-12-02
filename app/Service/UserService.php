@@ -55,7 +55,7 @@ class UserService extends BaseService
     {
         Db::beginTransaction();
         try {
-            $data['password'] = create_password($data['password']);
+            $data['password'] = Hash::make($data['password']);
             $data['created_at'] = date('Y-m-d H:i:s');
 
             $result = User::create($data);
