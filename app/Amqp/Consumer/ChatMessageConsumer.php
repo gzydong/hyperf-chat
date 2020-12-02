@@ -201,7 +201,7 @@ class ChatMessageConsumer extends ConsumerMessage
                 $invite = [
                     'type' => $notifyInfo->type,
                     'operate_user' => ['id' => $userInfo->id, 'nickname' => $userInfo->nickname],
-                    'users' => User::select('id', 'nickname')->whereIn('id', parse_ids($notifyInfo->user_ids))->get()->toArray()
+                    'users' => User::whereIn('id', parse_ids($notifyInfo->user_ids))->get(['id', 'nickname'])->toArray()
                 ];
 
                 unset($notifyInfo, $userInfo);
@@ -212,7 +212,7 @@ class ChatMessageConsumer extends ConsumerMessage
                 $forwardInfo = ChatRecordsForward::where('record_id', $result->id)->first(['records_id', 'text']);
                 if ($forwardInfo) {
                     $forward = [
-                        'num' => substr_count($forwardInfo->records_id, ',') + 1,
+                        'num' => count(parse_ids($forwardInfo->records_id)),
                         'list' => json_decode($forwardInfo->text, true) ?? []
                     ];
                 }
@@ -361,7 +361,7 @@ class ChatMessageConsumer extends ConsumerMessage
      * @param array $data 对话的消息
      * @return array
      */
-    private function formatTalkMessage(array $data)
+    private function formatTalkMessage(array $data): array
     {
         $message = [
             "id" => 0,//消息记录ID

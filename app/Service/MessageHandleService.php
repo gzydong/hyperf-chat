@@ -57,7 +57,7 @@ class MessageHandleService
         //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
         if ($data['source_type'] == 1) {//私信
             //判断发送者和接受者是否是好友关系
-            if (!UsersFriend::isFriend(intval($data['send_user']), intval($data['receive_user']))) {
+            if (!UsersFriend::isFriend((int)$data['send_user'], (int)$data['receive_user'], true)) {
                 return;
             }
         } else if ($data['source_type'] == 2) {//群聊
