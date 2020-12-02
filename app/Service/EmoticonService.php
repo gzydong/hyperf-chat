@@ -122,7 +122,6 @@ class EmoticonService extends BaseService
             return [false, []];
         }
 
-
         $result = EmoticonDetail::where('user_id', $user_id)->where('url', $fileInfo->save_dir)->first();
         if ($result) {
             return [false, []];

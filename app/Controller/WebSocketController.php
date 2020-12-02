@@ -19,6 +19,7 @@ use App\Service\MessageHandleService;
 use App\Service\SocketRoomService;
 use App\Model\Group\UsersGroupMember;
 use App\Amqp\Producer\ChatMessageProducer;
+use App\Support\SocketIOParser;
 
 /**
  * Class WebSocketController
@@ -77,6 +78,11 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否存在异地登录
         $isOnline = $this->socketClientService->isOnlineAll(intval($userInfo['user_id']));
 
+        // 若开启单点登录，则主动关闭当前连接
+        if ($isOnline) {
+            // ... 预留
+        }
+
         // 绑定fd与用户关系
         $this->socketClientService->bindRelation($request->fd, $userInfo['user_id']);
 
@@ -109,12 +115,20 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否为心跳检测
         if ($frame->data == 'PING') return;
 
-        [$event, $data] = array_values(json_decode($frame->data, true));
-
-        if (isset(self::EVENTS[$event])) {
-            call_user_func_array([$this->messageHandleService, self::EVENTS[$event]], [$server, $frame, $data]);
+        $result = SocketIOParser::decode($frame->data);
+        if (!isset(self::EVENTS[$result['event']])) {
             return;
         }
+
+        // 回调事件处理函数
+        call_user_func_array([
+            $this->messageHandleService,
+            self::EVENTS[$result['event']]
+        ], [
+            $server,
+            $frame,
+            $result['data']
+        ]);
     }
 
     /**

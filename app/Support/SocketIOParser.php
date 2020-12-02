@@ -23,15 +23,14 @@ class SocketIOParser extends Packet
 
     /**
      * Decode message from websocket client.
-     * Define and return payload here.
      *
-     * @param \Swoole\Websocket\Frame $frame
+     * @param string $string
      *
      * @return array
      */
-    public static function decode($frame)
+    public static function decode($string)
     {
-        $payload = Packet::getPayload($frame->data);
+        $payload = Packet::getPayload($string);
 
         return [
             'event' => $payload['event'] ?? null,

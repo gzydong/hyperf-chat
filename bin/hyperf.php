@@ -10,6 +10,7 @@ date_default_timezone_set('Asia/Shanghai');
 ! defined('BASE_PATH') && define('BASE_PATH', dirname(__DIR__, 1));
 ! defined('SWOOLE_HOOK_FLAGS') && define('SWOOLE_HOOK_FLAGS', SWOOLE_HOOK_ALL);
 
+define('SWOOLE_SSL', 512);
 require BASE_PATH . '/vendor/autoload.php';
 
 // 设置服务运行ID

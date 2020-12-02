@@ -683,6 +683,7 @@ class TalkService extends BaseService
      *
      * @param $message
      * @param $fileInfo
+     * @return bool|int
      */
     public function createImgMessage($message, $fileInfo)
     {
@@ -715,6 +716,7 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $codeBlock
+     * @return bool|int
      */
     public function createCodeMessage(array $message, array $codeBlock)
     {
@@ -746,6 +748,7 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $emoticon
+     * @return bool|int
      */
     public function createEmoticonMessage(array $message, array $emoticon)
     {
@@ -777,6 +780,7 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $emoticon
+     * @return bool|int
      */
     public function createFileMessage(array $message, array $emoticon)
     {

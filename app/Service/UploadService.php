@@ -1,10 +1,8 @@
 <?php
 
-
 namespace App\Service;
 
 use Hyperf\HttpMessage\Upload\UploadedFile;
-use League\Flysystem\Filesystem;
 
 /**
  * 文件上传服务
@@ -22,7 +20,7 @@ class UploadService extends BaseService
     /**
      * 创建文件夹
      *
-     * @param $dir
+     * @param string $dir 文件夹路径
      */
     public function makeDirectory($dir)
     {
@@ -33,18 +31,21 @@ class UploadService extends BaseService
      * 上传媒体图片
      *
      * @param UploadedFile $file
-     * @param string $dir
-     * @param string $filename 文件夹名称
+     * @param string $dir 文件夹路径
+     * @param string $filename 文件名称
+     *
+     * @return bool|string
      */
     public function media(UploadedFile $file, string $dir, string $filename)
     {
         $save_dir = $this->driver($dir);
+
         $this->makeDirectory($save_dir);
 
         $file->moveTo(sprintf('%s/%s', $save_dir, $filename));
 
         if ($file->isMoved()) {
-            // 修改文集权限
+            // 修改文件权限
             @chmod(sprintf('%s/%s', $save_dir, $filename), 0644);
         }
 

@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-
 use App\Model\User;
 use App\Model\UsersFriend;
 use App\Model\UsersFriendsApply;

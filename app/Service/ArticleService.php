@@ -429,8 +429,6 @@ class ArticleService extends BaseService
             return $res->id;
         } catch (Exception $e) {
             Db::rollBack();
-
-            var_dump($e->getMessage());
         }
 
         return false;
