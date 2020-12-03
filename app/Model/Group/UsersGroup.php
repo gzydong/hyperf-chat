@@ -69,7 +69,8 @@ class UsersGroup extends BaseModel
      * @param int $group_id 群ID
      * @return mixed
      */
-    public static function isManager(int $user_id,int $group_id){
+    public static function isManager(int $user_id, int $group_id)
+    {
         return self::where('id', $group_id)->where('user_id', $user_id)->exists();
     }
 
@@ -82,6 +83,6 @@ class UsersGroup extends BaseModel
      */
     public static function isMember(int $group_id, int $user_id)
     {
-        return UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists() ? true : false;
+        return UsersGroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('status', 0)->exists();
     }
 }

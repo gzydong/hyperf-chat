@@ -76,7 +76,7 @@ class UsersFriend extends BaseModel
               SELECT id as rid,user2 as uid,user1_remark as friend_remark from {$prefix}users_friends where user1 = {$uid} and `status` = 1
                 UNION all 
               SELECT id as rid,user1 as uid,user2_remark as friend_remark from {$prefix}users_friends where user2 = {$uid} and `status` = 1
-            ) tmp_table on tmp_table.uid = users.id  order by tmp_table.rid desc
+            ) tmp_table on tmp_table.uid = users.id
 SQL;
 
         $rows = Db::select($sql);

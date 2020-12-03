@@ -2,7 +2,6 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\SocketConstants;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -22,6 +21,7 @@ use App\Service\UploadService;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\LastMsgCache;
 use App\Cache\UnreadTalkCache;
+use App\Constants\SocketConstants;
 
 /**
  * Class TalkController

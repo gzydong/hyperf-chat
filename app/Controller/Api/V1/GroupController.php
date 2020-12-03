@@ -2,7 +2,6 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\SocketConstants;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -17,6 +16,7 @@ use App\Model\Group\UsersGroupNotice;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Service\SocketRoomService;
 use App\Service\GroupService;
+use App\Constants\SocketConstants;
 
 /**
  * Class GroupController

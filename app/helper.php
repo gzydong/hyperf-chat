@@ -38,7 +38,7 @@ function redis()
 }
 
 /**
- * server 实例 基于 swoole server
+ * Server 实例 基于 Swoole Server
  *
  * @return \Swoole\Coroutine\Server|\Swoole\Server
  */
@@ -48,7 +48,9 @@ function server()
 }
 
 /**
- * websocket frame 实例
+ * WebSocket frame 实例
+ *
+ * @return mixed|Frame
  */
 function frame()
 {
@@ -56,7 +58,9 @@ function frame()
 }
 
 /**
- * websocket 实例
+ * WebSocketServer 实例
+ *
+ * @return mixed|WebSocketServer
  */
 function websocket()
 {
@@ -65,6 +69,8 @@ function websocket()
 
 /**
  * 缓存实例 简单的缓存
+ *
+ * @return mixed|\Psr\SimpleCache\CacheInterface
  */
 function cache()
 {
@@ -73,6 +79,8 @@ function cache()
 
 /**
  * 控制台日志
+ *
+ * @return StdoutLoggerInterface|mixed
  */
 function stdout_log()
 {

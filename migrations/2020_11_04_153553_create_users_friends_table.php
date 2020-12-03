@@ -4,6 +4,7 @@ use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\DbConnection\Db;
+
 class CreateUsersFriendsTable extends Migration
 {
     /**
@@ -27,6 +28,7 @@ class CreateUsersFriendsTable extends Migration
             $table->engine = 'InnoDB';
 
             $table->index(['user1', 'user2'], 'idx_user1_user2');
+            $table->index(['user2', 'user1'], 'idx_user2_user1');
         });
 
         $prefix = config('databases.default.prefix');

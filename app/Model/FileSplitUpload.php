@@ -50,7 +50,6 @@ class FileSplitUpload extends BaseModel
         'upload_at'
     ];
 
-
     /**
      * The attributes that should be cast to native types.
      *

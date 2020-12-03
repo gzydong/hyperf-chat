@@ -39,4 +39,18 @@ class SocketConstants
      * WebSocket 消息消费队列交换机名称
      */
     const CONSUMER_MESSAGE_EXCHANGE = 'im.message.fanout';
+
+    /**
+     * @return array
+     */
+    public static function getMap(): array
+    {
+        return [
+            self::EVENT_TALK => '对话消息通知',
+            self::EVENT_KEYBOARD => '键盘输入事件通知',
+            self::EVENT_ONLINE_STATUS => '用户在线状态通知',
+            self::EVENT_REVOKE_TALK => '聊天消息撤销通知',
+            self::EVENT_FRIEND_APPLY => '好友申请消息通知'
+        ];
+    }
 }

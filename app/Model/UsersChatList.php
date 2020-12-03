@@ -118,7 +118,10 @@ class UsersChatList extends BaseModel
      */
     public static function topItem(int $user_id, int $list_id, $is_top = true)
     {
-        return (bool)self::where('id', $list_id)->where('uid', $user_id)->update(['is_top' => $is_top ? 1 : 0, 'updated_at' => date('Y-m-d H:i:s')]);
+        return (bool)self::where('id', $list_id)->where('uid', $user_id)->update([
+            'is_top' => $is_top ? 1 : 0,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
     }
 
     /**
@@ -131,12 +134,13 @@ class UsersChatList extends BaseModel
      */
     public static function delItem(int $user_id, int $id, $type = 1)
     {
+        $data = ['status' => 0, 'updated_at' => date('Y-m-d H:i:s')];
         if ($type == 1) {
-            return (bool)self::where('id', $id)->where('uid', $user_id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+            return (bool)self::where('id', $id)->where('uid', $user_id)->update($data);
         } else if ($type == 2) {
-            return (bool)self::where('uid', $user_id)->where('friend_id', $id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+            return (bool)self::where('uid', $user_id)->where('friend_id', $id)->update($data);
         } else {
-            return (bool)self::where('uid', $user_id)->where('group_id', $id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+            return (bool)self::where('uid', $user_id)->where('group_id', $id)->update($data);
         }
     }
 
