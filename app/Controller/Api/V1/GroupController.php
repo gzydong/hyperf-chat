@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Constants\SocketConstants;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -81,7 +82,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($data['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组
@@ -146,7 +147,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组
@@ -180,7 +181,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组
@@ -246,7 +247,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组
