@@ -16,6 +16,7 @@ use App\Model\Group\UsersGroupNotice;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Service\SocketRoomService;
 use App\Service\GroupService;
+use App\Constants\SocketConstants;
 
 /**
  * Class GroupController
@@ -81,7 +82,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($data['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组
@@ -146,7 +147,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组
@@ -180,7 +181,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组
@@ -246,7 +247,7 @@ class GroupController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['group_id']),  //接收者ID
                 'source' => 2, //接收者类型 1:好友;2:群组

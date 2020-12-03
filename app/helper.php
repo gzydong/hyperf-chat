@@ -38,7 +38,7 @@ function redis()
 }
 
 /**
- * server 实例 基于 swoole server
+ * Server 实例 基于 Swoole Server
  *
  * @return \Swoole\Coroutine\Server|\Swoole\Server
  */
@@ -48,7 +48,9 @@ function server()
 }
 
 /**
- * websocket frame 实例
+ * WebSocket frame 实例
+ *
+ * @return mixed|Frame
  */
 function frame()
 {
@@ -56,7 +58,9 @@ function frame()
 }
 
 /**
- * websocket 实例
+ * WebSocketServer 实例
+ *
+ * @return mixed|WebSocketServer
  */
 function websocket()
 {
@@ -65,6 +69,8 @@ function websocket()
 
 /**
  * 缓存实例 简单的缓存
+ *
+ * @return mixed|\Psr\SimpleCache\CacheInterface
  */
 function cache()
 {
@@ -73,6 +79,8 @@ function cache()
 
 /**
  * 控制台日志
+ *
+ * @return StdoutLoggerInterface|mixed
  */
 function stdout_log()
 {
@@ -112,7 +120,9 @@ function response()
 
 /**
  * 从HTML文本中提取所有图片
- * @param $content
+ *
+ * @param string $content HTML文本
+ *
  * @return array
  */
 function get_html_images($content)
@@ -133,8 +143,9 @@ function get_html_images($content)
 /**
  * 获取两个日期相差多少天
  *
- * @param $day1
- * @param $day2
+ * @param string $day1 日期1
+ * @param string $day2 日期2
+ *
  * @return float|int
  */
 function diff_date($day1, $day2)
@@ -153,6 +164,7 @@ function diff_date($day1, $day2)
  * 获取媒体文件url
  *
  * @param string $path 文件相对路径
+ *
  * @return string
  */
 function get_media_url(string $path)
@@ -166,6 +178,7 @@ function get_media_url(string $path)
  * @param string $ext 图片后缀名
  * @param int $width 图片宽度
  * @param int $height 图片高度
+ *
  * @return string
  */
 function create_image_name(string $ext, int $width, int $height)
@@ -176,7 +189,8 @@ function create_image_name(string $ext, int $width, int $height)
 /**
  * 替换文本中的url 为 a标签
  *
- * @param string $str
+ * @param string $str 字符串
+ *
  * @return null|string|string[]
  */
 function replace_url_link(string $str)

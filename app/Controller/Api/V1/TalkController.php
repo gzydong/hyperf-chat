@@ -21,6 +21,7 @@ use App\Service\UploadService;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\LastMsgCache;
 use App\Cache\UnreadTalkCache;
+use App\Constants\SocketConstants;
 
 /**
  * Class TalkController
@@ -229,7 +230,7 @@ class TalkController extends CController
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
         if ($isTrue) {
             $this->producer->produce(
-                new ChatMessageProducer('event_revoke_talk', [
+                new ChatMessageProducer(SocketConstants::EVENT_REVOKE_TALK, [
                     'record_id' => $params['record_id']
                 ])
             );
@@ -326,7 +327,7 @@ class TalkController extends CController
         // ...消息推送队列
         foreach ($ids as $value) {
             $this->producer->produce(
-                new ChatMessageProducer('event_talk', [
+                new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                     'sender' => $user_id,  //发送者ID
                     'receive' => intval($value['receive_id']),  //接收者ID
                     'source' => intval($value['source']), //接收者类型 1:好友;2:群组
@@ -526,7 +527,7 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['receive_id']),  //接收者ID
                 'source' => intval($params['source']), //接收者类型 1:好友;2:群组
@@ -571,7 +572,7 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['receive_id']),  //接收者ID
                 'source' => intval($params['source']), //接收者类型 1:好友;2:群组
@@ -586,6 +587,9 @@ class TalkController extends CController
      * 发送文件消息
      *
      * @RequestMapping(path="send-file", methods="post")
+     *
+     * @param UploadService $uploadService
+     * @return ResponseInterface
      */
     public function sendFile(UploadService $uploadService)
     {
@@ -633,7 +637,7 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['receive_id']),  //接收者ID
                 'source' => intval($params['source']), //接收者类型 1:好友;2:群组
@@ -661,7 +665,7 @@ class TalkController extends CController
 
         $user_id = $this->uid();
         $emoticon = EmoticonDetail::where('id', $params['emoticon_id'])->where('user_id', $user_id)->first([
-            'url','file_suffix','file_size'
+            'url', 'file_suffix', 'file_size'
         ]);
 
         if (!$emoticon) {
@@ -688,7 +692,7 @@ class TalkController extends CController
 
         // ...消息推送队列
         $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
+            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
                 'sender' => $user_id,  //发送者ID
                 'receive' => intval($params['receive_id']),  //接收者ID
                 'source' => intval($params['source']), //接收者类型 1:好友;2:群组

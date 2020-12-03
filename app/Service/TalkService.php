@@ -240,7 +240,7 @@ class TalkService extends BaseService
      * @param int $record_id 上一次查询的聊天记录ID
      * @param int $limit 查询数据长度
      * @param array $msg_type 消息类型
-     * @return mixed
+     * @return array
      */
     public function getChatRecords(int $user_id, int $receive_id, int $source, int $record_id, $limit = 30, $msg_type = [])
     {
@@ -417,7 +417,6 @@ class TalkService extends BaseService
      * @param int $record_id 转发消息的记录ID
      * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' => 1,'id' => 1658]] 二维数组
      * @return array
-     * @throws \Exception
      */
     public function forwardRecords(int $user_id, int $record_id, array $receive_ids)
     {
@@ -477,7 +476,7 @@ class TalkService extends BaseService
                         'save_dir' => $fileInfo->save_dir,
                         'created_at' => date('Y-m-d H:i:s')
                     ])) {
-                        throw new \Exception('插入文件消息记录失败');
+                        throw new Exception('插入文件消息记录失败');
                     }
                 } else if ($result->msg_type == 5) {
                     if (!ChatRecordsCode::create([
@@ -487,7 +486,7 @@ class TalkService extends BaseService
                         'code' => $codeBlock->code,
                         'created_at' => date('Y-m-d H:i:s')
                     ])) {
-                        throw new \Exception('插入代码消息记录失败');
+                        throw new Exception('插入代码消息记录失败');
                     }
                 }
             }
@@ -696,17 +695,17 @@ class TalkService extends BaseService
             $insert = ChatRecord::create($message);
 
             if (!$insert) {
-                throw new \Exception('插入聊天记录失败...');
+                throw new Exception('插入聊天记录失败...');
             }
 
             $fileInfo['record_id'] = $insert->id;
             $fileInfo['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsFile::create($fileInfo)) {
-                throw new \Exception('插入聊天记录(文件消息)失败...');
+                throw new Exception('插入聊天记录(文件消息)失败...');
             }
 
             Db::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Db::rollBack();
             return false;
         }
@@ -728,17 +727,17 @@ class TalkService extends BaseService
             $message['created_at'] = date('Y-m-d H:i:s');
             $insert = ChatRecord::create($message);
             if (!$insert) {
-                throw new \Exception('插入聊天记录失败...');
+                throw new Exception('插入聊天记录失败...');
             }
 
             $codeBlock['record_id'] = $insert->id;
             $codeBlock['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsCode::create($codeBlock)) {
-                throw new \Exception('插入聊天记录(代码消息)失败...');
+                throw new Exception('插入聊天记录(代码消息)失败...');
             }
 
             Db::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Db::rollBack();
             return false;
         }
@@ -760,17 +759,17 @@ class TalkService extends BaseService
             $message['created_at'] = date('Y-m-d H:i:s');
             $insert = ChatRecord::create($message);
             if (!$insert) {
-                throw new \Exception('插入聊天记录失败...');
+                throw new Exception('插入聊天记录失败...');
             }
 
             $emoticon['record_id'] = $insert->id;
             $emoticon['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsFile::create($emoticon)) {
-                throw new \Exception('插入聊天记录(代码消息)失败...');
+                throw new Exception('插入聊天记录(代码消息)失败...');
             }
 
             Db::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Db::rollBack();
             return false;
         }
@@ -792,17 +791,17 @@ class TalkService extends BaseService
             $message['created_at'] = date('Y-m-d H:i:s');
             $insert = ChatRecord::create($message);
             if (!$insert) {
-                throw new \Exception('插入聊天记录失败...');
+                throw new Exception('插入聊天记录失败...');
             }
 
             $emoticon['record_id'] = $insert->id;
             $emoticon['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsFile::create($emoticon)) {
-                throw new \Exception('插入聊天记录(代码消息)失败...');
+                throw new Exception('插入聊天记录(代码消息)失败...');
             }
 
             Db::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Db::rollBack();
             return false;
         }

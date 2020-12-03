@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Constants\SocketConstants;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -268,7 +269,7 @@ class UsersController extends CController
         //判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll((int)$params['friend_id'])) {
             $this->producer->produce(
-                new ChatMessageProducer('event_friend_apply', [
+                new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
                     'sender' => $user_id,
                     'receive' => (int)$params['friend_id'],
                     'type' => 1,
@@ -304,7 +305,7 @@ class UsersController extends CController
         if ($this->socketClientService->isOnlineAll((int)$params['friend_id'])) {
             // 待修改
             $this->producer->produce(
-                new ChatMessageProducer('event_friend_apply', [
+                new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
                     'sender' => $user_id,
                     'receive' => (int)$params['friend_id'],
                     'type' => 1,

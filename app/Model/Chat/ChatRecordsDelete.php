@@ -37,5 +37,10 @@ class ChatRecordsDelete extends BaseModel
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'record_id' => 'integer', 'user_id' => 'integer', 'created_at' => 'datetime'];
+    protected $casts = [
+        'id' => 'integer',
+        'record_id' => 'integer',
+        'user_id' => 'integer',
+        'created_at' => 'datetime'
+    ];
 }
