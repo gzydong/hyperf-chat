@@ -115,7 +115,8 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否为心跳检测
         if ($frame->data == 'PING') return;
 
-        $result = SocketIOParser::decode($frame->data);
+        //$result = SocketIOParser::decode($frame->data);
+        $result = json_decode($frame->data,true);
         if (!isset(self::EVENTS[$result['event']])) {
             return;
         }
