@@ -204,7 +204,7 @@ class GroupController extends CController
             'group_id' => 'required|integer',
             'group_name' => 'required',
             'group_profile' => 'required',
-            'avatar' => 'required'
+            'avatar' => 'present|url'
         ]);
 
         $result = UsersGroup::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
@@ -235,6 +235,10 @@ class GroupController extends CController
         ]);
 
         $user_id = $this->uid();
+        if (in_array($user_id, $params['members_ids'])) {
+            return $this->response->fail('群聊用户移除失败...');
+        }
+
         [$isTrue, $record_id] = $this->groupService->removeMember($params['group_id'], $user_id, $params['members_ids']);
         if (!$isTrue) {
             return $this->response->fail('群聊用户移除失败...');

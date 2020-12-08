@@ -50,7 +50,7 @@ class GroupService extends BaseService
                 $groupMember[] = [
                     'group_id' => $insRes->id,
                     'user_id' => $uid,
-                    'group_owner' => ($k == 0) ? 1 : 0,
+                    'group_owner' => $user_id == $uid ? 1 : 0,
                     'status' => 0,
                     'created_at' => date('Y-m-d H:i:s'),
                 ];
