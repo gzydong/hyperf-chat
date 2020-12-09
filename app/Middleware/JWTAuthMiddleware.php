@@ -48,16 +48,16 @@ class JWTAuthMiddleware implements MiddlewareInterface
         $token = $request->getHeaderLine('Authorization');
         if (empty($token)) {
             $token = $this->request->input('token', '');
+        } else {
+            $token = JWTUtil::handleToken($token);
         }
 
         if (!empty($token)) {
             try {
-                $token = JWTUtil::handleToken($token);
                 if ($token !== false && $this->jwt->checkToken($token)) {
                     $isValidToken = true;
                 }
             } catch (\Exception $e) {
-                $isValidToken = false;
             }
         }
 
