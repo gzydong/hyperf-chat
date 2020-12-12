@@ -169,7 +169,7 @@ function diff_date($day1, $day2)
  */
 function get_media_url(string $path)
 {
-    return config('domain.img_url') . $path;
+    return sprintf('%s/%s', rtrim(config('domain.img_url'), '/'), ltrim($path,'/'));
 }
 
 /**

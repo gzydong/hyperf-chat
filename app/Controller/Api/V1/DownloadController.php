@@ -18,7 +18,6 @@ use Hyperf\HttpServer\Contract\ResponseInterface;
  * Class DownloadController
  *
  * @Controller(path="/api/v1/download")
- * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1
  */

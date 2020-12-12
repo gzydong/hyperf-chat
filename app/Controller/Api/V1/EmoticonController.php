@@ -155,7 +155,10 @@ class EmoticonController extends CController
         }
 
         // 读取图片信息
-        $imgInfo = getimagesize($file->getPath());
+        $imgInfo = @getimagesize($file->getRealPath());
+        if(!$imgInfo){
+            return $this->response->fail('表情包上传失败...');
+        }
 
         $save_path = $uploadService->media($file, 'media/images/emoticon', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
         if (!$save_path) {

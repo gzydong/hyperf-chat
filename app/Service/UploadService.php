@@ -49,6 +49,6 @@ class UploadService extends BaseService
             @chmod(sprintf('%s/%s', $save_dir, $filename), 0644);
         }
 
-        return $file->isMoved() ? sprintf('/%s/%s', trim($dir, '/'), $filename) : false;
+        return $file->isMoved() ? sprintf('%s/%s', trim($dir, '/'), $filename) : false;
     }
 }
