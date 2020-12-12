@@ -354,6 +354,9 @@ class UsersController extends CController
         $user_id = $this->uid();
 
         $data = $this->friendService->findApplyRecords($user_id, $page, $page_size);
+
+        ApplyNumCache::del($user_id);
+
         return $this->response->success($data);
     }
 

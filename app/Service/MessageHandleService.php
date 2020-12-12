@@ -62,7 +62,7 @@ class MessageHandleService
             }
         } else if ($data['source_type'] == 2) {//群聊
             //判断是否属于群成员
-            if (!UsersGroup::isMember(intval($data['receive_user']), intval($data['send_user']))) {
+            if (!UsersGroup::isMember((int)$data['receive_user'], (int)$data['send_user'])) {
                 return;
             }
         }
@@ -76,22 +76,21 @@ class MessageHandleService
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        if (!$result) {
-            return;
-        }
+        if (!$result) return;
 
         // 判断是否私聊
         if ($data['source_type'] == 1) {
-            $msg_text = mb_substr($result->content, 0, 30);
-            // 缓存最后一条消息
-            LastMsgCache::set([
-                'text' => $msg_text,
-                'created_at' => $result->created_at
-            ], intval($data['receive_user']), intval($data['send_user']));
-
             // 设置好友消息未读数
             $this->unreadTalkCache->setInc(intval($result->receive_id), strval($result->user_id));
         }
+
+        // 缓存最后一条消息
+        LastMsgCache::set([
+            'text' => mb_substr($result->content, 0, 30),
+            'created_at' => $result->created_at
+        ], (int)$data['receive_user'],
+            $data['source_type'] == 1 ? (int)$data['send_user'] : 0
+        );
 
         $this->producer->produce(
             new ChatMessageProducer('event_talk', [
