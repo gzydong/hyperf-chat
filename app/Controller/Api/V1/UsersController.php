@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Cache\FriendRemarkCache;
 use App\Constants\SocketConstants;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -233,7 +234,11 @@ class UsersController extends CController
             'remarks' => "required"
         ]);
 
-        $isTrue = $this->friendService->editFriendRemark($this->uid(), $params['friend_id'], $params['remarks']);
+        $user_id = $this->uid();
+        $isTrue = $this->friendService->editFriendRemark($user_id, $params['friend_id'], $params['remarks']);
+        if ($isTrue) {
+            FriendRemarkCache::set($user_id, (int)$params['friend_id'], $params['remarks']);
+        }
 
         return $isTrue
             ? $this->response->success([], '备注修改成功...')
