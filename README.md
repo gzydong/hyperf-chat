@@ -30,13 +30,15 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
 [Api 接口文档](https://docs.apipost.cn/view/9c75130d7006e6e5#3184466)
 [Hyperf 框架](https://hyperf.wiki/2.0/#/README)
 
-## 5、项目安装
-1. 项目运行之前请确保 Mysql、Redis、RabbitMQ 及 Nginx 服务
+## 5、项目安装 
+1. 下载源码包
+2. 安装框架依赖包执行 `compsoer install` 命令 [项目根目录下执行]
 2. 拷贝项目根目录下 .env.example 文件为 .env 并正确配置相关参数（mysql、redis、rabbitmq）
 3. 执行数据库迁移文件命令生成相关数据表  `php bin/hyperf.php migrate`
 4. 启动运行项目 `php bin/hyperf.php start`
 
-## Nginx 相关配置
+注 ：[项目运行之前请确保 Mysql、Redis、RabbitMQ 及 Nginx 服务]
+## Nginx 相关配置(代理 swoole 服务)
 
 ##### 配置 Http 服务
 ```
