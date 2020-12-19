@@ -17,5 +17,8 @@ return [
             App\Exception\Handler\ValidateExceptionHandler::class,
             App\Exception\Handler\AppExceptionHandler::class,
         ],
+        'ws' => [
+            App\Exception\Handler\WebSocketExceptionHandler::class
+        ],
     ],
 ];

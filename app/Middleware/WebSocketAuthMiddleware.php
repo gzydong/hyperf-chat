@@ -39,6 +39,7 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
     {
         // 授权验证拦截握手请求并实现权限检查
         $token = $request->getQueryParams()['token'] ?? '';
+
         try {
             $this->jwt->checkToken($token);
         } catch (\Exception $e) {

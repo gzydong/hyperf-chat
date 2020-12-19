@@ -7,6 +7,7 @@ use Hyperf\ExceptionHandler\ExceptionHandler;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Http\Message\ResponseInterface;
 use Phper666\JWTAuth\Exception\TokenValidException;
+use Hyperf\WebSocketServer\Exception\WebSocketHandeShakeException;
 
 /**
  * Class JwtAuthExceptionHandler
