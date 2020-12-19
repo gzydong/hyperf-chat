@@ -21,7 +21,7 @@ return [
 
     'ip_address' => env('IP_ADDRESS', ''),
 
-    // 运行模式
+    // 运行模式（预留）
     'run_mode' => 'cluster',
 
     // 域名相关配置
@@ -30,13 +30,13 @@ return [
         'img_url' => env('IMG_URL', ''),//设置文件图片访问的域名
     ],
 
-    'upload_dir'=>env('UPLOAD_PATH',''),
+    'upload_dir' => env('UPLOAD_PATH', ''),
 
     StdoutLoggerInterface::class => [
         'log_level' => [
             LogLevel::ALERT,
             LogLevel::CRITICAL,
-//            LogLevel::DEBUG,
+            LogLevel::DEBUG,
             LogLevel::EMERGENCY,
             LogLevel::ERROR,
             LogLevel::INFO,
