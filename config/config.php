@@ -29,6 +29,7 @@ return [
         'web_url' => env('WEB_URL', ''),//Web 端首页地址
         'img_url' => env('IMG_URL', ''),//设置文件图片访问的域名
     ],
+
     'upload_dir'=>env('UPLOAD_PATH',''),
 
     StdoutLoggerInterface::class => [
