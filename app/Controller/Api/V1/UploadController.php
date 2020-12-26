@@ -1,4 +1,14 @@
 <?php
+/**
+ *
+ * This is my open source code, please do not use it for commercial applications.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code
+ *
+ * @author Yuandong<837215079@qq.com>
+ * @link   https://github.com/gzydong/hyperf-chat
+ */
 declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
@@ -10,6 +20,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Service\SplitUploadService;
 use App\Service\UploadService;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * 上传控制器
@@ -25,12 +36,14 @@ class UploadController extends CController
 {
     /**
      * @inject
+     *
      * @var UploadService
      */
     private $uploadService;
 
     /**
      * @inject
+     *
      * @var SplitUploadService
      */
     private $splitUploadService;
@@ -73,8 +86,6 @@ class UploadController extends CController
      * 文件拆分上传接口
      *
      * @RequestMapping(path="file-subarea-upload", methods="post")
-     *
-     * @return \Psr\Http\Message\ResponseInterface
      */
     public function fileSubareaUpload()
     {

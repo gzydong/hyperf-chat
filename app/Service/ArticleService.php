@@ -585,6 +585,12 @@ class ArticleService extends BaseService
      * @param int $uid 用户ID
      * @param int $annex_id 笔记附件ID
      * @return bool|int|mixed|null
+     */
+
+    /**
+     * @param int $uid
+     * @param int $annex_id
+     * @return bool|int|mixed|null
      * @throws Exception
      */
     public function foreverDelAnnex(int $uid, int $annex_id)

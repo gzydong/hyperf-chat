@@ -1,4 +1,14 @@
 <?php
+/**
+ *
+ * This is my open source code, please do not use it for commercial applications.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code
+ *
+ * @author Yuandong<837215079@qq.com>
+ * @link   https://github.com/gzydong/hyperf-chat
+ */
 
 namespace App\Controller\Api\V1;
 
@@ -11,6 +21,7 @@ use App\Constants\ResponseCode;
 use App\Model\User;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
+use Phper666\JWTAuth\JWT;
 
 /**
  * 授权相关控制器
@@ -32,12 +43,15 @@ class AuthController extends CController
     private $smsCodeService;
 
     /**
+     * @Inject
+     * @var JWT
+     */
+    protected $jwt;
+
+    /**
      * 授权登录接口
      *
      * @RequestMapping(path="login", methods="post")
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function login()
     {
@@ -94,8 +108,6 @@ class AuthController extends CController
      * 账号注册接口
      *
      * @RequestMapping(path="register", methods="post")
-     *
-     * @return \Psr\Http\Message\ResponseInterface
      */
     public function register()
     {
@@ -177,8 +189,6 @@ class AuthController extends CController
      * 发送验证码
      *
      * @RequestMapping(path="send-verify-code", methods="post")
-     *
-     * @return \Psr\Http\Message\ResponseInterface
      */
     public function sendVerifyCode()
     {

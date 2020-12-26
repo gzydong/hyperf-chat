@@ -1,4 +1,14 @@
 <?php
+/**
+ *
+ * This is my open source code, please do not use it for commercial applications.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code
+ *
+ * @author Yuandong<837215079@qq.com>
+ * @link   https://github.com/gzydong/hyperf-chat
+ */
 
 namespace App\Controller\Api\V1;
 
@@ -456,12 +466,10 @@ class ArticleController extends CController
         }
 
         $annex['save_dir'] = $path;
-        $insId = $this->articleService->insertArticleAnnex($this->uid(), (int)$params['article_id'], $annex);
-        if (!$insId) {
+        $annex['id'] = $this->articleService->insertArticleAnnex($this->uid(), (int)$params['article_id'], $annex);
+        if (!$annex['id']) {
             return $this->response->fail('附件上传失败，请稍后再试...');
         }
-
-        $annex['id'] = $insId;
 
         return $this->response->success($annex, '笔记附件上传成功...');
     }
@@ -492,7 +500,7 @@ class ArticleController extends CController
      */
     public function recoverArticleAnnex()
     {
-        $params = $this->request->all();
+        $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [
             'annex_id' => 'required|integer|min:0'
         ]);

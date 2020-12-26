@@ -1,5 +1,15 @@
 <?php
 declare(strict_types=1);
+/**
+ *
+ * This is my open source code, please do not use it for commercial applications.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code
+ *
+ * @author Yuandong<837215079@qq.com>
+ * @link   https://github.com/gzydong/hyperf-chat
+ */
 
 namespace App\Controller;
 
@@ -57,7 +67,9 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     private $messageHandleService;
 
-    // 消息事件绑定
+    /**
+     * 消息事件绑定
+     */
     const EVENTS = [
         SocketConstants::EVENT_TALK => 'onTalk',
         SocketConstants::EVENT_KEYBOARD => 'onKeyboard',
@@ -78,7 +90,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否存在异地登录
         $isOnline = $this->socketClientService->isOnlineAll(intval($userInfo['user_id']));
 
-        // 若开启单点登录，则主动关闭当前连接
+        // 若开启单点登录，则主动关闭之前登录的连接
         if ($isOnline) {
             // ... 预留
         }
@@ -116,7 +128,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         if ($frame->data == 'PING') return;
 
         //$result = SocketIOParser::decode($frame->data);
-        $result = json_decode($frame->data,true);
+        $result = json_decode($frame->data, true);
         if (!isset(self::EVENTS[$result['event']])) {
             return;
         }

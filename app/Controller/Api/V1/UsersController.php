@@ -1,27 +1,37 @@
 <?php
-
+/**
+ *
+ * This is my open source code, please do not use it for commercial applications.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code
+ *
+ * @author Yuandong<837215079@qq.com>
+ * @link   https://github.com/gzydong/hyperf-chat
+ */
 namespace App\Controller\Api\V1;
 
-use App\Cache\FriendRemarkCache;
-use App\Constants\SocketConstants;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use Hyperf\Amqp\Producer;
-use App\Constants\ResponseCode;
-use App\Helper\Hash;
+use App\Amqp\Producer\ChatMessageProducer;
 use App\Model\User;
 use App\Model\UsersChatList;
 use App\Model\UsersFriend;
 use App\Support\SendEmailCode;
+use App\Helper\Hash;
 use App\Service\FriendService;
 use App\Service\UserService;
 use App\Service\SocketClientService;
 use App\Service\SmsCodeService;
-use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\ApplyNumCache;
+use App\Cache\FriendRemarkCache;
+use App\Constants\SocketConstants;
+use App\Constants\ResponseCode;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class UsersController
@@ -410,7 +420,7 @@ class UsersController extends CController
      * @RequestMapping(path="change-mobile", methods="post")
      *
      * @param SmsCodeService $smsCodeService
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function editUserMobile(SmsCodeService $smsCodeService)
     {
@@ -482,7 +492,7 @@ class UsersController extends CController
      * @RequestMapping(path="send-mobile-code", methods="post")
      *
      * @param SmsCodeService $smsCodeService
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function sendMobileCode(SmsCodeService $smsCodeService)
     {
@@ -519,7 +529,7 @@ class UsersController extends CController
      * @RequestMapping(path="send-change-email-code", methods="post")
      *
      * @param SendEmailCode $sendEmailCode
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function sendChangeEmailCode(SendEmailCode $sendEmailCode)
     {

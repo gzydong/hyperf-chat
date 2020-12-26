@@ -14,21 +14,21 @@ class Mail
     /**
      * 发送邮件验证码
      *
-     * @param string $eamil 邮箱地址
+     * @param string $email 邮箱地址
      * @param string $sms_code 验证码
      * @param string $title 邮件标题
      * @return bool
      */
-    public function sendEmailCode(string $eamil, string $sms_code, string $title)
+    public function sendEmailCode(string $email, string $sms_code, string $title)
     {
         $view = $this->view(config('view.engine'), 'emails.verify-code', [
-            'service_name' => "Lumen IM",
+            'service_name' => "邮箱绑定",
             'sms_code' => $sms_code,
-            'domain' => 'adsfas/asdfa'
+            'domain' => config('domain.web_url')
         ]);
 
         try {
-            return $this->mail($eamil, $title, $view);
+            return $this->mail($email, $title, $view);
         } catch (\Exception $e) {
             return false;
         }

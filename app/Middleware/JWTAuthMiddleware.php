@@ -1,5 +1,14 @@
 <?php
-
+/**
+ *
+ * This is my open source code, please do not use it for commercial applications.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code
+ *
+ * @author Yuandong<837215079@qq.com>
+ * @link   https://github.com/gzydong/hyperf-chat
+ */
 namespace App\Middleware;
 
 use Hyperf\HttpServer\Contract\RequestInterface;
@@ -10,6 +19,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Phper666\JWTAuth\JWT;
 use Phper666\JWTAuth\Util\JWTUtil;
+use Hyperf\Utils\Context;
 
 /**
  * Http Token 授权验证中间件
@@ -68,6 +78,20 @@ class JWTAuthMiddleware implements MiddlewareInterface
             ]);
         }
 
+        $request = $this->setRequestContext($token);
         return $handler->handle($request);
+    }
+
+    private function setRequestContext(string $token): ServerRequestInterface
+    {
+        $request = Context::get(ServerRequestInterface::class);
+
+        $jwtData = $this->jwt->getParserData($token);
+
+        $request = $request->withAttribute('auth_data', $jwtData);
+
+        Context::set(ServerRequestInterface::class, $request);
+
+        return $request;
     }
 }

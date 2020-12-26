@@ -1,5 +1,14 @@
 <?php
-
+/**
+ *
+ * This is my open source code, please do not use it for commercial applications.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code
+ *
+ * @author Yuandong<837215079@qq.com>
+ * @link   https://github.com/gzydong/hyperf-chat
+ */
 namespace App\Controller\Api\V1;
 
 use Hyperf\Di\Annotation\Inject;
@@ -12,6 +21,7 @@ use App\Model\Emoticon;
 use App\Model\EmoticonDetail;
 use App\Service\EmoticonService;
 use App\Service\UploadService;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class EmoticonController
@@ -134,7 +144,7 @@ class EmoticonController extends CController
      * @RequestMapping(path="upload-emoticon", methods="post")
      *
      * @param UploadService $uploadService
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function uploadEmoticon(UploadService $uploadService)
     {
@@ -156,7 +166,7 @@ class EmoticonController extends CController
 
         // 读取图片信息
         $imgInfo = @getimagesize($file->getRealPath());
-        if(!$imgInfo){
+        if (!$imgInfo) {
             return $this->response->fail('表情包上传失败...');
         }
 

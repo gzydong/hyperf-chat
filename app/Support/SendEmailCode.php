@@ -55,9 +55,10 @@ class SendEmailCode
             $sms_code = mt_rand(100000, 999999);
         }
 
-        $this->setCode($key, $sms_code);
+        $this->setCode($key, $sms_code);;
 
-        // ...执行发送
+        // ...执行发送(后期使用队列)
+        container()->get(Mail::class)->sendEmailCode($email, $sms_code, 'Lumen IM(绑定邮箱验证码)');
 
         return true;
     }

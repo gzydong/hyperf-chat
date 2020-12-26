@@ -42,7 +42,7 @@
                     <p>此为系统邮件，请勿回复<br>
                         请保管好您的邮箱，避免账号被他人盗用
                     </p>
-                    <p style="margin-top: 15px"><a href="{{$domain}}" style="text-decoration: none;color: #3f99e6;">Hyperf Chat在线聊天</a></p>
+                    <p style="margin-top: 15px"><a href="{{$domain}}" style="text-decoration: none;color: #3f99e6;">Lumen IM 在线聊天</a></p>
                 </div>
             </div>
         </td>
