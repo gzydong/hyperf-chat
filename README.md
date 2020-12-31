@@ -27,7 +27,6 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
  - AMQP
 
 ## 4、相关文档
-[Api 接口文档](https://docs.apipost.cn/view/9c75130d7006e6e5#3184466)
 [Hyperf 框架](https://hyperf.wiki/2.0/#/README)
 
 ## 5、项目安装 
