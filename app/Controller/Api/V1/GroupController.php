@@ -211,8 +211,8 @@ class GroupController extends CController
         $params = $this->request->inputs(['group_id', 'group_name', 'group_profile', 'avatar']);
         $this->validate($params, [
             'group_id' => 'required|integer',
-            'group_name' => 'required',
-            'group_profile' => 'required',
+            'group_name' => 'required|max:30',
+            'group_profile' => 'required|max:100',
             'avatar' => 'present|url'
         ]);
 
@@ -323,7 +323,7 @@ class GroupController extends CController
         $params = $this->request->inputs(['group_id', 'visit_card']);
         $this->validate($params, [
             'group_id' => 'required|integer',
-            'visit_card' => 'required'
+            'visit_card' => 'required|max:20'
         ]);
 
         $isTrue = UsersGroupMember::where('group_id', $params['group_id'])
@@ -432,7 +432,7 @@ class GroupController extends CController
         $this->validate($params, [
             'group_id' => 'required|integer',
             'notice_id' => 'required|integer',
-            'title' => 'required',
+            'title' => 'required|max:50',
             'content' => 'required'
         ]);
 

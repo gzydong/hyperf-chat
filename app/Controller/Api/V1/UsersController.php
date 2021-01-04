@@ -240,8 +240,8 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['friend_id', 'remarks']);
         $this->validate($params, [
-            'friend_id' => 'required|integer',
-            'remarks' => "required"
+            'friend_id' => 'required|integer|min:1',
+            'remarks' => "required|max:20"
         ]);
 
         $user_id = $this->uid();
@@ -265,7 +265,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['friend_id', 'remarks']);
         $this->validate($params, [
             'friend_id' => 'required|integer',
-            'remarks' => 'present'
+            'remarks' => 'present|max:50'
         ]);
 
         $user = $this->userService->findById($params['friend_id']);
@@ -307,7 +307,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['apply_id', 'remarks']);
         $this->validate($params, [
             'apply_id' => 'required|integer',
-            'remarks' => 'present'
+            'remarks' => 'present|max:20'
         ]);
 
         $user_id = $this->uid();

@@ -128,7 +128,7 @@ class ArticleController extends CController
         $params = $this->request->inputs(['class_id', 'class_name']);
         $this->validate($params, [
             'class_id' => 'required|integer',
-            'class_name' => 'required'
+            'class_name' => 'required|max:20'
         ]);
 
         $class_id = $this->articleService->editArticleClass($this->uid(), $params['class_id'], $params['class_name']);
@@ -218,7 +218,7 @@ class ArticleController extends CController
         $params = $this->request->inputs(['tag_id', 'tag_name']);
         $this->validate($params, [
             'tag_id' => 'required|integer|min:0',
-            'tag_name' => 'required'
+            'tag_name' => 'required|max:20'
         ]);
 
         $id = $this->articleService->editArticleTag($this->uid(), (int)$params['tag_id'], $params['tag_name']);
