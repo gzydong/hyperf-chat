@@ -142,8 +142,3 @@ openssl => OpenSSL 1.0.2k-fips  26 Jan 2017 (请确保此处开启)
 ``` 
 
 3. 请确保 RabbitMQ 中添加了对应的vhost
-
-
-## License
-
-[LICENSE](LICENSE)
