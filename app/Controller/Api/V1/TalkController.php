@@ -544,6 +544,11 @@ class TalkController extends CController
             ])
         );
 
+        LastMsgCache::set([
+            'text' =>  '[图片消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ],intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
+
         return $this->response->success();
     }
 
@@ -588,6 +593,11 @@ class TalkController extends CController
                 'record_id' => $record_id
             ])
         );
+
+        LastMsgCache::set([
+            'text' =>  '[代码消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ],intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
 
         return $this->response->success();
     }
@@ -654,6 +664,11 @@ class TalkController extends CController
             ])
         );
 
+        LastMsgCache::set([
+            'text' =>  '[文件消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ],intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
+
         return $this->response->success();
     }
 
@@ -708,6 +723,11 @@ class TalkController extends CController
                 'record_id' => $record_id
             ])
         );
+
+        LastMsgCache::set([
+            'text' =>  '[表情包消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ],intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
 
         return $this->response->success();
     }
