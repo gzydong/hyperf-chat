@@ -9,6 +9,7 @@
  * @author Yuandong<837215079@qq.com>
  * @link   https://github.com/gzydong/hyperf-chat
  */
+
 namespace App\Controller\Api\V1;
 
 use Hyperf\Di\Annotation\Inject;
@@ -314,7 +315,7 @@ class GroupController extends CController
     }
 
     /**
-     * 设置用户群名片
+     * 设置群名片
      *
      * @RequestMapping(path="set-group-card", methods="post")
      */
@@ -337,7 +338,7 @@ class GroupController extends CController
     }
 
     /**
-     * 获取用户可邀请加入群组的好友列表
+     * 获取可邀请加入群组的好友列表
      *
      * @RequestMapping(path="invite-friends", methods="get")
      */
@@ -356,6 +357,18 @@ class GroupController extends CController
         }
 
         return $this->response->success($friends);
+    }
+
+    /**
+     * 获取群组列表
+     *
+     * @RequestMapping(path="list", methods="get")
+     */
+    public function getGroups()
+    {
+        return $this->response->success(
+            $this->groupService->getGroups($this->uid())
+        );
     }
 
     /**

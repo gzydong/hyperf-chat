@@ -16,20 +16,11 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use Hyperf\Amqp\Producer;
-use App\Amqp\Producer\ChatMessageProducer;
 use App\Model\User;
-use App\Model\UsersChatList;
-use App\Model\UsersFriend;
 use App\Support\SendEmailCode;
 use App\Helper\Hash;
-use App\Service\FriendService;
 use App\Service\UserService;
-use App\Service\SocketClientService;
 use App\Service\SmsCodeService;
-use App\Cache\ApplyNumCache;
-use App\Cache\FriendRemarkCache;
-use App\Constants\SocketConstants;
 use App\Constants\ResponseCode;
 use Psr\Http\Message\ResponseInterface;
 
@@ -45,80 +36,9 @@ class UsersController extends CController
 {
     /**
      * @Inject
-     * @var FriendService
-     */
-    private $friendService;
-
-    /**
-     * @Inject
      * @var UserService
      */
     private $userService;
-
-    /**
-     * @inject
-     * @var SocketClientService
-     */
-    private $socketClientService;
-
-    /**
-     * @Inject
-     * @var Producer
-     */
-    private $producer;
-
-    /**
-     * 获取我的好友列表
-     *
-     * @RequestMapping(path="friends", methods="get")
-     */
-    public function getUserFriends()
-    {
-        $rows = UsersFriend::getUserFriends($this->uid());
-
-        $runArr = $this->socketClientService->getServerRunIdAll();
-        foreach ($rows as $k => $row) {
-            $rows[$k]['online'] = $this->socketClientService->isOnlineAll($row['id'], $runArr);
-        }
-
-        return $this->response->success($rows);
-    }
-
-    /**
-     * 解除好友关系
-     *
-     * @RequestMapping(path="remove-friend", methods="post")
-     */
-    public function removeFriend()
-    {
-        $params = $this->request->inputs(['friend_id']);
-        $this->validate($params, [
-            'friend_id' => 'required|integer'
-        ]);
-
-        $user_id = $this->uid();
-        if (!$this->friendService->removeFriend($user_id, $params['friend_id'])) {
-            return $this->response->fail('好友关系解除成功...');
-        }
-
-        //删除好友会话列表
-        UsersChatList::delItem($user_id, $params['friend_id'], 2);
-        UsersChatList::delItem($params['friend_id'], $user_id, 2);
-
-        return $this->response->success([], '好友关系解除成功...');
-    }
-
-    /**
-     * 获取用户群聊列表
-     *
-     * @RequestMapping(path="user-groups", methods="get")
-     */
-    public function getUserGroups()
-    {
-        return $this->response->success(
-            $this->userService->getUserChatGroups($this->uid())
-        );
-    }
 
     /**
      * 获取我的信息
@@ -212,180 +132,14 @@ class UsersController extends CController
      */
     public function searchUserInfo()
     {
-        $params = $this->request->inputs(['user_id', 'mobile']);
+        $params = $this->request->inputs(['user_id']);
+        $this->validate($params, ['user_id' => 'required|integer']);
 
-        if (isset($params['user_id']) && !empty($params['user_id'])) {
-            $this->validate($params, ['user_id' => 'present|integer']);
-            $where['uid'] = $params['user_id'];
-        } else if (isset($params['mobile']) && !empty($params['mobile'])) {
-            $this->validate($params, ['mobile' => "present|regex:/^1[345789][0-9]{9}$/"]);
-            $where['mobile'] = $params['mobile'];
-        } else {
-            return $this->response->fail('请求参数不正确...', [], ResponseCode::VALIDATION_ERROR);
-        }
-
-        if ($data = $this->userService->searchUserInfo($where, $this->uid())) {
+        if ($data = $this->userService->getUserCard($params['user_id'],$this->uid())) {
             return $this->response->success($data);
         }
 
         return $this->response->fail('查询失败...');
-    }
-
-    /**
-     * 编辑好友备注信息
-     *
-     * @RequestMapping(path="edit-friend-remark", methods="post")
-     */
-    public function editFriendRemark()
-    {
-        $params = $this->request->inputs(['friend_id', 'remarks']);
-        $this->validate($params, [
-            'friend_id' => 'required|integer|min:1',
-            'remarks' => "required|max:20"
-        ]);
-
-        $user_id = $this->uid();
-        $isTrue = $this->friendService->editFriendRemark($user_id, $params['friend_id'], $params['remarks']);
-        if ($isTrue) {
-            FriendRemarkCache::set($user_id, (int)$params['friend_id'], $params['remarks']);
-        }
-
-        return $isTrue
-            ? $this->response->success([], '备注修改成功...')
-            : $this->response->fail('备注修改失败...');
-    }
-
-    /**
-     * 发送添加好友申请
-     *
-     * @RequestMapping(path="send-friend-apply", methods="post")
-     */
-    public function sendFriendApply()
-    {
-        $params = $this->request->inputs(['friend_id', 'remarks']);
-        $this->validate($params, [
-            'friend_id' => 'required|integer',
-            'remarks' => 'present|max:50'
-        ]);
-
-        $user = $this->userService->findById($params['friend_id']);
-        if (!$user) {
-            return $this->response->fail('用户不存在...');
-        }
-
-        $user_id = $this->uid();
-        if (!$this->friendService->addFriendApply($user_id, (int)$params['friend_id'], $params['remarks'])) {
-            return $this->response->fail('发送好友申请失败...');
-        }
-
-        // 好友申请未读消息数自增
-        ApplyNumCache::setInc((int)$params['friend_id']);
-
-        //判断对方是否在线。如果在线发送消息通知
-        if ($this->socketClientService->isOnlineAll((int)$params['friend_id'])) {
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                    'sender' => $user_id,
-                    'receive' => (int)$params['friend_id'],
-                    'type' => 1,
-                    'status' => 1,
-                    'remark' => ''
-                ])
-            );
-        }
-
-        return $this->response->success([], '发送好友申请成功...');
-    }
-
-    /**
-     * 处理好友的申请
-     *
-     * @RequestMapping(path="handle-friend-apply", methods="post")
-     */
-    public function handleFriendApply()
-    {
-        $params = $this->request->inputs(['apply_id', 'remarks']);
-        $this->validate($params, [
-            'apply_id' => 'required|integer',
-            'remarks' => 'present|max:20'
-        ]);
-
-        $user_id = $this->uid();
-        $isTrue = $this->friendService->handleFriendApply($this->uid(), (int)$params['apply_id'], $params['remarks']);
-        if (!$isTrue) {
-            return $this->response->fail('处理失败...');
-        }
-
-        //判断对方是否在线。如果在线发送消息通知
-        if ($this->socketClientService->isOnlineAll((int)$params['friend_id'])) {
-            // 待修改
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                    'sender' => $user_id,
-                    'receive' => (int)$params['friend_id'],
-                    'type' => 1,
-                    'status' => 1,
-                    'remark' => ''
-                ])
-            );
-        }
-
-        return $this->response->success([], '处理成功...');
-    }
-
-    /**
-     * 删除好友申请记录
-     *
-     * @RequestMapping(path="delete-friend-apply", methods="post")
-     */
-    public function deleteFriendApply()
-    {
-        $params = $this->request->inputs(['apply_id']);
-        $this->validate($params, [
-            'apply_id' => 'required|integer'
-        ]);
-
-        $isTrue = $this->friendService->delFriendApply($this->uid(), (int)$params['apply_id']);
-        return $isTrue
-            ? $this->response->success([], '删除成功...')
-            : $this->response->fail('删除失败...');
-    }
-
-    /**
-     * 获取我的好友申请记录
-     *
-     * @RequestMapping(path="friend-apply-records", methods="get")
-     */
-    public function getFriendApplyRecords()
-    {
-        $params = $this->request->inputs(['page', 'page_size']);
-        $this->validate($params, [
-            'page' => 'present|integer',
-            'page_size' => 'present|integer'
-        ]);
-
-        $page = $this->request->input('page', 1);
-        $page_size = $this->request->input('page_size', 10);
-        $user_id = $this->uid();
-
-        $data = $this->friendService->findApplyRecords($user_id, $page, $page_size);
-
-        ApplyNumCache::del($user_id);
-
-        return $this->response->success($data);
-    }
-
-    /**
-     * 获取好友申请未读数
-     *
-     * @RequestMapping(path="friend-apply-num", methods="get")
-     */
-    public function getApplyUnreadNum()
-    {
-        $num = ApplyNumCache::get($this->uid());
-        return $this->response->success([
-            'unread_num' => $num ? $num : 0
-        ]);
     }
 
     /**

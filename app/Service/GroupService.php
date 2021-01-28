@@ -18,6 +18,45 @@ use Exception;
 class GroupService extends BaseService
 {
     /**
+     * 获取用户所在的群聊
+     *
+     * @param int $user_id 用户ID
+     * @return array
+     */
+    public function getGroups(int $user_id): array
+    {
+        $fields = [
+            'users_group.id', 'users_group.group_name', 'users_group.avatar',
+            'users_group.group_profile', 'users_group.user_id as group_user_id'
+        ];
+
+        $items = UsersGroupMember::join('users_group', 'users_group.id', '=', 'users_group_member.group_id')
+            ->where([
+                ['users_group_member.user_id', '=', $user_id],
+                ['users_group_member.status', '=', 0]
+            ])
+            ->orderBy('id', 'desc')
+            ->get($fields)->toArray();
+
+        foreach ($items as $key => $item) {
+            // 判断当前用户是否是群主
+            $items[$key]['isGroupLeader'] = $item['group_user_id'] == $user_id;
+
+            //删除无关字段
+            unset($items[$key]['group_user_id']);
+
+            // 是否消息免打扰
+            $items[$key]['not_disturb'] = UsersChatList::where([
+                ['uid', '=', $user_id],
+                ['type', '=', 2],
+                ['group_id', '=', $item['id']]
+            ])->value('not_disturb');
+        }
+
+        return $items;
+    }
+
+    /**
      * 创建群组
      *
      * @param int $user_id 用户ID
