@@ -180,11 +180,6 @@ class TalkService extends BaseService
             $rows[$k]['invite'] = [];
 
             switch ($row['msg_type']) {
-                case 1://1:文本消息
-                    if (!empty($rows[$k]['content'])) {
-                        $rows[$k]['content'] = replace_url_link($row['content']);
-                    }
-                    break;
                 case 2://2:文件消息
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
                     if ($rows[$k]['file']) {
