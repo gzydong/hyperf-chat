@@ -57,7 +57,7 @@ class DownloadController extends CController
 
         $user_id = $this->uid();
 
-        //判断消息是否是当前用户发送(如果是则跳过权限验证)
+        // 判断消息是否是当前用户发送(如果是则跳过权限验证)
         if ($recordsInfo->user_id != $user_id) {
             if ($recordsInfo->source == 1) {
                 if ($recordsInfo->receive_id != $user_id) {
@@ -71,7 +71,7 @@ class DownloadController extends CController
         }
 
         $fileInfo = ChatRecordsFile::select(['save_dir', 'original_name'])->where('record_id', $params['cr_id'])->first();
-        if (!$fileInfo) {
+        if (!$fileInfo || !file_exists($uploadService->driver($fileInfo->save_dir))) {
             return $this->response->fail('文件不存在或没有下载权限...');
         }
 
@@ -99,7 +99,7 @@ class DownloadController extends CController
             ->where('user_id', $this->uid())
             ->first();
 
-        if (!$info) {
+        if (!$info || !file_exists($uploadService->driver($info->save_dir))) {
             return $this->response->fail('文件不存在或没有下载权限...');
         }
 

@@ -75,7 +75,12 @@ SQL;
             ->where('friend_id', $friend_id)
             ->orderBy('id', 'desc')->first();
 
-        if (!$result) {
+        if ($result && $result->status == 0) {
+            $result->remarks = $remarks;
+            $result->updated_at = date('Y-m-d H:i:s');
+            $result->save();
+            return true;
+        } else {
             $result = UsersFriendsApply::create([
                 'user_id' => $user_id,
                 'friend_id' => $friend_id,
@@ -86,15 +91,7 @@ SQL;
             ]);
 
             return $result ? true : false;
-        } else if ($result->status == 0) {
-            $result->remarks = $remarks;
-            $result->updated_at = date('Y-m-d H:i:s');
-            $result->save();
-
-            return true;
         }
-
-        return false;
     }
 
     /**
