@@ -260,7 +260,7 @@ class TalkController extends CController
         $params = $this->request->inputs(['source', 'record_id', 'receive_id']);
         $this->validate($params, [
             'source' => 'required|in:1,2',//消息来源（1：好友消息 2：群聊消息）
-            'record_id' => 'required|integer|min:0',
+            'record_id' => 'required|ids',
             'receive_id' => 'required|integer|min:0'
         ]);
 
