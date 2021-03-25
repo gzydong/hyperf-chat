@@ -24,7 +24,7 @@ use App\Model\FileSplitUpload;
 use App\Model\User;
 use App\Model\UsersChatList;
 use App\Model\UsersFriend;
-use App\Model\Group\UsersGroup;
+use App\Model\Group\Group;
 use App\Service\TalkService;
 use App\Service\UploadService;
 use App\Amqp\Producer\ChatMessageProducer;
@@ -101,7 +101,7 @@ class TalkController extends CController
                 return $this->response->fail('暂不属于好友关系，无法进行聊天...');
             }
         } else {
-            if (!UsersGroup::isMember($params['receive_id'], $user_id)) {
+            if (!Group::isMember($params['receive_id'], $user_id)) {
                 return $this->response->fail('暂不属于群成员，无法进行群聊...');
             }
         }
@@ -133,7 +133,7 @@ class TalkController extends CController
             $data['name'] = $userInfo->nickname;
             $data['avatar'] = $userInfo->avatar;
         } else if ($result['type'] == 2) {
-            $groupInfo = UsersGroup::where('id', $result['group_id'])->first(['group_name', 'avatar']);
+            $groupInfo = Group::where('id', $result['group_id'])->first(['group_name', 'avatar']);
             $data['name'] = $groupInfo->group_name;
             $data['avatar'] = $groupInfo->avatar;
         }
@@ -366,7 +366,7 @@ class TalkController extends CController
         $limit = 30;
 
         // 判断是否属于群成员
-        if ($params['source'] == 2 && UsersGroup::isMember($params['receive_id'], $user_id) == false) {
+        if ($params['source'] == 2 && Group::isMember($params['receive_id'], $user_id) == false) {
             return $this->response->success([
                 'rows' => [],
                 'record_id' => 0,
@@ -428,7 +428,7 @@ class TalkController extends CController
         $limit = 30;
 
         // 判断是否属于群成员
-        if ($params['source'] == 2 && UsersGroup::isMember($params['receive_id'], $user_id) == false) {
+        if ($params['source'] == 2 && Group::isMember($params['receive_id'], $user_id) == false) {
             return $this->response->success([
                 'rows' => [],
                 'record_id' => 0,

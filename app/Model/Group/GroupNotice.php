@@ -1,5 +1,4 @@
 <?php
-
 declare (strict_types=1);
 
 namespace App\Model\Group;
@@ -7,28 +6,31 @@ namespace App\Model\Group;
 use App\Model\BaseModel;
 
 /**
- * 用户群组[公告消息]数据表模型
+ * 聊天群组[公告消息]数据表模型
  *
- * @property int $id 群公告ID
- * @property int $group_id 群ID
- * @property int $user_id 发布者ID
+ * @property integer $id 群公告ID
+ * @property integer $group_id 群组ID
+ * @property integer $creator_id 创建者用户ID
  * @property string $title 公告标题
  * @property string $content 公告内容
- * @property int $is_delete 是否删除[0:否;1:是]
- * @property string $created_at 发布时间
- * @property string $updated_at 修改时间
+ * @property integer $is_top 是否置顶[0:否;1:是;]
+ * @property integer $is_delete 是否删除[0:否;1:是;]
+ * @property integer $is_confirm 是否需群成员确认公告[0:否;1:是;]
+ * @property array $confirm_users 已确认成员
+ * @property string $created_at 创建时间
+ * @property string $updated_at 更新时间
  * @property string $deleted_at 删除时间
  *
  * @package App\Model\Group
  */
-class UsersGroupNotice extends BaseModel
+class GroupNotice extends BaseModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'users_group_notice';
+    protected $table = 'group_notice';
 
     /**
      * The attributes that are mass assignable.
@@ -37,10 +39,13 @@ class UsersGroupNotice extends BaseModel
      */
     protected $fillable = [
         'group_id',
-        'user_id',
+        'creator_id',
         'title',
         'content',
+        'is_top',
         'is_delete',
+        'is_confirm',
+        'confirm_users',
         'created_at',
         'updated_at',
         'deleted_at'
@@ -52,11 +57,13 @@ class UsersGroupNotice extends BaseModel
      * @var array
      */
     protected $casts = [
-        'id' => 'integer',
         'group_id' => 'integer',
-        'user_id' => 'integer',
+        'creator_id' => 'integer',
+        'is_top' => 'integer',
         'is_delete' => 'integer',
+        'is_confirm' => 'integer',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 }

@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsFile;
 use App\Model\EmoticonDetail;
-use App\Model\Group\UsersGroup;
+use App\Model\Group\Group;
 use App\Model\UsersEmoticon;
 
 /**
@@ -107,7 +107,7 @@ class EmoticonService extends BaseService
                 return [false, []];
             }
         } else {
-            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
+            if (!Group::isMember($result->receive_id, $user_id)) {
                 return [false, []];
             }
         }

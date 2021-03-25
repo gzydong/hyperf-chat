@@ -20,7 +20,7 @@ use App\Middleware\JWTAuthMiddleware;
 use App\Model\Article\ArticleAnnex;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsFile;
-use App\Model\Group\UsersGroup;
+use App\Model\Group\Group;
 use App\Service\UploadService;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
@@ -64,7 +64,7 @@ class DownloadController extends CController
                     return $this->response->fail('非法请求...');
                 }
             } else {
-                if (!UsersGroup::isMember($recordsInfo->receive_id, $user_id)) {
+                if (!Group::isMember($recordsInfo->receive_id, $user_id)) {
                     return $this->response->fail('非法请求...');
                 }
             }

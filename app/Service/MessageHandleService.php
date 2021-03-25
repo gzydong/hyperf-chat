@@ -11,7 +11,7 @@ use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\LastMsgCache;
 use App\Cache\UnreadTalkCache;
 use App\Model\Chat\ChatRecord;
-use App\Model\Group\UsersGroup;
+use App\Model\Group\Group;
 use App\Model\UsersFriend;
 
 class MessageHandleService
@@ -62,7 +62,7 @@ class MessageHandleService
             }
         } else if ($data['source_type'] == 2) {//群聊
             //判断是否属于群成员
-            if (!UsersGroup::isMember((int)$data['receive_user'], (int)$data['send_user'])) {
+            if (!Group::isMember((int)$data['receive_user'], (int)$data['send_user'])) {
                 return;
             }
         }

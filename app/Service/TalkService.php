@@ -10,7 +10,7 @@ use App\Model\Chat\ChatRecordsCode;
 use App\Model\Chat\ChatRecordsFile;
 use App\Model\Chat\ChatRecordsForward;
 use App\Model\Chat\ChatRecordsInvite;
-use App\Model\Group\UsersGroup;
+use App\Model\Group\Group;
 use App\Model\User;
 use App\Model\UsersChatList;
 use App\Model\UsersFriend;
@@ -38,41 +38,38 @@ class TalkService extends BaseService
 
         $rows = UsersChatList::from('users_chat_list as list')
             ->leftJoin('users', 'users.id', '=', 'list.friend_id')
-            ->leftJoin('users_group as group', 'group.id', '=', 'list.group_id')
+            ->leftJoin('group', 'group.id', '=', 'list.group_id')
             ->where('list.uid', $user_id)
             ->where('list.status', 1)
             ->orderBy('updated_at', 'desc')
             ->get($filed)
             ->toArray();
 
-        if (!$rows) {
-            return [];
-        }
-
+        if (!$rows) return [];
 
         $socketFDService = make(SocketClientService::class);
-        $runIdAll = $socketFDService->getServerRunIdAll();
+        $runIdAll        = $socketFDService->getServerRunIdAll();
 
         $rows = array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {
-            $data['id'] = $item['id'];
-            $data['type'] = $item['type'];
-            $data['friend_id'] = $item['friend_id'];
-            $data['group_id'] = $item['group_id'];
-            $data['name'] = '';//对方昵称/群名称
-            $data['unread_num'] = 0;//未读消息数量
-            $data['avatar'] = '';//默认头像
+            $data['id']          = $item['id'];
+            $data['type']        = $item['type'];
+            $data['friend_id']   = $item['friend_id'];
+            $data['group_id']    = $item['group_id'];
+            $data['name']        = '';//对方昵称/群名称
+            $data['unread_num']  = 0;//未读消息数量
+            $data['avatar']      = '';//默认头像
             $data['remark_name'] = '';//好友备注
-            $data['msg_text'] = '......';
-            $data['updated_at'] = $item['updated_at'];
-            $data['online'] = 0;
+            $data['msg_text']    = '......';
+            $data['updated_at']  = $item['updated_at'];
+            $data['online']      = 0;
             $data['not_disturb'] = $item['not_disturb'];
-            $data['is_top'] = $item['is_top'];
+            $data['is_top']      = $item['is_top'];
 
             if ($item['type'] == 1) {
-                $data['name'] = $item['nickname'];
-                $data['avatar'] = $item['user_avatar'];
+                $data['name']       = $item['nickname'];
+                $data['avatar']     = $item['user_avatar'];
                 $data['unread_num'] = make(UnreadTalkCache::class)->get($user_id, $item['friend_id']);
-                $data['online'] = $socketFDService->isOnlineAll($item['friend_id'], $runIdAll);
+                $data['online']     = $socketFDService->isOnlineAll($item['friend_id'], $runIdAll);
 
                 $remark = FriendRemarkCache::get($user_id, $item['friend_id']);
                 if ($remark) {
@@ -88,13 +85,13 @@ class TalkService extends BaseService
                     }
                 }
             } else {
-                $data['name'] = strval($item['group_name']);
+                $data['name']   = strval($item['group_name']);
                 $data['avatar'] = $item['group_avatar'];
             }
 
             $records = LastMsgCache::get($item['type'] == 1 ? $item['friend_id'] : $item['group_id'], $item['type'] == 1 ? $user_id : 0);
             if ($records) {
-                $data['msg_text'] = $records['text'];
+                $data['msg_text']   = $records['text'];
                 $data['updated_at'] = $records['created_at'];
             }
 
@@ -174,10 +171,10 @@ class TalkService extends BaseService
         }
 
         foreach ($rows as $k => $row) {
-            $rows[$k]['file'] = [];
+            $rows[$k]['file']       = [];
             $rows[$k]['code_block'] = [];
-            $rows[$k]['forward'] = [];
-            $rows[$k]['invite'] = [];
+            $rows[$k]['forward']    = [];
+            $rows[$k]['invite']     = [];
 
             switch ($row['msg_type']) {
                 case 2://2:文件消息
@@ -306,7 +303,7 @@ class TalkService extends BaseService
         //判断是否有权限查看
         if ($result->source == 1 && ($result->user_id != $user_id && $result->receive_id != $user_id)) {
             return [];
-        } else if ($result->source == 2 && !UsersGroup::isMember($result->receive_id, $user_id)) {
+        } else if ($result->source == 2 && !Group::isMember($result->receive_id, $user_id)) {
             return [];
         }
 
@@ -357,7 +354,7 @@ class TalkService extends BaseService
         }
 
         // 判读是否属于群消息并且判断是否是群成员
-        if ($source == 2 && !UsersGroup::isMember($receive_id, $user_id)) {
+        if ($source == 2 && !Group::isMember($receive_id, $user_id)) {
             return false;
         }
 
@@ -394,7 +391,7 @@ class TalkService extends BaseService
                 return [false, '非法操作', []];
             }
         } else if ($result->source == 2) {
-            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
+            if (!Group::isMember($result->receive_id, $user_id)) {
                 return [false, '非法操作', []];
             }
         }
@@ -426,12 +423,12 @@ class TalkService extends BaseService
                 return [];
             }
         } else if ($result->source == 2) {
-            if (!UsersGroup::isMember($result->receive_id, $user_id)) {
+            if (!Group::isMember($result->receive_id, $user_id)) {
                 return [];
             }
         }
 
-        $fileInfo = null;
+        $fileInfo  = null;
         $codeBlock = null;
         if ($result->msg_type == 2) {
             $fileInfo = ChatRecordsFile::where('record_id', $record_id)->first();
@@ -516,7 +513,7 @@ class TalkService extends BaseService
         //验证是否有权限转发
         if ($source == 2) {//群聊消息
             //判断是否是群聊成员
-            if (!UsersGroup::isMember($receive_id, $user_id)) {
+            if (!Group::isMember($receive_id, $user_id)) {
                 return false;
             }
 
@@ -687,13 +684,13 @@ class TalkService extends BaseService
         Db::beginTransaction();
         try {
             $message['created_at'] = date('Y-m-d H:i:s');
-            $insert = ChatRecord::create($message);
+            $insert                = ChatRecord::create($message);
 
             if (!$insert) {
                 throw new Exception('插入聊天记录失败...');
             }
 
-            $fileInfo['record_id'] = $insert->id;
+            $fileInfo['record_id']  = $insert->id;
             $fileInfo['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsFile::create($fileInfo)) {
                 throw new Exception('插入聊天记录(文件消息)失败...');
@@ -720,12 +717,12 @@ class TalkService extends BaseService
         Db::beginTransaction();
         try {
             $message['created_at'] = date('Y-m-d H:i:s');
-            $insert = ChatRecord::create($message);
+            $insert                = ChatRecord::create($message);
             if (!$insert) {
                 throw new Exception('插入聊天记录失败...');
             }
 
-            $codeBlock['record_id'] = $insert->id;
+            $codeBlock['record_id']  = $insert->id;
             $codeBlock['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsCode::create($codeBlock)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');
@@ -752,12 +749,12 @@ class TalkService extends BaseService
         Db::beginTransaction();
         try {
             $message['created_at'] = date('Y-m-d H:i:s');
-            $insert = ChatRecord::create($message);
+            $insert                = ChatRecord::create($message);
             if (!$insert) {
                 throw new Exception('插入聊天记录失败...');
             }
 
-            $emoticon['record_id'] = $insert->id;
+            $emoticon['record_id']  = $insert->id;
             $emoticon['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsFile::create($emoticon)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');
@@ -784,12 +781,12 @@ class TalkService extends BaseService
         Db::beginTransaction();
         try {
             $message['created_at'] = date('Y-m-d H:i:s');
-            $insert = ChatRecord::create($message);
+            $insert                = ChatRecord::create($message);
             if (!$insert) {
                 throw new Exception('插入聊天记录失败...');
             }
 
-            $emoticon['record_id'] = $insert->id;
+            $emoticon['record_id']  = $insert->id;
             $emoticon['created_at'] = date('Y-m-d H:i:s');
             if (!ChatRecordsFile::create($emoticon)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');

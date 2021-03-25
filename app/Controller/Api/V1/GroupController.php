@@ -20,9 +20,9 @@ use App\Middleware\JWTAuthMiddleware;
 use Hyperf\Amqp\Producer;
 use App\Model\UsersFriend;
 use App\Model\UsersChatList;
-use App\Model\Group\UsersGroup;
-use App\Model\Group\UsersGroupMember;
-use App\Model\Group\UsersGroupNotice;
+use App\Model\Group\Group;
+use App\Model\Group\GroupMember;
+use App\Model\Group\GroupNotice;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Service\SocketRoomService;
 use App\Service\GroupService;
@@ -217,7 +217,7 @@ class GroupController extends CController
             'avatar' => 'present|url'
         ]);
 
-        $result = UsersGroup::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
+        $result = Group::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
             'group_name' => $params['group_name'],
             'group_profile' => $params['group_profile'],
             'avatar' => $params['avatar']
@@ -281,13 +281,13 @@ class GroupController extends CController
     {
         $group_id = $this->request->input('group_id', 0);
 
-        $user_id = $this->uid();
-        $groupInfo = UsersGroup::leftJoin('users', 'users.id', '=', 'users_group.user_id')
-            ->where('users_group.id', $group_id)->where('users_group.status', 0)->first([
-                'users_group.id', 'users_group.user_id',
-                'users_group.group_name',
-                'users_group.group_profile', 'users_group.avatar',
-                'users_group.created_at',
+        $user_id   = $this->uid();
+        $groupInfo = Group::leftJoin('users', 'users.id', '=', 'group.user_id')
+            ->where('group.id', $group_id)->where('group.status', 0)->first([
+                'group.id', 'group.user_id',
+                'group.group_name',
+                'group.group_profile', 'group.avatar',
+                'group.created_at',
                 'users.nickname'
             ]);
 
@@ -295,7 +295,7 @@ class GroupController extends CController
             return $this->response->success([]);
         }
 
-        $notice = UsersGroupNotice::where('group_id', $group_id)
+        $notice = GroupNotice::where('group_id', $group_id)
             ->where('is_delete', 0)
             ->orderBy('id', 'desc')
             ->first(['title', 'content']);
@@ -308,7 +308,7 @@ class GroupController extends CController
             'created_at' => $groupInfo->created_at,
             'is_manager' => $groupInfo->user_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
-            'visit_card' => UsersGroupMember::visitCard($user_id, $group_id),
+            'visit_card' => GroupMember::visitCard($user_id, $group_id),
             'not_disturb' => UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
             'notice' => $notice ? $notice->toArray() : []
         ]);
@@ -327,7 +327,7 @@ class GroupController extends CController
             'visit_card' => 'required|max:20'
         ]);
 
-        $isTrue = UsersGroupMember::where('group_id', $params['group_id'])
+        $isTrue = GroupMember::where('group_id', $params['group_id'])
             ->where('user_id', $this->uid())
             ->where('status', 0)
             ->update(['visit_card' => $params['visit_card']]);
@@ -345,9 +345,9 @@ class GroupController extends CController
     public function getInviteFriends()
     {
         $group_id = $this->request->input('group_id', 0);
-        $friends = UsersFriend::getUserFriends($this->uid());
+        $friends  = UsersFriend::getUserFriends($this->uid());
         if ($group_id > 0 && $friends) {
-            if ($ids = UsersGroupMember::getGroupMemberIds($group_id)) {
+            if ($ids = GroupMember::getGroupMemberIds($group_id)) {
                 foreach ($friends as $k => $item) {
                     if (in_array($item['id'], $ids)) unset($friends[$k]);
                 }
@@ -378,23 +378,23 @@ class GroupController extends CController
      */
     public function getGroupMembers()
     {
-        $user_id = $this->uid();
+        $user_id  = $this->uid();
         $group_id = $this->request->input('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!UsersGroup::isMember($group_id, $user_id)) {
+        if (!Group::isMember($group_id, $user_id)) {
             return $this->response->fail('非法操作...');
         }
 
-        $members = UsersGroupMember::select([
-            'users_group_member.id', 'users_group_member.group_owner as is_manager', 'users_group_member.visit_card',
-            'users_group_member.user_id', 'users.avatar', 'users.nickname', 'users.gender',
+        $members = GroupMember::select([
+            'group_member.id', 'group_member.group_owner as is_manager', 'group_member.visit_card',
+            'group_member.user_id', 'users.avatar', 'users.nickname', 'users.gender',
             'users.motto',
         ])
-            ->leftJoin('users', 'users.id', '=', 'users_group_member.user_id')
+            ->leftJoin('users', 'users.id', '=', 'group_member.user_id')
             ->where([
-                ['users_group_member.group_id', '=', $group_id],
-                ['users_group_member.status', '=', 0],
+                ['group_member.group_id', '=', $group_id],
+                ['group_member.status', '=', 0],
             ])->orderBy('is_manager', 'desc')->get()->toArray();
 
         return $this->response->success($members);
@@ -407,27 +407,27 @@ class GroupController extends CController
      */
     public function getGroupNotices()
     {
-        $user_id = $this->uid();
+        $user_id  = $this->uid();
         $group_id = $this->request->input('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!UsersGroup::isMember($group_id, $user_id)) {
+        if (!Group::isMember($group_id, $user_id)) {
             return $this->response->fail('非管理员禁止操作...');
         }
 
-        $rows = UsersGroupNotice::leftJoin('users', 'users.id', '=', 'users_group_notice.user_id')
+        $rows = GroupNotice::leftJoin('users', 'users.id', '=', 'group_notice.user_id')
             ->where([
-                ['users_group_notice.group_id', '=', $group_id],
-                ['users_group_notice.is_delete', '=', 0]
+                ['group_notice.group_id', '=', $group_id],
+                ['group_notice.is_delete', '=', 0]
             ])
-            ->orderBy('users_group_notice.id', 'desc')
+            ->orderBy('group_notice.id', 'desc')
             ->get([
-                'users_group_notice.id',
-                'users_group_notice.user_id',
-                'users_group_notice.title',
-                'users_group_notice.content',
-                'users_group_notice.created_at',
-                'users_group_notice.updated_at',
+                'group_notice.id',
+                'group_notice.user_id',
+                'group_notice.title',
+                'group_notice.content',
+                'group_notice.created_at',
+                'group_notice.updated_at',
                 'users.avatar', 'users.nickname',
             ])->toArray();
 
@@ -452,13 +452,13 @@ class GroupController extends CController
         $user_id = $this->uid();
 
         // 判断用户是否是管理员
-        if (!UsersGroup::isManager($user_id, $params['group_id'])) {
+        if (!Group::isManager($user_id, $params['group_id'])) {
             return $this->response->fail('非管理员禁止操作...');
         }
 
         // 判断是否是新增数据
         if (empty($data['notice_id'])) {
-            $result = UsersGroupNotice::create([
+            $result = GroupNotice::create([
                 'group_id' => $params['group_id'],
                 'title' => $params['title'],
                 'content' => $params['content'],
@@ -475,7 +475,7 @@ class GroupController extends CController
             return $this->response->success([], '添加群公告信息成功...');
         }
 
-        $result = UsersGroupNotice::where('id', $data['notice_id'])->update([
+        $result = GroupNotice::where('id', $data['notice_id'])->update([
             'title' => $data['title'],
             'content' => $data['content'],
             'updated_at' => date('Y-m-d H:i:s')
@@ -502,11 +502,11 @@ class GroupController extends CController
         $user_id = $this->uid();
 
         // 判断用户是否是管理员
-        if (!UsersGroup::isManager($user_id, $params['group_id'])) {
+        if (!Group::isManager($user_id, $params['group_id'])) {
             return $this->response->fail('非法操作...');
         }
 
-        $result = UsersGroupNotice::where('id', $params['notice_id'])
+        $result = GroupNotice::where('id', $params['notice_id'])
             ->where('group_id', $params['group_id'])
             ->update([
                 'is_delete' => 1,

@@ -27,7 +27,7 @@ use Phper666\JWTAuth\JWT;
 use App\Service\SocketClientService;
 use App\Service\MessageHandleService;
 use App\Service\SocketRoomService;
-use App\Model\Group\UsersGroupMember;
+use App\Model\Group\GroupMember;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Support\SocketIOParser;
 
@@ -99,7 +99,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $this->socketClientService->bindRelation($request->fd, $userInfo['user_id']);
 
         // 加入群聊
-        $groupIds = UsersGroupMember::getUserGroupIds($userInfo['user_id']);
+        $groupIds = GroupMember::getUserGroupIds($userInfo['user_id']);
         foreach ($groupIds as $group_id) {
             $this->socketRoomService->addRoomMember($userInfo['user_id'], $group_id);
         }
