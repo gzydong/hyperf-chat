@@ -68,15 +68,15 @@ class GroupController extends CController
         $params = $this->request->inputs(['group_name', 'uids']);
         $this->validate($params, [
             'group_name' => 'required',
-            'uids' => 'required|ids'
+            'uids'       => 'required|ids'
         ]);
 
         $friend_ids = parse_ids($params['uids']);
 
         $user_id = $this->uid();
         [$isTrue, $data] = $this->groupService->create($user_id, [
-            'name' => $params['group_name'],
-            'avatar' => $params['avatar'] ?? '',
+            'name'    => $params['group_name'],
+            'avatar'  => $params['avatar'] ?? '',
             'profile' => $params['group_profile'] ?? ''
         ], $friend_ids);
 
@@ -90,13 +90,13 @@ class GroupController extends CController
             $this->socketRoomService->addRoomMember($uid, $data['group_id']);
         }
 
-        // ...消息推送队列
+        // ... 消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender' => $user_id,  //发送者ID
-                'receive' => intval($data['group_id']),  //接收者ID
-                'source' => 2, //接收者类型 1:好友;2:群组
-                'record_id' => intval($data['record_id'])
+                'sender'    => $user_id,                   // 发送者ID
+                'receive'   => (int)$data['group_id'],     // 接收者ID
+                'source'    => 2,                          // 接收者类型[1:好友;2:群组;]
+                'record_id' => (int)$data['record_id']
             ])
         );
 
@@ -124,7 +124,7 @@ class GroupController extends CController
 
         $this->socketRoomService->delRoom($params['group_id']);
 
-        // ... 推送群消息(后期添加)
+        // ... 推送群消息(预留)
 
         return $this->response->success([], '群组解散成功...');
     }
@@ -139,7 +139,7 @@ class GroupController extends CController
         $params = $this->request->inputs(['group_id', 'uids']);
         $this->validate($params, [
             'group_id' => 'required|integer',
-            'uids' => 'required|ids'
+            'uids'     => 'required|ids'
         ]);
 
         $uids = parse_ids($params['uids']);
@@ -158,9 +158,9 @@ class GroupController extends CController
         // ...消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender' => $user_id,  //发送者ID
-                'receive' => intval($params['group_id']),  //接收者ID
-                'source' => 2, //接收者类型 1:好友;2:群组
+                'sender'    => $user_id,                     // 发送者ID
+                'receive'   => (int)$params['group_id'],     // 接收者ID
+                'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
                 'record_id' => $record_id
             ])
         );
@@ -192,9 +192,9 @@ class GroupController extends CController
         // ...消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender' => $user_id,  //发送者ID
-                'receive' => intval($params['group_id']),  //接收者ID
-                'source' => 2, //接收者类型 1:好友;2:群组
+                'sender'    => $user_id,                     // 发送者ID
+                'receive'   => (int)$params['group_id'],     // 接收者ID
+                'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
                 'record_id' => $record_id
             ])
         );
@@ -209,22 +209,21 @@ class GroupController extends CController
      */
     public function editDetail()
     {
-        $params = $this->request->inputs(['group_id', 'group_name', 'group_profile', 'avatar']);
+        $params = $this->request->inputs(['group_id', 'group_name', 'profile', 'avatar']);
         $this->validate($params, [
-            'group_id' => 'required|integer',
+            'group_id'   => 'required|integer',
             'group_name' => 'required|max:30',
-            'group_profile' => 'required|max:100',
-            'avatar' => 'present|url'
+            'profile'    => 'present|max:100',
+            'avatar'     => 'present|url'
         ]);
 
-        $result = Group::where('id', $params['group_id'])->where('user_id', $this->uid())->update([
+        $result = Group::where('id', $params['group_id'])->where('creator_id', $this->uid())->update([
             'group_name' => $params['group_name'],
-            'group_profile' => $params['group_profile'],
-            'avatar' => $params['avatar']
+            'profile'    => $params['profile'],
+            'avatar'     => $params['avatar']
         ]);
 
-        // 推送消息通知
-        // ...
+        // ... 推送消息通知（预留）
 
         return $result
             ? $this->response->success([], '群组信息修改成功...')
@@ -240,9 +239,11 @@ class GroupController extends CController
     {
         $params = $this->request->inputs(['group_id', 'members_ids']);
         $this->validate($params, [
-            'group_id' => 'required|integer',
-            'members_ids' => 'required|array'
+            'group_id'    => 'required|integer',
+            'members_ids' => 'required|ids'
         ]);
+
+        $params['members_ids'] = parse_ids($params['members_ids']);
 
         $user_id = $this->uid();
         if (in_array($user_id, $params['members_ids'])) {
@@ -259,12 +260,12 @@ class GroupController extends CController
             $this->socketRoomService->delRoomMember($params['group_id'], $uid);
         }
 
-        // ...消息推送队列
+        // ... 消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender' => $user_id,  //发送者ID
-                'receive' => intval($params['group_id']),  //接收者ID
-                'source' => 2, //接收者类型 1:好友;2:群组
+                'sender'    => $user_id,                     // 发送者ID
+                'receive'   => (int)$params['group_id'],     // 接收者ID
+                'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
                 'record_id' => $record_id
             ])
         );
@@ -280,19 +281,21 @@ class GroupController extends CController
     public function detail()
     {
         $group_id = $this->request->input('group_id', 0);
+        $user_id  = $this->uid();
 
-        $user_id   = $this->uid();
-        $groupInfo = Group::leftJoin('users', 'users.id', '=', 'group.user_id')
-            ->where('group.id', $group_id)->where('group.status', 0)->first([
-                'group.id', 'group.user_id',
+        $groupInfo = Group::leftJoin('users', 'users.id', '=', 'group.creator_id')
+            ->where('group.id', $group_id)->where('group.is_dismiss', 0)->first([
+                'group.id',
+                'group.creator_id',
                 'group.group_name',
-                'group.group_profile', 'group.avatar',
+                'group.profile',
+                'group.avatar',
                 'group.created_at',
                 'users.nickname'
             ]);
 
         if (!$groupInfo) {
-            return $this->response->success([]);
+            return $this->response->success();
         }
 
         $notice = GroupNotice::where('group_id', $group_id)
@@ -301,16 +304,16 @@ class GroupController extends CController
             ->first(['title', 'content']);
 
         return $this->response->success([
-            'group_id' => $groupInfo->id,
-            'group_name' => $groupInfo->group_name,
-            'group_profile' => $groupInfo->group_profile,
-            'avatar' => $groupInfo->avatar,
-            'created_at' => $groupInfo->created_at,
-            'is_manager' => $groupInfo->user_id == $user_id,
+            'group_id'         => $groupInfo->id,
+            'group_name'       => $groupInfo->group_name,
+            'group_profile'    => $groupInfo->profile,
+            'avatar'           => $groupInfo->avatar,
+            'created_at'       => $groupInfo->created_at,
+            'is_manager'       => $groupInfo->creator_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
-            'visit_card' => GroupMember::visitCard($user_id, $group_id),
-            'not_disturb' => UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
-            'notice' => $notice ? $notice->toArray() : []
+            'visit_card'       => GroupMember::visitCard($user_id, $group_id),
+            'not_disturb'      => UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
+            'notice'           => $notice ? $notice->toArray() : []
         ]);
     }
 
@@ -319,18 +322,17 @@ class GroupController extends CController
      *
      * @RequestMapping(path="set-group-card", methods="post")
      */
-    public function setGroupCard()
+    public function editGroupCard()
     {
         $params = $this->request->inputs(['group_id', 'visit_card']);
         $this->validate($params, [
-            'group_id' => 'required|integer',
+            'group_id'   => 'required|integer',
             'visit_card' => 'required|max:20'
         ]);
 
         $isTrue = GroupMember::where('group_id', $params['group_id'])
             ->where('user_id', $this->uid())
-            ->where('status', 0)
-            ->update(['visit_card' => $params['visit_card']]);
+            ->update(['user_card' => $params['visit_card']]);
 
         return $isTrue
             ? $this->response->success([], '群名片修改成功...')
@@ -387,15 +389,20 @@ class GroupController extends CController
         }
 
         $members = GroupMember::select([
-            'group_member.id', 'group_member.group_owner as is_manager', 'group_member.visit_card',
-            'group_member.user_id', 'users.avatar', 'users.nickname', 'users.gender',
+            'group_member.id',
+            'group_member.leader',
+            'group_member.user_card',
+            'group_member.user_id',
+            'users.avatar',
+            'users.nickname',
+            'users.gender',
             'users.motto',
         ])
             ->leftJoin('users', 'users.id', '=', 'group_member.user_id')
             ->where([
                 ['group_member.group_id', '=', $group_id],
-                ['group_member.status', '=', 0],
-            ])->orderBy('is_manager', 'desc')->get()->toArray();
+                ['group_member.is_quit', '=', 0],
+            ])->orderBy('leader', 'desc')->get()->toArray();
 
         return $this->response->success($members);
     }
@@ -405,7 +412,7 @@ class GroupController extends CController
      *
      * @RequestMapping(path="notices", methods="get")
      */
-    public function getGroupNotices()
+    public function getGroupNotice()
     {
         $user_id  = $this->uid();
         $group_id = $this->request->input('group_id', 0);
@@ -415,20 +422,25 @@ class GroupController extends CController
             return $this->response->fail('非管理员禁止操作...');
         }
 
-        $rows = GroupNotice::leftJoin('users', 'users.id', '=', 'group_notice.user_id')
+        $rows = GroupNotice::leftJoin('users', 'users.id', '=', 'group_notice.creator_id')
             ->where([
                 ['group_notice.group_id', '=', $group_id],
                 ['group_notice.is_delete', '=', 0]
             ])
-            ->orderBy('group_notice.id', 'desc')
+            ->orderBy('group_notice.is_top', 'desc')
+            ->orderBy('group_notice.updated_at', 'desc')
             ->get([
                 'group_notice.id',
-                'group_notice.user_id',
+                'group_notice.creator_id',
                 'group_notice.title',
                 'group_notice.content',
+                'group_notice.is_top',
+                'group_notice.is_confirm',
+                'group_notice.confirm_users',
                 'group_notice.created_at',
                 'group_notice.updated_at',
-                'users.avatar', 'users.nickname',
+                'users.avatar',
+                'users.nickname',
             ])->toArray();
 
         return $this->response->success($rows);
@@ -441,12 +453,14 @@ class GroupController extends CController
      */
     public function editNotice()
     {
-        $params = $this->request->inputs(['group_id', 'notice_id', 'title', 'content']);
+        $params = $this->request->inputs(['group_id', 'notice_id', 'title', 'content', 'is_top', 'is_confirm']);
         $this->validate($params, [
-            'group_id' => 'required|integer',
-            'notice_id' => 'required|integer',
-            'title' => 'required|max:50',
-            'content' => 'required'
+            'notice_id'  => 'required|integer',
+            'group_id'   => 'required|integer',
+            'title'      => 'required|max:50',
+            'is_top'     => 'integer|in:0,1',
+            'is_confirm' => 'integer|in:0,1',
+            'content'    => 'required'
         ]);
 
         $user_id = $this->uid();
@@ -457,12 +471,14 @@ class GroupController extends CController
         }
 
         // 判断是否是新增数据
-        if (empty($data['notice_id'])) {
+        if (empty($params['notice_id'])) {
             $result = GroupNotice::create([
-                'group_id' => $params['group_id'],
-                'title' => $params['title'],
-                'content' => $params['content'],
-                'user_id' => $user_id,
+                'group_id'   => $params['group_id'],
+                'creator_id' => $user_id,
+                'title'      => $params['title'],
+                'content'    => $params['content'],
+                'is_top'     => $params['is_top'],
+                'is_confirm' => $params['is_confirm'],
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
@@ -471,13 +487,15 @@ class GroupController extends CController
                 return $this->response->fail('添加群公告信息失败...');
             }
 
-            // ... 推送群消息
+            // ... 推送群消息（预留）
+
             return $this->response->success([], '添加群公告信息成功...');
         }
 
-        $result = GroupNotice::where('id', $data['notice_id'])->update([
-            'title' => $data['title'],
-            'content' => $data['content'],
+        $result = GroupNotice::where('id', $params['notice_id'])->update([
+            'title'      => $params['title'],
+            'content'    => $params['content'],
+            'is_top'     => $params['is_top'],
             'updated_at' => date('Y-m-d H:i:s')
         ]);
 
@@ -495,7 +513,7 @@ class GroupController extends CController
     {
         $params = $this->request->inputs(['group_id', 'notice_id']);
         $this->validate($params, [
-            'group_id' => 'required|integer',
+            'group_id'  => 'required|integer',
             'notice_id' => 'required|integer'
         ]);
 
@@ -509,7 +527,7 @@ class GroupController extends CController
         $result = GroupNotice::where('id', $params['notice_id'])
             ->where('group_id', $params['group_id'])
             ->update([
-                'is_delete' => 1,
+                'is_delete'  => 1,
                 'deleted_at' => date('Y-m-d H:i:s')
             ]);
 

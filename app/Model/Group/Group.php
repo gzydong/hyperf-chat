@@ -59,9 +59,9 @@ class Group extends BaseModel
      */
     protected $casts = [
         'creator_id' => 'integer',
-        'max_num' => 'integer',
-        'is_overt' => 'integer',
-        'is_mute' => 'integer',
+        'max_num'    => 'integer',
+        'is_overt'   => 'integer',
+        'is_mute'    => 'integer',
         'is_dismiss' => 'integer',
         'created_at' => 'datetime'
     ];
@@ -84,7 +84,7 @@ class Group extends BaseModel
      */
     public static function isManager(int $user_id, int $group_id, $leader = 2)
     {
-        return self::where('id', $group_id)->where('creator_id', $user_id)->where('leader', $leader)->exists();
+        return self::where('id', $group_id)->where('creator_id', $user_id)->exists();
     }
 
     /**

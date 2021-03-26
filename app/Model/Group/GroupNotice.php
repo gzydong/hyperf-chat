@@ -57,10 +57,10 @@ class GroupNotice extends BaseModel
      * @var array
      */
     protected $casts = [
-        'group_id' => 'integer',
+        'group_id'   => 'integer',
         'creator_id' => 'integer',
-        'is_top' => 'integer',
-        'is_delete' => 'integer',
+        'is_top'     => 'integer',
+        'is_delete'  => 'integer',
         'is_confirm' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

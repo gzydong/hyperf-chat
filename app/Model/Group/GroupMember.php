@@ -51,11 +51,11 @@ class GroupMember extends BaseModel
      * @var array
      */
     protected $casts = [
-        'group_id' => 'integer',
-        'user_id' => 'integer',
-        'leader' => 'integer',
-        'is_mute' => 'integer',
-        'is_quit' => 'integer',
+        'group_id'   => 'integer',
+        'user_id'    => 'integer',
+        'leader'     => 'integer',
+        'is_mute'    => 'integer',
+        'is_quit'    => 'integer',
         'created_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
@@ -80,7 +80,7 @@ class GroupMember extends BaseModel
      */
     public static function visitCard(int $user_id, int $group_id)
     {
-        return self::where('group_id', $group_id)->where('user_id', $user_id)->value('visit_card') ?? "";
+        return self::where('group_id', $group_id)->where('user_id', $user_id)->value('user_card') ?? "";
     }
 
     /**

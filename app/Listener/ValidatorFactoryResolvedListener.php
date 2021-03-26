@@ -27,6 +27,10 @@ class ValidatorFactoryResolvedListener implements ListenerInterface
 
         // 注册了 ids 验证器(验证英文逗号拼接的整形数字字符串 例如:[1,2,3,4,5])
         $validatorFactory->extend('ids', function ($attribute, $value, $parameters, $validator) {
+            if (!is_string($value)) {
+                return false;
+            }
+
             $arr = explode(',', $value);
             foreach ($arr as $id) {
                 if (!check_int($id)) return false;
