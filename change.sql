@@ -13,7 +13,7 @@ ALTER TABLE lar_group ADD `dismissed_at` datetime DEFAULT NULL COMMENT '解散�
 # lar_group_member
 ALTER TABLE lar_users_group_member RENAME lar_group_member;
 ALTER TABLE lar_group_member MODIFY `group_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '群组ID';
-ALTER TABLE lar_group_member MODIFY `user_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '用户ID',;
+ALTER TABLE lar_group_member MODIFY `user_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '用户ID';
 ALTER TABLE lar_group_member CHANGE `group_owner` `leader` tinyint(4) unsigned DEFAULT '0' COMMENT '成员属性[0:普通成员;1:管理员;2:群主;]';
 ALTER TABLE lar_group_member CHANGE `status` `is_quit` tinyint(4) DEFAULT '0' COMMENT '是否退群[0:否;1:是;]';
 ALTER TABLE lar_group_member CHANGE `visit_card` `user_card` varchar(20) CHARACTER SET utf8mb4 NOT NULL DEFAULT '' COMMENT '群名片';
