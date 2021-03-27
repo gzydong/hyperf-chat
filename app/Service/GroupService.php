@@ -47,7 +47,7 @@ class GroupService extends BaseService
         ])->get(['group_id', 'not_disturb'])->keyBy('group_id')->toArray();
 
         foreach ($items as $key => $item) {
-            $items[$key]['not_disturb'] = $arr[$item['id']] ? $arr[$item['id']]['not_disturb'] : 0;
+            $items[$key]['not_disturb'] = isset($arr[$item['id']]) ? $arr[$item['id']]['not_disturb'] : 0;
         }
 
         return $items;
