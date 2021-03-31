@@ -63,6 +63,7 @@ class GroupService extends BaseService
      */
     public function create(int $user_id, array $group_info, $friend_ids = [])
     {
+        $invite_ids   = implode(',', $friend_ids);
         $friend_ids[] = $user_id;
         $groupMember  = [];
         $chatList     = [];
@@ -123,7 +124,7 @@ class GroupService extends BaseService
                 'record_id'       => $result->id,
                 'type'            => 1,
                 'operate_user_id' => $user_id,
-                'user_ids'        => implode(',', $friend_ids)
+                'user_ids'        => $invite_ids
             ]);
 
             Db::commit();
