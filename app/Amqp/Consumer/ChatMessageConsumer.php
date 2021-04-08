@@ -152,9 +152,9 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeTalk(array $data, AMQPMessage $message): string
     {
-        $source     = $data['data']['source'];
-        $fds        = $this->socketClientService->findUserFds($data['data']['sender']);
-        $group_name = '';
+        $source    = $data['data']['source'];
+        $fds       = $this->socketClientService->findUserFds($data['data']['sender']);
+        $groupInfo = null;
 
         if ($source == 1) {// 私聊
             $fds = array_merge($fds, $this->socketClientService->findUserFds($data['data']['receive']));
@@ -164,7 +164,7 @@ class ChatMessageConsumer extends ConsumerMessage
                 $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$uid));
             }
 
-            $group_name = Group::where('id', $data['data']['receive'])->value('group_name');
+            $groupInfo = Group::where('id', $data['data']['receive'])->first(['group_name', 'avatar']);
         }
 
         // 客户端ID去重
@@ -235,24 +235,23 @@ class ChatMessageConsumer extends ConsumerMessage
             'receive_user' => $data['data']['receive'],
             'source_type'  => $data['data']['source'],
             'data'         => $this->formatTalkMessage([
-                'id'         => $result->id,
-                'msg_type'   => $result->msg_type,
-                'source'     => $result->source,
-                'avatar'     => $result->avatar,
-                'nickname'   => $result->nickname,
-                'group_name' => $group_name,
-                "user_id"    => $result->user_id,
-                "receive_id" => $result->receive_id,
-                "created_at" => $result->created_at,
-                "content"    => $result->content,
-                "file"       => $file,
-                "code_block" => $code_block,
-                'forward'    => $forward,
-                'invite'     => $invite
+                'id'           => $result->id,
+                'msg_type'     => $result->msg_type,
+                'source'       => $result->source,
+                'avatar'       => $result->avatar,
+                'nickname'     => $result->nickname,
+                'group_name'   => $groupInfo ? $groupInfo->group_name : '',
+                'group_avatar' => $groupInfo ? $groupInfo->avatar : '',
+                "user_id"      => $result->user_id,
+                "receive_id"   => $result->receive_id,
+                "created_at"   => $result->created_at,
+                "content"      => $result->content,
+                "file"         => $file,
+                "code_block"   => $code_block,
+                'forward'      => $forward,
+                'invite'       => $invite
             ])
         ];
-
-        unset($result, $file, $code_block, $forward, $invite);
 
         $this->socketPushNotify($fds, json_encode([SocketConstants::EVENT_TALK, $notify]));
 
@@ -371,27 +370,28 @@ class ChatMessageConsumer extends ConsumerMessage
     private function formatTalkMessage(array $data): array
     {
         $message = [
-            "id"         => 0,// 消息记录ID
-            "source"     => 1,// 消息来源[1:好友私信;2:群聊]
-            "msg_type"   => 1,
-            "user_id"    => 0,// 发送者用户ID
-            "receive_id" => 0,// 接收者ID[好友ID或群ID]
-            "content"    => '',// 文本消息
-            "is_revoke"  => 0,// 消息是否撤销
+            "id"           => 0,// 消息记录ID
+            "source"       => 1,// 消息来源[1:好友私信;2:群聊]
+            "msg_type"     => 1,
+            "user_id"      => 0,// 发送者用户ID
+            "receive_id"   => 0,// 接收者ID[好友ID或群ID]
+            "content"      => '',// 文本消息
+            "is_revoke"    => 0,// 消息是否撤销
 
             // 发送消息人的信息
-            "nickname"   => "",// 用户昵称
-            "avatar"     => "",// 用户头像
-            "group_name" => "",// 群组名称
+            "nickname"     => "",// 用户昵称
+            "avatar"       => "",// 用户头像
+            "group_name"   => "",// 群组名称
+            "group_avatar" => "",// 群组头像
 
             // 不同的消息类型
-            "file"       => [],
-            "code_block" => [],
-            "forward"    => [],
-            "invite"     => [],
+            "file"         => [],
+            "code_block"   => [],
+            "forward"      => [],
+            "invite"       => [],
 
             // 消息创建时间
-            "created_at" => "",
+            "created_at"   => "",
         ];
 
         return array_merge($message, array_intersect_key($data, $message));
