@@ -12,7 +12,7 @@ class CreateGroupNoticeTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('users_group_notice', function (Blueprint $table) {
+        Schema::create('group_notice', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('群公告ID');
             $table->unsignedInteger('group_id')->default(0)->comment('群组ID');
             $table->unsignedInteger('creator_id')->default(0)->comment('创建者用户ID');
