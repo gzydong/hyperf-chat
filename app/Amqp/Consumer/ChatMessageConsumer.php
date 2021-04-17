@@ -370,19 +370,19 @@ class ChatMessageConsumer extends ConsumerMessage
     private function formatTalkMessage(array $data): array
     {
         $message = [
-            "id"           => 0,  // 消息记录ID
-            "source"       => 1,  // 消息来源[1:好友私信;2:群聊]
+            "id"           => 0,// 消息记录ID
+            "source"       => 1,// 消息来源[1:好友私信;2:群聊]
             "msg_type"     => 1,
-            "user_id"      => 0,  // 发送者用户ID
-            "receive_id"   => 0,  // 接收者ID[好友ID或群ID]
-            "content"      => '', // 文本消息
-            "is_revoke"    => 0,  // 消息是否撤销
+            "user_id"      => 0,// 发送者用户ID
+            "receive_id"   => 0,// 接收者ID[好友ID或群ID]
+            "content"      => '',// 文本消息
+            "is_revoke"    => 0,// 消息是否撤销
 
             // 发送消息人的信息
-            "nickname"     => "", // 用户昵称
-            "avatar"       => "", // 用户头像
-            "group_name"   => "", // 群组名称
-            "group_avatar" => "", // 群组头像
+            "nickname"     => "",// 用户昵称
+            "avatar"       => "",// 用户头像
+            "group_name"   => "",// 群组名称
+            "group_avatar" => "",// 群组头像
 
             // 不同的消息类型
             "file"         => [],
