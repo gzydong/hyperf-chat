@@ -34,7 +34,7 @@
         "phper666/jwt-auth": "^3.0",
         "hyperf/filesystem": "^2.0",
         "hashids/hashids": "^4.0",
-        "ext-json": "^1.6",
+        "ext-json": "*",
         "hyperf/view": "^2.0",
         "hyperf/view-engine": "^2.0",
         "phpmailer/phpmailer": "^6.2"
