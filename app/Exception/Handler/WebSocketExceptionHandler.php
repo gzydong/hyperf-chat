@@ -23,13 +23,13 @@ class WebSocketExceptionHandler extends ExceptionHandler
 
     public function __construct(StdoutLoggerInterface $logger, FormatterInterface $formatter)
     {
-        $this->logger = $logger;
+        $this->logger    = $logger;
         $this->formatter = $formatter;
     }
 
     public function handle(Throwable $throwable, ResponseInterface $response)
     {
-        $stream = new SwooleStream((string) $throwable->getMessage());
+        $stream = new SwooleStream((string)$throwable->getMessage());
         return $response->withBody($stream);
     }
 

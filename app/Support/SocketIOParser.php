@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Support;
 
 class SocketIOParser extends Packet
@@ -7,16 +8,16 @@ class SocketIOParser extends Packet
      * Encode output payload for websocket push.
      *
      * @param string $event
-     * @param mixed $data
+     * @param mixed  $data
      *
      * @return mixed
      */
     public static function encode(string $event, $data)
     {
-        $packet = Packet::MESSAGE . Packet::EVENT;
+        $packet       = Packet::MESSAGE . Packet::EVENT;
         $shouldEncode = is_array($data) || is_object($data);
-        $data = $shouldEncode ? json_encode($data) : $data;
-        $format = $shouldEncode ? '["%s",%s]' : '["%s","%s"]';
+        $data         = $shouldEncode ? json_encode($data) : $data;
+        $format       = $shouldEncode ? '["%s",%s]' : '["%s","%s"]';
 
         return $packet . sprintf($format, $event, $data);
     }
@@ -34,7 +35,7 @@ class SocketIOParser extends Packet
 
         return [
             'event' => $payload['event'] ?? null,
-            'data' => $payload['data'] ?? null,
+            'data'  => $payload['data'] ?? null,
         ];
     }
 }

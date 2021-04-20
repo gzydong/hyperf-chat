@@ -6,6 +6,7 @@ namespace App\Service;
  * 聊天室房间服务
  *
  * Class SocketRoomService
+ *
  * @package App\Service
  */
 class SocketRoomService
@@ -16,6 +17,7 @@ class SocketRoomService
      * 获取房间名
      *
      * @param string|integer $room 房间名
+     *
      * @return string
      */
     public function getRoomName($room)
@@ -27,6 +29,7 @@ class SocketRoomService
      * 获取房间成员
      *
      * @param string $room 房间名
+     *
      * @return array
      */
     public function getRoomMembers(string $room)
@@ -37,8 +40,9 @@ class SocketRoomService
     /**
      * 成员加入房间
      *
-     * @param int $usr_id 用户ID
-     * @param string|array $room 房间名
+     * @param int          $usr_id 用户ID
+     * @param string|array $room   房间名
+     *
      * @return bool|int
      */
     public function addRoomMember(int $usr_id, $room)
@@ -49,8 +53,9 @@ class SocketRoomService
     /**
      * 成员退出房间
      *
-     * @param string|array $room 房间名
+     * @param string|array $room    房间名
      * @param string|array $members 用户ID
+     *
      * @return int
      */
     public function delRoomMember($room, $members)
@@ -62,6 +67,7 @@ class SocketRoomService
      * 删除房间
      *
      * @param string|int $room 房间名
+     *
      * @return int
      */
     public function delRoom($room)

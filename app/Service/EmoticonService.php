@@ -12,6 +12,7 @@ use App\Model\UsersEmoticon;
  * 表情服务层
  *
  * Class EmoticonService
+ *
  * @package App\Services
  */
 class EmoticonService extends BaseService
@@ -19,8 +20,9 @@ class EmoticonService extends BaseService
     /**
      * 安装系统表情包
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id     用户ID
      * @param int $emoticon_id 表情包ID
+     *
      * @return mixed
      */
     public function installSysEmoticon(int $user_id, int $emoticon_id)
@@ -44,8 +46,9 @@ class EmoticonService extends BaseService
     /**
      * 移除已安装的系统表情包
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id     用户ID
      * @param int $emoticon_id 表情包ID
+     *
      * @return bool
      */
     public function removeSysEmoticon(int $user_id, int $emoticon_id)
@@ -75,6 +78,7 @@ class EmoticonService extends BaseService
      * 获取用户安装的表情ID
      *
      * @param int $user_id 用户ID
+     *
      * @return array
      */
     public function getInstallIds(int $user_id)
@@ -86,8 +90,9 @@ class EmoticonService extends BaseService
     /**
      * 收藏聊天图片
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id   用户ID
      * @param int $record_id 聊天消息ID
+     *
      * @return array
      */
     public function collect(int $user_id, int $record_id)
@@ -128,11 +133,11 @@ class EmoticonService extends BaseService
         }
 
         $res = EmoticonDetail::create([
-            'user_id' => $user_id,
-            'url' => $fileInfo->save_dir,
+            'user_id'     => $user_id,
+            'url'         => $fileInfo->save_dir,
             'file_suffix' => $fileInfo->file_suffix,
-            'file_size' => $fileInfo->file_size,
-            'created_at' => time()
+            'file_size'   => $fileInfo->file_size,
+            'created_at'  => time()
         ]);
 
         return $res ? [true, ['media_id' => $res->id, 'src' => get_media_url($res->url)]] : [false, []];
@@ -141,8 +146,9 @@ class EmoticonService extends BaseService
     /**
      * 移除收藏的表情包
      *
-     * @param int $user_id 用户ID
-     * @param array $ids 表情包详情ID
+     * @param int   $user_id 用户ID
+     * @param array $ids     表情包详情ID
+     *
      * @return
      */
     public function deleteCollect(int $user_id, array $ids)
@@ -154,6 +160,7 @@ class EmoticonService extends BaseService
      * 获取表情包列表
      *
      * @param array $where
+     *
      * @return mixed
      */
     public function getDetailsAll(array $where = [])

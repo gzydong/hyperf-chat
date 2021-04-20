@@ -7,10 +7,10 @@ namespace App\Model\Article;
 use App\Model\BaseModel;
 
 /**
- * @property integer $id 标签ID
- * @property integer $user_id 用户ID
- * @property string $tag_name 标签名称
- * @property integer $sort 标签排序
+ * @property integer $id         标签ID
+ * @property integer $user_id    用户ID
+ * @property string  $tag_name   标签名称
+ * @property integer $sort       标签排序
  * @property integer $created_at 创建时间
  */
 class ArticleTag extends BaseModel
@@ -28,7 +28,7 @@ class ArticleTag extends BaseModel
      * @var array
      */
     protected $fillable = [
-        'user_id','tag_name','sort','created_at'
+        'user_id', 'tag_name', 'sort', 'created_at'
     ];
 
     /**
@@ -37,9 +37,9 @@ class ArticleTag extends BaseModel
      * @var array
      */
     protected $casts = [
-        'id' => 'integer',
-        'user_id' => 'integer',
-        'sort' => 'integer',
+        'id'         => 'integer',
+        'user_id'    => 'integer',
+        'sort'       => 'integer',
         'created_at' => 'integer'
     ];
 }

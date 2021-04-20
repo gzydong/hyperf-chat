@@ -42,16 +42,16 @@ class ChatMessageProducer extends ProducerMessage
     /**
      * 实例化处理
      *
-     * @param string $event 事件名
-     * @param array $data 数据
-     * @param array $options 其它参数
+     * @param string $event   事件名
+     * @param array  $data    数据
+     * @param array  $options 其它参数
      */
     public function __construct(string $event, array $data, array $options = [])
     {
         $message = [
-            'uuid' => $this->uuid(),// 自定义消息ID
-            'event' => $event,
-            'data' => $data,
+            'uuid'    => $this->uuid(),// 自定义消息ID
+            'event'   => $event,
+            'data'    => $data,
             'options' => $options
         ];
 

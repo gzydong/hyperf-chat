@@ -10,6 +10,7 @@ use Hyperf\HttpMessage\Upload\UploadedFile;
  * 文件拆分上传服务
  *
  * Class SplitUploadService
+ *
  * @package App\Service
  */
 class SplitUploadService
@@ -22,7 +23,7 @@ class SplitUploadService
     /**
      * 创建文件拆分相关信息
      *
-     * @param int $user_id 用户ID
+     * @param int    $user_id  用户ID
      * @param string $fileName 上传的文件名
      * @param string $fileSize 上传文件大小
      *
@@ -33,17 +34,17 @@ class SplitUploadService
         $hash_name = implode('-', [uniqid(), rand(10000000, 99999999), Str::random(6)]);
         $split_num = intval(ceil($fileSize / self::SPLIT_SIZE));
 
-        $data = [];
-        $data['file_type'] = 1;
-        $data['user_id'] = $user_id;
+        $data                  = [];
+        $data['file_type']     = 1;
+        $data['user_id']       = $user_id;
         $data['original_name'] = $fileName;
-        $data['hash_name'] = $hash_name;
-        $data['file_ext'] = pathinfo($fileName, PATHINFO_EXTENSION);
-        $data['file_size'] = $fileSize;
-        $data['upload_at'] = time();
+        $data['hash_name']     = $hash_name;
+        $data['file_ext']      = pathinfo($fileName, PATHINFO_EXTENSION);
+        $data['file_size']     = $fileSize;
+        $data['upload_at']     = time();
 
         //文件拆分数量
-        $data['split_num'] = $split_num;
+        $data['split_num']   = $split_num;
         $data['split_index'] = $split_num;
 
         return FileSplitUpload::create($data) ? array_merge($data, ['split_size' => self::SPLIT_SIZE]) : false;
@@ -52,11 +53,11 @@ class SplitUploadService
     /**
      * 保存拆分上传的文件
      *
-     * @param int $user_id 用户ID
-     * @param UploadedFile $file 文件信息
-     * @param string $hashName 上传临时问价hash名
-     * @param int $split_index 当前拆分文件索引
-     * @param int $fileSize 文件大小
+     * @param int          $user_id     用户ID
+     * @param UploadedFile $file        文件信息
+     * @param string       $hashName    上传临时问价hash名
+     * @param int          $split_index 当前拆分文件索引
+     * @param int          $fileSize    文件大小
      *
      * @return bool
      */
@@ -71,7 +72,7 @@ class SplitUploadService
         }
 
         // 保存文件名及保存文件相对目录
-        $fileName = "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp";
+        $fileName      = "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp";
         $uploadService = make(UploadService::class);
 
         $uploadService->makeDirectory($uploadService->driver("tmp/{$hashName}"));
@@ -83,18 +84,18 @@ class SplitUploadService
 
         $info = FileSplitUpload::where('user_id', $user_id)->where('hash_name', $hashName)->where('split_index', $split_index)->first();
         if (!$info) {
-            return FileSplitUpload::create([
-                'user_id' => $user_id,
-                'file_type' => 2,
-                'hash_name' => $hashName,
+            return (bool)FileSplitUpload::create([
+                'user_id'       => $user_id,
+                'file_type'     => 2,
+                'hash_name'     => $hashName,
                 'original_name' => $fileInfo->original_name,
-                'split_index' => $split_index,
-                'split_num' => $fileInfo->split_num,
-                'save_dir' => sprintf('%s/%s', "tmp/{$hashName}", $fileName),
-                'file_ext' => $fileInfo->file_ext,
-                'file_size' => $fileSize,
-                'upload_at' => time(),
-            ]) ? true : false;
+                'split_index'   => $split_index,
+                'split_num'     => $fileInfo->split_num,
+                'save_dir'      => sprintf('%s/%s', "tmp/{$hashName}", $fileName),
+                'file_ext'      => $fileInfo->file_ext,
+                'file_size'     => $fileSize,
+                'upload_at'     => time(),
+            ]);
         }
 
         return true;
@@ -103,7 +104,7 @@ class SplitUploadService
     /**
      * 文件合并
      *
-     * @param int $user_id 用户ID
+     * @param int    $user_id   用户ID
      * @param string $hash_name 上传临时问价hash名
      *
      * @return array|bool
@@ -134,7 +135,7 @@ class SplitUploadService
             return false;
         }
 
-        $fileMerge = "tmp/{$hash_name}/{$fileInfo->original_name}.tmp";
+        $fileMerge     = "tmp/{$hash_name}/{$fileInfo->original_name}.tmp";
         $uploadService = make(UploadService::class);
 
         // 文件合并
@@ -149,10 +150,10 @@ class SplitUploadService
             ->update(['save_dir' => $fileMerge]);
 
         return [
-            'path' => $fileMerge,
+            'path'          => $fileMerge,
             'tmp_file_name' => "{$fileInfo->original_name}.tmp",
             'original_name' => $fileInfo->original_name,
-            'file_size' => $fileInfo->file_size
+            'file_size'     => $fileInfo->file_size
         ];
     }
 }

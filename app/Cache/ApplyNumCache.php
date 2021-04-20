@@ -4,6 +4,7 @@ namespace App\Cache;
 
 /**
  * Class ApplyNumCache
+ *
  * @package App\Cache
  */
 class ApplyNumCache
@@ -15,6 +16,7 @@ class ApplyNumCache
      * 获取好友未读申请数
      *
      * @param int $user_id 用户ID
+     *
      * @return string
      */
     public static function get(int $user_id)
@@ -26,6 +28,7 @@ class ApplyNumCache
      * 设置未读好友申请数（自增加1）
      *
      * @param int $user_id 用户ID
+     *
      * @return int
      */
     public static function setInc(int $user_id)

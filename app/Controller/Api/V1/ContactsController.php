@@ -83,6 +83,7 @@ class ContactsController extends CController
      * @RequestMapping(path="add", methods="post")
      *
      * @param UserService $userService
+     *
      * @return ResponseInterface
      */
     public function addContact(UserService $userService)
@@ -90,7 +91,7 @@ class ContactsController extends CController
         $params = $this->request->inputs(['friend_id', 'remarks']);
         $this->validate($params, [
             'friend_id' => 'required|integer',
-            'remarks' => 'present|max:50'
+            'remarks'   => 'present|max:50'
         ]);
 
         $user = $userService->findById($params['friend_id']);
@@ -111,11 +112,11 @@ class ContactsController extends CController
             $this->producer->produce(
             // 消息待完善
                 new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                    'sender' => $user_id,
+                    'sender'  => $user_id,
                     'receive' => intval($params['friend_id']),
-                    'type' => 1,
-                    'status' => 1,
-                    'remark' => ''
+                    'type'    => 1,
+                    'status'  => 1,
+                    'remark'  => ''
                 ])
             );
         }
@@ -159,11 +160,11 @@ class ContactsController extends CController
         $params = $this->request->inputs(['apply_id', 'remarks']);
         $this->validate($params, [
             'apply_id' => 'required|integer',
-            'remarks' => 'present|max:20'
+            'remarks'  => 'present|max:20'
         ]);
 
         $user_id = $this->uid();
-        $isTrue = $this->contactsService->acceptInvitation($user_id, intval($params['apply_id']), $params['remarks']);
+        $isTrue  = $this->contactsService->acceptInvitation($user_id, intval($params['apply_id']), $params['remarks']);
         if (!$isTrue) {
             return $this->response->fail('处理失败...');
         }
@@ -177,11 +178,11 @@ class ContactsController extends CController
             // 待完善
             $this->producer->produce(
                 new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                    'sender' => $user_id,
+                    'sender'  => $user_id,
                     'receive' => $friend_id,
-                    'type' => 1,
-                    'status' => 1,
-                    'remark' => ''
+                    'type'    => 1,
+                    'status'  => 1,
+                    'remark'  => ''
                 ])
             );
         }
@@ -199,7 +200,7 @@ class ContactsController extends CController
         $params = $this->request->inputs(['apply_id', 'remarks']);
         $this->validate($params, [
             'apply_id' => 'required|integer',
-            'remarks' => 'present|max:20'
+            'remarks'  => 'present|max:20'
         ]);
 
         $isTrue = $this->contactsService->declineInvitation($this->uid(), intval($params['apply_id']), $params['remarks']);
@@ -250,13 +251,13 @@ class ContactsController extends CController
     {
         $params = $this->request->inputs(['page', 'page_size']);
         $this->validate($params, [
-            'page' => 'present|integer',
+            'page'      => 'present|integer',
             'page_size' => 'present|integer'
         ]);
 
-        $page = $this->request->input('page', 1);
+        $page      = $this->request->input('page', 1);
         $page_size = $this->request->input('page_size', 10);
-        $user_id = $this->uid();
+        $user_id   = $this->uid();
 
         $data = $this->contactsService->getContactApplyRecords($user_id, $page, $page_size);
 
@@ -291,11 +292,11 @@ class ContactsController extends CController
         $params = $this->request->inputs(['friend_id', 'remarks']);
         $this->validate($params, [
             'friend_id' => 'required|integer|min:1',
-            'remarks' => "required|max:20"
+            'remarks'   => "required|max:20"
         ]);
 
         $user_id = $this->uid();
-        $isTrue = $this->contactsService->editContactRemark($user_id, intval($params['friend_id']), $params['remarks']);
+        $isTrue  = $this->contactsService->editContactRemark($user_id, intval($params['friend_id']), $params['remarks']);
         if (!$isTrue) {
             return $this->response->fail('备注修改失败...');
         }

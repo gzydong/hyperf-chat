@@ -29,7 +29,7 @@ class AppExceptionHandler extends ExceptionHandler
         $this->logger->error($throwable->getTraceAsString());
 
         $data = json_encode([
-            'code' => ResponseCode::SERVER_ERROR,
+            'code'    => ResponseCode::SERVER_ERROR,
             'message' => 'Internal Server Error.'
         ], JSON_UNESCAPED_UNICODE);
 
@@ -38,6 +38,7 @@ class AppExceptionHandler extends ExceptionHandler
 
     /**
      * @param Throwable $throwable
+     *
      * @return bool
      */
     public function isValid(Throwable $throwable): bool

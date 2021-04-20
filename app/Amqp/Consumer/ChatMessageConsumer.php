@@ -94,8 +94,9 @@ class ChatMessageConsumer extends ConsumerMessage
 
     /**
      * ChatMessageConsumer constructor.
+     *
      * @param SocketClientService $socketClientService
-     * @param SocketRoomService $socketRoomService
+     * @param SocketRoomService   $socketRoomService
      */
     public function __construct(SocketClientService $socketClientService, SocketRoomService $socketRoomService)
     {
@@ -121,8 +122,9 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 消费队列消息
      *
-     * @param $data
+     * @param             $data
      * @param AMQPMessage $message
+     *
      * @return string
      */
     public function consumeMessage($data, AMQPMessage $message): string
@@ -146,8 +148,9 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 对话聊天消息
      *
-     * @param array $data 队列消息
+     * @param array       $data 队列消息
      * @param AMQPMessage $message
+     *
      * @return string
      */
     public function onConsumeTalk(array $data, AMQPMessage $message): string
@@ -261,8 +264,9 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 键盘输入事件消息
      *
-     * @param array $data 队列消息
+     * @param array       $data 队列消息
      * @param AMQPMessage $message
+     *
      * @return string
      */
     public function onConsumeKeyboard(array $data, AMQPMessage $message): string
@@ -277,8 +281,9 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 用户上线或下线消息
      *
-     * @param array $data 队列消息
+     * @param array       $data 队列消息
      * @param AMQPMessage $message
+     *
      * @return string
      */
     public function onConsumeOnlineStatus(array $data, AMQPMessage $message): string
@@ -298,8 +303,9 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 撤销聊天消息
      *
-     * @param array $data 队列消息
+     * @param array       $data 队列消息
      * @param AMQPMessage $message
+     *
      * @return string
      */
     public function onConsumeRevokeTalk(array $data, AMQPMessage $message): string
@@ -334,8 +340,9 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 好友申请消息
      *
-     * @param array $data 队列消息
+     * @param array       $data 队列消息
      * @param AMQPMessage $message
+     *
      * @return string
      */
     public function onConsumeFriendApply(array $data, AMQPMessage $message): string
@@ -365,6 +372,7 @@ class ChatMessageConsumer extends ConsumerMessage
      * 格式化对话的消息体
      *
      * @param array $data 对话的消息
+     *
      * @return array
      */
     private function formatTalkMessage(array $data): array
@@ -373,10 +381,10 @@ class ChatMessageConsumer extends ConsumerMessage
             "id"           => 0,// 消息记录ID
             "source"       => 1,// 消息来源[1:好友私信;2:群聊]
             "msg_type"     => 1,
-            "user_id"      => 0,// 发送者用户ID
-            "receive_id"   => 0,// 接收者ID[好友ID或群ID]
+            "user_id"      => 0, // 发送者用户ID
+            "receive_id"   => 0, // 接收者ID[好友ID或群ID]
             "content"      => '',// 文本消息
-            "is_revoke"    => 0,// 消息是否撤销
+            "is_revoke"    => 0, // 消息是否撤销
 
             // 发送消息人的信息
             "nickname"     => "",// 用户昵称

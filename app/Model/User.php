@@ -7,12 +7,12 @@ namespace App\Model;
 /**
  * Class User
  *
- * @property integer $id 用户ID
- * @property string $nickname 用户昵称
- * @property string $mobile 登录手机号
- * @property string $password 登录密码
- * @property string $avatar 头像
- * @property integer $gender 性别
+ * @property integer $id         用户ID
+ * @property string  $nickname   用户昵称
+ * @property string  $mobile     登录手机号
+ * @property string  $password   登录密码
+ * @property string  $avatar     头像
+ * @property integer $gender     性别
  * @property integer $created_at 注册时间
  *
  * @package App\Model

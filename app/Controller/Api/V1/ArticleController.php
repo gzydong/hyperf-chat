@@ -78,15 +78,15 @@ class ArticleController extends CController
         $params1 = $this->request->inputs(['keyword', 'find_type', 'cid', 'page']);
         $this->validate($params1, [
             // 搜索关键词
-            'keyword' => "present",
+            'keyword'   => "present",
             // 查询类型 $findType 1:获取近期日记  2:获取星标日记  3:获取指定分类文章  4:获取指定标签文章 5:获取已删除文章 6:关键词搜索
             'find_type' => 'required|in:0,1,2,3,4,5,6',
             // 分类ID
-            'cid' => 'present|integer|min:-1',
-            'page' => 'present|integer|min:1'
+            'cid'       => 'present|integer|min:-1',
+            'page'      => 'present|integer|min:1'
         ]);
 
-        $params = [];
+        $params              = [];
         $params['find_type'] = $params1['find_type'];
         if (in_array($params1['find_type'], [3, 4])) {
             $params['class_id'] = $params1['cid'];
@@ -127,7 +127,7 @@ class ArticleController extends CController
     {
         $params = $this->request->inputs(['class_id', 'class_name']);
         $this->validate($params, [
-            'class_id' => 'required|integer',
+            'class_id'   => 'required|integer',
             'class_name' => 'required|max:20'
         ]);
 
@@ -167,7 +167,7 @@ class ArticleController extends CController
     {
         $params = $this->request->inputs(['class_id', 'sort_type']);
         $this->validate($params, [
-            'class_id' => 'required|integer',
+            'class_id'  => 'required|integer',
             'sort_type' => 'required|in:1,2'
         ]);
 
@@ -198,7 +198,7 @@ class ArticleController extends CController
         $params = $this->request->inputs(['class_id', 'toid']);
         $this->validate($params, [
             'class_id' => 'required|integer',
-            'toid' => 'required|integer'
+            'toid'     => 'required|integer'
         ]);
 
         $isTrue = $this->articleService->mergeArticleClass($this->uid(), (int)$params['class_id'], (int)$params['toid']);
@@ -217,7 +217,7 @@ class ArticleController extends CController
     {
         $params = $this->request->inputs(['tag_id', 'tag_name']);
         $this->validate($params, [
-            'tag_id' => 'required|integer|min:0',
+            'tag_id'   => 'required|integer|min:0',
             'tag_name' => 'required|max:20'
         ]);
 
@@ -257,19 +257,19 @@ class ArticleController extends CController
         $params = $this->request->all();
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
-            'class_id' => 'required|integer|min:0',
-            'title' => 'required|max:255',
-            'content' => 'required',
+            'class_id'   => 'required|integer|min:0',
+            'title'      => 'required|max:255',
+            'content'    => 'required',
             'md_content' => 'required'
         ]);
 
         $id = $this->articleService->editArticle($this->uid(), (int)$params['article_id'], [
-            'title' => $params['title'],
-            'abstract' => mb_substr(strip_tags($params['content']), 0, 200),
-            'class_id' => $params['class_id'],
-            'image' => get_html_images($params['content']),
+            'title'      => $params['title'],
+            'abstract'   => mb_substr(strip_tags($params['content']), 0, 200),
+            'class_id'   => $params['class_id'],
+            'image'      => get_html_images($params['content']),
             'md_content' => htmlspecialchars($params['md_content']),
-            'content' => htmlspecialchars($params['content'])
+            'content'    => htmlspecialchars($params['content'])
         ]);
 
         return $id
@@ -355,7 +355,7 @@ class ArticleController extends CController
         $params = $this->request->inputs(['article_id', 'class_id']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
-            'class_id' => 'required|integer|min:0'
+            'class_id'   => 'required|integer|min:0'
         ]);
 
         $isTrue = $this->articleService->moveArticle(
@@ -379,7 +379,7 @@ class ArticleController extends CController
         $params = $this->request->inputs(['article_id', 'type']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
-            'type' => 'required|in:1,2'
+            'type'       => 'required|in:1,2'
         ]);
 
         $isTrue = $this->articleService->setAsteriskArticle(
@@ -403,7 +403,7 @@ class ArticleController extends CController
         $params = $this->request->inputs(['article_id', 'tags']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
-            'tags' => 'required|array'
+            'tags'       => 'required|array'
         ]);
 
         $isTrue = $this->articleService->updateArticleTag($this->uid(), (int)$params['article_id'], $params['tags']);
@@ -450,9 +450,9 @@ class ArticleController extends CController
         }
 
         $annex = [
-            'file_suffix' => $file->getExtension(),
-            'file_size' => $file->getSize(),
-            'save_dir' => '',
+            'file_suffix'   => $file->getExtension(),
+            'file_size'     => $file->getSize(),
+            'save_dir'      => '',
             'original_name' => $file->getClientFilename()
         ];
 
@@ -466,7 +466,7 @@ class ArticleController extends CController
         }
 
         $annex['save_dir'] = $path;
-        $annex['id'] = $this->articleService->insertArticleAnnex($this->uid(), (int)$params['article_id'], $annex);
+        $annex['id']       = $this->articleService->insertArticleAnnex($this->uid(), (int)$params['article_id'], $annex);
         if (!$annex['id']) {
             return $this->response->fail('附件上传失败，请稍后再试...');
         }
@@ -528,7 +528,7 @@ class ArticleController extends CController
             };
 
             array_walk($rows, function (&$item) use ($getDay) {
-                $item['day'] = $getDay($item['deleted_at']);
+                $item['day']     = $getDay($item['deleted_at']);
                 $item['visible'] = false;
             });
         }

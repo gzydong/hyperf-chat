@@ -9,18 +9,20 @@
  * @author Yuandong<837215079@qq.com>
  * @link   https://github.com/gzydong/hyperf-chat
  */
+
 namespace App\Constants;
 
 /**
  * HTTP 响应状态码枚举
  *
  * Class ResponseCode
+ *
  * @package App\Constants
  */
 class ResponseCode
 {
     const SUCCESS = 200;   // 接口处理成功
-    const FAIL = 305;   // 接口处理失败
+    const FAIL    = 305;   // 接口处理失败
 
     /**
      * Server Error！

@@ -12,13 +12,15 @@ use Throwable;
  * 验证器异常处理类
  *
  * Class ValidateExceptionHandler
+ *
  * @package App\Exception\Handler
  */
 class ValidateExceptionHandler extends ExceptionHandler
 {
     /**
-     * @param Throwable $throwable
+     * @param Throwable         $throwable
      * @param ResponseInterface $response
+     *
      * @return ResponseInterface
      */
     public function handle(Throwable $throwable, ResponseInterface $response)
@@ -27,9 +29,9 @@ class ValidateExceptionHandler extends ExceptionHandler
         if ($throwable instanceof ValidateException) {
             // 格式化输出
             $data = json_encode([
-                'code' => $throwable->getCode(),
+                'code'    => $throwable->getCode(),
                 'message' => $throwable->getMessage(),
-                'data' => []
+                'data'    => []
             ], JSON_UNESCAPED_UNICODE);
 
             // 阻止异常冒泡
@@ -45,6 +47,7 @@ class ValidateExceptionHandler extends ExceptionHandler
      * 判断该异常处理器是否要对该异常进行处理
      *
      * @param Throwable $throwable
+     *
      * @return bool
      */
     public function isValid(Throwable $throwable): bool

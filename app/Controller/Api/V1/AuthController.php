@@ -57,7 +57,7 @@ class AuthController extends CController
     {
         $params = $this->request->inputs(['mobile', 'password', 'platform']);
         $this->validate($params, [
-            'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
+            'mobile'   => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
             'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
@@ -69,7 +69,7 @@ class AuthController extends CController
 
         try {
             $token = $this->jwt->getToken([
-                'user_id' => $userInfo['id'],
+                'user_id'  => $userInfo['id'],
                 'platform' => $params['platform'],
             ]);
         } catch (\Exception $exception) {
@@ -79,14 +79,14 @@ class AuthController extends CController
         return $this->response->success([
             'authorize' => [
                 'access_token' => $token,
-                'expires_in' => $this->jwt->getTTL()
+                'expires_in'   => $this->jwt->getTTL()
             ],
             'user_info' => [
                 'nickname' => $userInfo['nickname'],
-                'avatar' => $userInfo['avatar'],
-                'gender' => $userInfo['gender'],
-                'motto' => $userInfo['motto'],
-                'email' => $userInfo['email'],
+                'avatar'   => $userInfo['avatar'],
+                'gender'   => $userInfo['gender'],
+                'motto'    => $userInfo['motto'],
+                'email'    => $userInfo['email'],
             ]
         ]);
     }
@@ -114,7 +114,7 @@ class AuthController extends CController
         $params = $this->request->all();
         $this->validate($params, [
             'nickname' => "required|max:20",
-            'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
+            'mobile'   => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required|max:16',
             'sms_code' => 'required|digits:6',
             'platform' => 'required|in:h5,ios,windows,mac,web',
@@ -125,7 +125,7 @@ class AuthController extends CController
         }
 
         $isTrue = $this->userService->register([
-            'mobile' => $params['mobile'],
+            'mobile'   => $params['mobile'],
             'password' => $params['password'],
             'nickname' => strip_tags($params['nickname']),
         ]);
@@ -149,7 +149,7 @@ class AuthController extends CController
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
         $this->validate($params, [
-            'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
+            'mobile'   => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required|max:16',
             'sms_code' => 'required|digits:6',
         ]);
@@ -179,7 +179,7 @@ class AuthController extends CController
     {
         return $this->response->success([
             'authorize' => [
-                'token' => $this->jwt->refreshToken(),
+                'token'  => $this->jwt->refreshToken(),
                 'expire' => $this->jwt->getTTL()
             ]
         ]);
@@ -194,7 +194,7 @@ class AuthController extends CController
     {
         $params = $this->request->inputs(['type', 'mobile']);
         $this->validate($params, [
-            'type' => "required",
+            'type'   => "required",
             'mobile' => "required|regex:/^1[345789][0-9]{9}$/"
         ]);
 

@@ -9,6 +9,7 @@
  * @author Yuandong<837215079@qq.com>
  * @link   https://github.com/gzydong/hyperf-chat
  */
+
 namespace App\Middleware;
 
 use Hyperf\HttpServer\Contract\RequestInterface;
@@ -46,8 +47,8 @@ class JWTAuthMiddleware implements MiddlewareInterface
     public function __construct(HttpResponse $response, RequestInterface $request, JWT $jwt)
     {
         $this->response = $response;
-        $this->request = $request;
-        $this->jwt = $jwt;
+        $this->request  = $request;
+        $this->jwt      = $jwt;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -73,7 +74,7 @@ class JWTAuthMiddleware implements MiddlewareInterface
 
         if (!$isValidToken) {
             return $this->response->withStatus(401)->json([
-                'code' => 401,
+                'code'    => 401,
                 'message' => 'Token authentication does not pass',
             ]);
         }

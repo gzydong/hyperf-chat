@@ -7,8 +7,8 @@ namespace App\Model;
 /**
  * 表情包收藏数据表模型
  *
- * @property int $id 收藏ID
- * @property int $user_id 用户ID
+ * @property int    $id           收藏ID
+ * @property int    $user_id      用户ID
  * @property string $emoticon_ids 表情包ID，多个用英文逗号拼接
  *
  * @package App\Model
@@ -38,13 +38,14 @@ class UsersEmoticon extends BaseModel
      * @var array
      */
     protected $casts = [
-        'id' => 'integer',
+        'id'      => 'integer',
         'user_id' => 'integer'
     ];
 
     /**
      *
-     * @param  string $value
+     * @param string $value
+     *
      * @return string
      */
     public function getEmoticonIdsAttribute($value)

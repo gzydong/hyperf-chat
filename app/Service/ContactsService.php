@@ -33,12 +33,13 @@ class ContactsService extends BaseService
      * 获取联系人列表
      *
      * @param int $user_id 用户ID
+     *
      * @return array
      */
     public function getContacts(int $user_id): array
     {
         $prefix = config('databases.default.prefix');
-        $sql = <<<SQL
+        $sql    = <<<SQL
             SELECT users.id,users.nickname,users.avatar,users.motto,users.gender,tmp_table.friend_remark from {$prefix}users users
             INNER join
             (
@@ -60,9 +61,10 @@ SQL;
     /**
      * 添加联系人/申请
      *
-     * @param int $user_id 用户ID
-     * @param int $friend_id 好友ID
-     * @param string $remarks 申请备注
+     * @param int    $user_id   用户ID
+     * @param int    $friend_id 好友ID
+     * @param string $remarks   申请备注
+     *
      * @return bool
      */
     public function addContact(int $user_id, int $friend_id, string $remarks): bool
@@ -76,16 +78,16 @@ SQL;
             ->orderBy('id', 'desc')->first();
 
         if ($result && $result->status == 0) {
-            $result->remarks = $remarks;
+            $result->remarks    = $remarks;
             $result->updated_at = date('Y-m-d H:i:s');
             $result->save();
             return true;
         } else {
             $result = UsersFriendsApply::create([
-                'user_id' => $user_id,
-                'friend_id' => $friend_id,
-                'status' => 0,
-                'remarks' => $remarks,
+                'user_id'    => $user_id,
+                'friend_id'  => $friend_id,
+                'status'     => 0,
+                'remarks'    => $remarks,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
@@ -97,8 +99,9 @@ SQL;
     /**
      * 删除联系人
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id   用户ID
      * @param int $friend_id 好友ID
+     *
      * @return bool
      */
     public function deleteContact(int $user_id, int $friend_id): bool
@@ -120,9 +123,10 @@ SQL;
     /**
      * 同意添加联系人 / 联系人申请
      *
-     * @param int $user_id 用户ID
-     * @param int $apply_id 联系人申请ID
-     * @param string $remarks 联系人备注名称
+     * @param int    $user_id  用户ID
+     * @param int    $apply_id 联系人申请ID
+     * @param string $remarks  联系人备注名称
+     *
      * @return bool
      */
     public function acceptInvitation(int $user_id, int $apply_id, string $remarks = ''): bool
@@ -159,14 +163,14 @@ SQL;
                 $friend_nickname = User::where('id', $info->friend_id)->value('nickname');
 
                 UsersFriend::create([
-                    'user1' => $user1,
-                    'user2' => $user2,
+                    'user1'        => $user1,
+                    'user2'        => $user2,
                     'user1_remark' => $user1 == $user_id ? $remarks : $friend_nickname,
                     'user2_remark' => $user2 == $user_id ? $remarks : $friend_nickname,
-                    'active' => $user1 == $user_id ? 2 : 1,
-                    'status' => 1,
-                    'agree_time' => date('Y-m-d H:i:s'),
-                    'created_at' => date('Y-m-d H:i:s')
+                    'active'       => $user1 == $user_id ? 2 : 1,
+                    'status'       => 1,
+                    'agree_time'   => date('Y-m-d H:i:s'),
+                    'created_at'   => date('Y-m-d H:i:s')
                 ]);
             }
 
@@ -182,9 +186,10 @@ SQL;
     /**
      * 拒绝添加联系人 / 联系人申请
      *
-     * @param int $user_id 用户ID
-     * @param int $apply_id 联系人申请ID
-     * @param string $remarks 拒绝申请备注信息
+     * @param int    $user_id  用户ID
+     * @param int    $apply_id 联系人申请ID
+     * @param string $remarks  拒绝申请备注信息
+     *
      * @return bool
      */
     public function declineInvitation(int $user_id, int $apply_id, string $remarks = ''): bool
@@ -194,8 +199,8 @@ SQL;
             ['user_id', '=', $user_id],
             ['status', '=', 2],
         ])->update([
-            'status' => 2,
-            'remarks' => $remarks,
+            'status'     => 2,
+            'remarks'    => $remarks,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
 
@@ -205,9 +210,10 @@ SQL;
     /**
      * 编辑联系人备注
      *
-     * @param int $user_id 用户ID
-     * @param int $friend_id 朋友ID
-     * @param string $remarks 好友备注名称
+     * @param int    $user_id   用户ID
+     * @param int    $friend_id 朋友ID
+     * @param string $remarks   好友备注名称
+     *
      * @return bool
      */
     public function editContactRemark(int $user_id, int $friend_id, string $remarks): bool
@@ -227,6 +233,7 @@ SQL;
      * 搜索联系人
      *
      * @param string $mobile 用户手机号/登录账号
+     *
      * @return array
      */
     public function findContact(string $mobile): array
@@ -239,9 +246,10 @@ SQL;
     /**
      * 获取联系人申请记录
      *
-     * @param int $user_id 用户ID
-     * @param int $page 当前分页
+     * @param int $user_id   用户ID
+     * @param int $page      当前分页
      * @param int $page_size 分页大小
+     *
      * @return array
      */
     public function getContactApplyRecords(int $user_id, $page = 1, $page_size = 30): array
@@ -262,7 +270,7 @@ SQL;
         $rowsSqlObj->where('users_friends_apply.friend_id', $user_id);
 
         $count = $rowsSqlObj->count();
-        $rows = [];
+        $rows  = [];
         if ($count > 0) {
             $rows = $rowsSqlObj->orderBy('users_friends_apply.id', 'desc')->forPage($page, $page_size)->get()->toArray();
         }
@@ -273,8 +281,9 @@ SQL;
     /**
      * 删除联系人申请记录
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id  用户ID
      * @param int $apply_id 联系人好友申请ID
+     *
      * @return bool
      */
     public function delContactApplyRecord(int $user_id, int $apply_id): bool

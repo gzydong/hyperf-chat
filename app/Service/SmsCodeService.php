@@ -6,6 +6,7 @@ namespace App\Service;
  * 短信发送服务
  *
  * Class SmsCodeService
+ *
  * @package App\Services
  */
 class SmsCodeService
@@ -32,8 +33,9 @@ class SmsCodeService
     /**
      * 获取缓存key
      *
-     * @param string $type 短信用途
+     * @param string $type   短信用途
      * @param string $mobile 手机号
+     *
      * @return string
      */
     private function getKey(string $type, string $mobile)
@@ -44,9 +46,10 @@ class SmsCodeService
     /**
      * 检测验证码是否正确
      *
-     * @param string $type 发送类型
+     * @param string $type   发送类型
      * @param string $mobile 手机号
-     * @param string $code 验证码
+     * @param string $code   验证码
+     *
      * @return bool
      */
     public function check(string $type, string $mobile, string $code)
@@ -59,15 +62,16 @@ class SmsCodeService
     /**
      * 发送验证码
      *
-     * @param string $usage 验证码用途
+     * @param string $usage  验证码用途
      * @param string $mobile 手机号
+     *
      * @return array|bool
      */
     public function send(string $usage, string $mobile)
     {
         if (!$this->isUsages($usage)) {
             return [false, [
-                'msg' => "[{$usage}]：此类短信验证码不支持发送",
+                'msg'  => "[{$usage}]：此类短信验证码不支持发送",
                 'data' => []
             ]];
         }
@@ -90,7 +94,7 @@ class SmsCodeService
         // ... 调取短信接口，建议异步任务执行 (暂无短信接口，省略处理)
 
         return [true, [
-            'msg' => 'success',
+            'msg'  => 'success',
             'data' => ['type' => $usage, 'code' => $sms_code]
         ]];
     }
@@ -99,6 +103,7 @@ class SmsCodeService
      * 获取缓存的验证码
      *
      * @param string $key
+     *
      * @return mixed
      */
     public function getCode(string $key)
@@ -109,9 +114,10 @@ class SmsCodeService
     /**
      * 设置验证码缓存
      *
-     * @param string $key 缓存key
-     * @param string $sms_code 验证码
-     * @param float|int $exp 过期时间（默认15分钟）
+     * @param string    $key      缓存key
+     * @param string    $sms_code 验证码
+     * @param float|int $exp      过期时间（默认15分钟）
+     *
      * @return mixed
      */
     public function setCode(string $key, string $sms_code, $exp = 60 * 15)
@@ -122,8 +128,9 @@ class SmsCodeService
     /**
      * 删除验证码缓存
      *
-     * @param string $usage 验证码用途
+     * @param string $usage  验证码用途
      * @param string $mobile 手机号
+     *
      * @return mixed
      */
     public function delCode(string $usage, string $mobile)
@@ -134,8 +141,9 @@ class SmsCodeService
     /**
      * 短信发送过滤验证
      *
-     * @param string $usage 验证码用途
+     * @param string $usage  验证码用途
      * @param string $mobile 手机号
+     *
      * @return array
      */
     public function filter(string $usage, string $mobile)
@@ -143,13 +151,13 @@ class SmsCodeService
         // ... 省略处理
         if (false) {
             return [false, [
-                'msg' => '过滤原因...',
+                'msg'  => '过滤原因...',
                 'data' => []
             ]];
         }
 
         return [true, [
-            'msg' => 'ok',
+            'msg'  => 'ok',
             'data' => []
         ]];
     }
@@ -158,6 +166,7 @@ class SmsCodeService
      * 判断验证码用途渠道是否注册
      *
      * @param string $usage
+     *
      * @return bool
      */
     public function isUsages(string $usage)

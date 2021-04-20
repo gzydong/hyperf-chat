@@ -38,8 +38,9 @@ class MessageHandleService
      * 对话消息
      *
      * @param Response|Server $server
-     * @param Frame $frame
-     * @param array|string $data 解析后数据
+     * @param Frame           $frame
+     * @param array|string    $data 解析后数据
+     *
      * @return bool|void
      */
     public function onTalk($server, Frame $frame, $data)
@@ -68,11 +69,11 @@ class MessageHandleService
         }
 
         $result = ChatRecord::create([
-            'source' => $data['source_type'],
-            'msg_type' => 1,
-            'user_id' => $data['send_user'],
+            'source'     => $data['source_type'],
+            'msg_type'   => 1,
+            'user_id'    => $data['send_user'],
             'receive_id' => $data['receive_user'],
-            'content' => htmlspecialchars($data['text_message']),
+            'content'    => htmlspecialchars($data['text_message']),
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
@@ -86,7 +87,7 @@ class MessageHandleService
 
         // 缓存最后一条消息
         LastMsgCache::set([
-            'text' => mb_substr($result->content, 0, 30),
+            'text'       => mb_substr($result->content, 0, 30),
             'created_at' => $result->created_at
         ], (int)$data['receive_user'],
             $data['source_type'] == 1 ? (int)$data['send_user'] : 0
@@ -94,9 +95,9 @@ class MessageHandleService
 
         $this->producer->produce(
             new ChatMessageProducer('event_talk', [
-                'sender' => intval($data['send_user']),  //发送者ID
-                'receive' => intval($data['receive_user']),  //接收者ID
-                'source' => intval($data['source_type']), //接收者类型 1:好友;2:群组
+                'sender'    => intval($data['send_user']),     //发送者ID
+                'receive'   => intval($data['receive_user']),  //接收者ID
+                'source'    => intval($data['source_type']),   //接收者类型 1:好友;2:群组
                 'record_id' => $result->id
             ])
         );
@@ -106,15 +107,16 @@ class MessageHandleService
      * 键盘输入消息
      *
      * @param Response|Server $server
-     * @param Frame $frame
-     * @param array|string $data 解析后数据
+     * @param Frame           $frame
+     * @param array|string    $data 解析后数据
+     *
      * @return bool|void
      */
     public function onKeyboard($server, Frame $frame, $data)
     {
         $this->producer->produce(
             new ChatMessageProducer('event_keyboard', [
-                'send_user' => intval($data['send_user']),  //发送者ID
+                'send_user'    => intval($data['send_user']),     //发送者ID
                 'receive_user' => intval($data['receive_user']),  //接收者ID
             ])
         );

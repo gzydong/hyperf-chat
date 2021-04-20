@@ -17,6 +17,7 @@ class Response
 
     /**
      * @param $data
+     *
      * @return PsrResponseInterface
      */
     public function json($data)
@@ -27,8 +28,9 @@ class Response
     /**
      * 处理成功信息返回
      *
-     * @param array $data 响应数据
+     * @param array  $data    响应数据
      * @param string $message 响应提示
+     *
      * @return PsrResponseInterface
      */
     public function success(array $data = [], $message = 'success')
@@ -40,9 +42,9 @@ class Response
     /**
      * 处理失败信息返回
      *
-     * @param array $data 响应数据
+     * @param array  $data    响应数据
      * @param string $message 响应提示
-     * @param int $code 错误码
+     * @param int    $code    错误码
      *
      * @return PsrResponseInterface
      */
@@ -53,13 +55,14 @@ class Response
 
     /**
      * @param string $message
-     * @param int $code
+     * @param int    $code
+     *
      * @return PsrResponseInterface
      */
     public function error($message = '', $code = ResponseCode::SERVER_ERROR)
     {
         return $this->response->withStatus(500)->json([
-            'code' => $code,
+            'code'    => $code,
             'message' => $message,
         ]);
     }

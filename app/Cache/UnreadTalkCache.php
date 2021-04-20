@@ -4,6 +4,7 @@ namespace App\Cache;
 
 /**
  * Class UnreadTalkCache
+ *
  * @package App\Cache
  */
 class UnreadTalkCache
@@ -13,8 +14,9 @@ class UnreadTalkCache
     /**
      * 设置用户未读消息(自增加1)
      *
-     * @param int $user_id 用户ID
+     * @param int    $user_id   用户ID
      * @param string $friend_id 好友ID
+     *
      * @return bool
      */
     public function setInc(int $user_id, string $friend_id)
@@ -27,8 +29,9 @@ class UnreadTalkCache
     /**
      * 获取用户指定好友的未读消息数
      *
-     * @param int $user_id 用户ID
+     * @param int    $user_id   用户ID
      * @param string $friend_id 好友ID
+     *
      * @return int
      */
     public function get(int $user_id, string $friend_id)
@@ -40,6 +43,7 @@ class UnreadTalkCache
      * 获取用户未读消息列表
      *
      * @param int $user_id 用户ID
+     *
      * @return mixed
      */
     public function getAll(int $user_id)
@@ -50,8 +54,9 @@ class UnreadTalkCache
     /**
      * 清除用户指定好友的未读消息
      *
-     * @param int $user_id 用户ID
+     * @param int    $user_id   用户ID
      * @param string $friend_id 好友ID
+     *
      * @return bool
      */
     public function del(int $user_id, string $friend_id)
@@ -63,6 +68,7 @@ class UnreadTalkCache
      * 清除用户所有好友未读数
      *
      * @param int $user_id
+     *
      * @return bool
      */
     public function delAll(int $user_id)
@@ -74,6 +80,7 @@ class UnreadTalkCache
      * 获取缓存key
      *
      * @param int $user_id 用户ID
+     *
      * @return string
      */
     private function _key(int $user_id)

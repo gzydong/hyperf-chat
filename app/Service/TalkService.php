@@ -26,6 +26,7 @@ class TalkService extends BaseService
      * 获取用户的聊天列表
      *
      * @param int $user_id 用户ID
+     *
      * @return array
      */
     public function talks(int $user_id)
@@ -56,7 +57,7 @@ class TalkService extends BaseService
             $data['friend_id']   = $item['friend_id'];
             $data['group_id']    = $item['group_id'];
             $data['name']        = '';//对方昵称/群名称
-            $data['unread_num']  = 0;//未读消息数量
+            $data['unread_num']  = 0; //未读消息数量
             $data['avatar']      = '';//默认头像
             $data['remark_name'] = '';//好友备注
             $data['msg_text']    = '......';
@@ -105,17 +106,17 @@ class TalkService extends BaseService
      * 同步未读的消息到数据库中
      *
      * @param int $user_id 用户ID
-     * @param $data
+     * @param     $data
      */
     public function updateUnreadTalkList(int $user_id, $data)
     {
         foreach ($data as $friend_id => $num) {
             UsersChatList::updateOrCreate([
-                'uid' => $user_id,
+                'uid'       => $user_id,
                 'friend_id' => intval($friend_id),
-                'type' => 1
+                'type'      => 1
             ], [
-                'status' => 1,
+                'status'     => 1,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
@@ -126,6 +127,7 @@ class TalkService extends BaseService
      * 处理聊天记录信息
      *
      * @param array $rows 聊天记录
+     *
      * @return array
      */
     public function handleChatRecords(array $rows)
@@ -186,12 +188,12 @@ class TalkService extends BaseService
                 case 3://3:入群消息/退群消息
                     if (isset($invites[$row['id']])) {
                         $rows[$k]['invite'] = [
-                            'type' => $invites[$row['id']]['type'],
+                            'type'         => $invites[$row['id']]['type'],
                             'operate_user' => [
-                                'id' => $invites[$row['id']]['operate_user_id'],
+                                'id'       => $invites[$row['id']]['operate_user_id'],
                                 'nickname' => User::where('id', $invites[$row['id']]['operate_user_id'])->value('nickname')
                             ],
-                            'users' => []
+                            'users'        => []
                         ];
 
                         if ($rows[$k]['invite']['type'] == 1 || $rows[$k]['invite']['type'] == 3) {
@@ -204,7 +206,7 @@ class TalkService extends BaseService
                 case 4://4:会话记录消息
                     if (isset($forwards[$row['id']])) {
                         $rows[$k]['forward'] = [
-                            'num' => substr_count($forwards[$row['id']]['records_id'], ',') + 1,
+                            'num'  => substr_count($forwards[$row['id']]['records_id'], ',') + 1,
                             'list' => json_decode($forwards[$row['id']]['text'], true) ?? []
                         ];
                     }
@@ -226,12 +228,13 @@ class TalkService extends BaseService
     /**
      * 查询对话页面的历史聊天记录
      *
-     * @param int $user_id 用户ID
-     * @param int $receive_id 接收者ID（好友ID或群ID）
-     * @param int $source 消息来源  1:好友消息 2:群聊消息
-     * @param int $record_id 上一次查询的聊天记录ID
-     * @param int $limit 查询数据长度
-     * @param array $msg_type 消息类型
+     * @param int   $user_id    用户ID
+     * @param int   $receive_id 接收者ID（好友ID或群ID）
+     * @param int   $source     消息来源  1:好友消息 2:群聊消息
+     * @param int   $record_id  上一次查询的聊天记录ID
+     * @param int   $limit      查询数据长度
+     * @param array $msg_type   消息类型
+     *
      * @return array
      */
     public function getChatRecords(int $user_id, int $receive_id, int $source, int $record_id, $limit = 30, $msg_type = [])
@@ -290,8 +293,9 @@ class TalkService extends BaseService
     /**
      * 获取转发会话记录信息
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id   用户ID
      * @param int $record_id 聊天记录ID
+     *
      * @return array
      */
     public function getForwardRecords(int $user_id, int $record_id)
@@ -332,10 +336,11 @@ class TalkService extends BaseService
     /**
      * 批量删除聊天消息
      *
-     * @param int $user_id 用户ID
-     * @param int $source 消息来源  1:好友消息 2:群聊消息
-     * @param int $receive_id 好友ID或者群聊ID
+     * @param int   $user_id    用户ID
+     * @param int   $source     消息来源  1:好友消息 2:群聊消息
+     * @param int   $receive_id 好友ID或者群聊ID
      * @param array $record_ids 聊天记录ID
+     *
      * @return bool
      */
     public function removeRecords(int $user_id, int $source, int $receive_id, array $record_ids)
@@ -360,8 +365,8 @@ class TalkService extends BaseService
 
         $data = array_map(function ($record_id) use ($user_id) {
             return [
-                'record_id' => $record_id,
-                'user_id' => $user_id,
+                'record_id'  => $record_id,
+                'user_id'    => $user_id,
                 'created_at' => date('Y-m-d H:i:s'),
             ];
         }, $ids->toArray());
@@ -372,8 +377,9 @@ class TalkService extends BaseService
     /**
      * 撤回单条聊天消息
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id   用户ID
      * @param int $record_id 聊天记录ID
+     *
      * @return array
      */
     public function revokeRecord(int $user_id, int $record_id)
@@ -405,9 +411,10 @@ class TalkService extends BaseService
     /**
      * 转发消息（单条转发）
      *
-     * @param int $user_id 转发的用户ID
-     * @param int $record_id 转发消息的记录ID
+     * @param int   $user_id     转发的用户ID
+     * @param int   $record_id   转发消息的记录ID
      * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' => 1,'id' => 1658]] 二维数组
+     *
      * @return array
      */
     public function forwardRecords(int $user_id, int $record_id, array $receive_ids)
@@ -441,11 +448,11 @@ class TalkService extends BaseService
         try {
             foreach ($receive_ids as $item) {
                 $res = ChatRecord::create([
-                    'source' => $item['source'],
-                    'msg_type' => $result->msg_type,
-                    'user_id' => $user_id,
+                    'source'     => $item['source'],
+                    'msg_type'   => $result->msg_type,
+                    'user_id'    => $user_id,
                     'receive_id' => $item['id'],
-                    'content' => $result->content,
+                    'content'    => $result->content,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
 
@@ -457,25 +464,25 @@ class TalkService extends BaseService
 
                 if ($result->msg_type == 2) {
                     if (!ChatRecordsFile::create([
-                        'record_id' => $res->id,
-                        'user_id' => $fileInfo->user_id,
-                        'file_source' => $fileInfo->file_source,
-                        'file_type' => $fileInfo->file_type,
-                        'save_type' => $fileInfo->save_type,
+                        'record_id'     => $res->id,
+                        'user_id'       => $fileInfo->user_id,
+                        'file_source'   => $fileInfo->file_source,
+                        'file_type'     => $fileInfo->file_type,
+                        'save_type'     => $fileInfo->save_type,
                         'original_name' => $fileInfo->original_name,
-                        'file_suffix' => $fileInfo->file_suffix,
-                        'file_size' => $fileInfo->file_size,
-                        'save_dir' => $fileInfo->save_dir,
-                        'created_at' => date('Y-m-d H:i:s')
+                        'file_suffix'   => $fileInfo->file_suffix,
+                        'file_size'     => $fileInfo->file_size,
+                        'save_dir'      => $fileInfo->save_dir,
+                        'created_at'    => date('Y-m-d H:i:s')
                     ])) {
                         throw new Exception('插入文件消息记录失败');
                     }
                 } else if ($result->msg_type == 5) {
                     if (!ChatRecordsCode::create([
-                        'record_id' => $res->id,
-                        'user_id' => $user_id,
-                        'code_lang' => $codeBlock->code_lang,
-                        'code' => $codeBlock->code,
+                        'record_id'  => $res->id,
+                        'user_id'    => $user_id,
+                        'code_lang'  => $codeBlock->code_lang,
+                        'code'       => $codeBlock->code,
                         'created_at' => date('Y-m-d H:i:s')
                     ])) {
                         throw new Exception('插入代码消息记录失败');
@@ -495,9 +502,9 @@ class TalkService extends BaseService
     /**
      * 转发消息（多条合并转发）
      *
-     * @param int $user_id 转发的用户ID
-     * @param int $receive_id 当前转发消息的所属者(好友ID或者群聊ID)
-     * @param int $source 消息来源  1:好友消息 2:群聊消息
+     * @param int   $user_id     转发的用户ID
+     * @param int   $receive_id  当前转发消息的所属者(好友ID或者群聊ID)
+     * @param int   $source      消息来源  1:好友消息 2:群聊消息
      * @param array $records_ids 转发消息的记录ID
      * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' => 1,'id' => 1658]] 二维数组
      *
@@ -552,19 +559,19 @@ class TalkService extends BaseService
                 case 1:
                     $jsonText[] = [
                         'nickname' => $row->nickname,
-                        'text' => mb_substr(str_replace(PHP_EOL, "", $row->content), 0, 30)
+                        'text'     => mb_substr(str_replace(PHP_EOL, "", $row->content), 0, 30)
                     ];
                     break;
                 case 2:
                     $jsonText[] = [
                         'nickname' => $row->nickname,
-                        'text' => '【文件消息】'
+                        'text'     => '【文件消息】'
                     ];
                     break;
                 case 3:
                     $jsonText[] = [
                         'nickname' => $row->nickname,
-                        'text' => '【代码消息】'
+                        'text'     => '【代码消息】'
                     ];
                     break;
             }
@@ -575,9 +582,9 @@ class TalkService extends BaseService
         try {
             foreach ($receive_ids as $item) {
                 $res = ChatRecord::create([
-                    'source' => $item['source'],
-                    'msg_type' => 4,
-                    'user_id' => $user_id,
+                    'source'     => $item['source'],
+                    'msg_type'   => 4,
+                    'user_id'    => $user_id,
                     'receive_id' => $item['id'],
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
@@ -587,16 +594,16 @@ class TalkService extends BaseService
                 }
 
                 $insRecordIds[] = [
-                    'record_id' => $res->id,
+                    'record_id'  => $res->id,
                     'receive_id' => $item['id'],
-                    'source' => $item['source']
+                    'source'     => $item['source']
                 ];
 
                 if (!ChatRecordsForward::create([
-                    'record_id' => $res->id,
-                    'user_id' => $user_id,
+                    'record_id'  => $res->id,
+                    'user_id'    => $user_id,
                     'records_id' => implode(',', $records_ids),
-                    'text' => json_encode($jsonText),
+                    'text'       => json_encode($jsonText),
                     'created_at' => date('Y-m-d H:i:s'),
                 ])) {
                     throw new Exception('插入转发消息失败');
@@ -615,12 +622,13 @@ class TalkService extends BaseService
     /**
      * 关键词搜索聊天记录
      *
-     * @param int $user_id 用户ID
-     * @param int $receive_id 接收者ID(用户ID或群聊接收ID)
-     * @param int $source 聊天来源（1:私信 2:群聊）
-     * @param int $page 当前查询分页
-     * @param int $page_size 分页大小
-     * @param array $params 查询参数
+     * @param int   $user_id    用户ID
+     * @param int   $receive_id 接收者ID(用户ID或群聊接收ID)
+     * @param int   $source     聊天来源（1:私信 2:群聊）
+     * @param int   $page       当前查询分页
+     * @param int   $page_size  分页大小
+     * @param array $params     查询参数
+     *
      * @return mixed
      */
     public function searchRecords(int $user_id, int $receive_id, int $source, int $page, int $page_size, array $params)
@@ -677,6 +685,7 @@ class TalkService extends BaseService
      *
      * @param $message
      * @param $fileInfo
+     *
      * @return bool|int
      */
     public function createImgMessage($message, $fileInfo)
@@ -710,6 +719,7 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $codeBlock
+     *
      * @return bool|int
      */
     public function createCodeMessage(array $message, array $codeBlock)
@@ -742,6 +752,7 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $emoticon
+     *
      * @return bool|int
      */
     public function createEmoticonMessage(array $message, array $emoticon)
@@ -774,6 +785,7 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $emoticon
+     *
      * @return bool|int
      */
     public function createFileMessage(array $message, array $emoticon)

@@ -9,6 +9,7 @@
  * @author Yuandong<837215079@qq.com>
  * @link   https://github.com/gzydong/hyperf-chat
  */
+
 namespace App\Bootstrap;
 
 use Hyperf\Framework\Bootstrap\ServerStartCallback;
@@ -19,6 +20,7 @@ use Hyperf\Redis\Redis;
  * 自定义服务启动前回调事件
  *
  * Class ServerStart
+ *
  * @package App\Bootstrap
  */
 class ServerStart extends ServerStartCallback

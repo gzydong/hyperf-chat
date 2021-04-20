@@ -9,6 +9,7 @@
  * @author Yuandong<837215079@qq.com>
  * @link   https://github.com/gzydong/hyperf-chat
  */
+
 namespace App\Controller\Api\V1;
 
 use Hyperf\Di\Annotation\Inject;
@@ -47,16 +48,16 @@ class EmoticonController extends CController
     public function getUserEmoticon()
     {
         $emoticonList = [];
-        $user_id = $this->uid();
+        $user_id      = $this->uid();
 
         if ($ids = $this->emoticonService->getInstallIds($user_id)) {
             $items = Emoticon::whereIn('id', $ids)->get(['id', 'name', 'url']);
             foreach ($items as $item) {
                 $emoticonList[] = [
                     'emoticon_id' => $item->id,
-                    'url' => get_media_url($item->url),
-                    'name' => $item->name,
-                    'list' => $this->emoticonService->getDetailsAll([
+                    'url'         => get_media_url($item->url),
+                    'name'        => $item->name,
+                    'list'        => $this->emoticonService->getDetailsAll([
                         ['emoticon_id', '=', $item->id],
                         ['user_id', '=', 0]
                     ])
@@ -65,7 +66,7 @@ class EmoticonController extends CController
         }
 
         return $this->response->success([
-            'sys_emoticon' => $emoticonList,
+            'sys_emoticon'     => $emoticonList,
             'collect_emoticon' => $this->emoticonService->getDetailsAll([
                 ['emoticon_id', '=', 0],
                 ['user_id', '=', $user_id]
@@ -85,7 +86,7 @@ class EmoticonController extends CController
             $ids = $this->emoticonService->getInstallIds($this->uid());
             array_walk($items, function (&$item) use ($ids) {
                 $item['status'] = in_array($item['id'], $ids) ? 1 : 0;
-                $item['url'] = get_media_url($item['url']);
+                $item['url']    = get_media_url($item['url']);
             });
         }
 
@@ -102,7 +103,7 @@ class EmoticonController extends CController
         $params = $this->request->all();
         $this->validate($params, [
             'emoticon_id' => 'required|integer',
-            'type' => 'required|in:1,2'
+            'type'        => 'required|in:1,2'
         ]);
 
         $user_id = $this->uid();
@@ -127,9 +128,9 @@ class EmoticonController extends CController
 
             $data = [
                 'emoticon_id' => $emoticonInfo->id,
-                'url' => get_media_url($emoticonInfo->url),
-                'name' => $emoticonInfo->name,
-                'list' => $this->emoticonService->getDetailsAll([
+                'url'         => get_media_url($emoticonInfo->url),
+                'name'        => $emoticonInfo->name,
+                'list'        => $this->emoticonService->getDetailsAll([
                     ['emoticon_id', '=', $emoticonInfo->id]
                 ])
             ];
@@ -144,6 +145,7 @@ class EmoticonController extends CController
      * @RequestMapping(path="upload-emoticon", methods="post")
      *
      * @param UploadService $uploadService
+     *
      * @return ResponseInterface
      */
     public function uploadEmoticon(UploadService $uploadService)
@@ -176,11 +178,11 @@ class EmoticonController extends CController
         }
 
         $result = EmoticonDetail::create([
-            'user_id' => $this->uid(),
-            'url' => $save_path,
+            'user_id'     => $this->uid(),
+            'url'         => $save_path,
             'file_suffix' => $ext,
-            'file_size' => $file->getSize(),
-            'created_at' => time()
+            'file_size'   => $file->getSize(),
+            'created_at'  => time()
         ]);
 
         if (!$result) {
@@ -189,7 +191,7 @@ class EmoticonController extends CController
 
         return $this->response->success([
             'media_id' => $result->id,
-            'src' => get_media_url($result->url)
+            'src'      => get_media_url($result->url)
         ]);
     }
 

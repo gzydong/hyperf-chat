@@ -11,6 +11,7 @@ use Hyperf\WebSocketServer\Exception\WebSocketHandeShakeException;
 
 /**
  * Class JwtAuthExceptionHandler
+ *
  * @package App\Exception\Handler
  */
 class JwtAuthExceptionHandler extends ExceptionHandler
@@ -21,9 +22,9 @@ class JwtAuthExceptionHandler extends ExceptionHandler
         if ($throwable instanceof TokenValidException) {
             // 格式化输出
             $data = json_encode([
-                'code' => $throwable->getCode(),
+                'code'    => $throwable->getCode(),
                 'message' => $throwable->getMessage(),
-                'data' => []
+                'data'    => []
             ], JSON_UNESCAPED_UNICODE);
 
             // 阻止异常冒泡
@@ -38,6 +39,7 @@ class JwtAuthExceptionHandler extends ExceptionHandler
      * 判断该异常处理器是否要对该异常进行处理
      *
      * @param Throwable $throwable
+     *
      * @return bool
      */
     public function isValid(Throwable $throwable): bool

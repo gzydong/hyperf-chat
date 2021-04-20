@@ -9,6 +9,7 @@
  * @author Yuandong<837215079@qq.com>
  * @link   https://github.com/gzydong/hyperf-chat
  */
+
 namespace App\Exception;
 
 use Hyperf\Server\Exception\ServerException;
@@ -17,6 +18,7 @@ use Hyperf\Server\Exception\ServerException;
  * 验证器异常类
  *
  * Class ValidateException
+ *
  * @package App\Exception
  */
 class ValidateException extends ServerException

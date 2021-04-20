@@ -40,7 +40,8 @@ class DownloadController extends CController
      * @RequestMapping(path="user-chat-file", methods="get")
      *
      * @param ResponseInterface $response
-     * @param UploadService $uploadService
+     * @param UploadService     $uploadService
+     *
      * @return \Psr\Http\Message\ResponseInterface
      */
     public function userChatFile(ResponseInterface $response, UploadService $uploadService)
@@ -84,7 +85,8 @@ class DownloadController extends CController
      * @RequestMapping(path="article-annex", methods="get")
      *
      * @param ResponseInterface $response
-     * @param UploadService $uploadService
+     * @param UploadService     $uploadService
+     *
      * @return \Psr\Http\Message\ResponseInterface
      */
     public function articleAnnex(ResponseInterface $response, UploadService $uploadService)

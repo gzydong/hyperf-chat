@@ -9,6 +9,7 @@
  * @author Yuandong<837215079@qq.com>
  * @link   https://github.com/gzydong/hyperf-chat
  */
+
 namespace App\Controller\Api\V1;
 
 use Hyperf\Di\Annotation\Inject;
@@ -49,12 +50,12 @@ class UsersController extends CController
     {
         $userInfo = $this->userService->findById($this->uid(), ['mobile', 'nickname', 'avatar', 'motto', 'email', 'gender']);
         return $this->response->success([
-            'mobile' => $userInfo->mobile,
+            'mobile'   => $userInfo->mobile,
             'nickname' => $userInfo->nickname,
-            'avatar' => $userInfo->avatar,
-            'motto' => $userInfo->motto,
-            'email' => $userInfo->email,
-            'gender' => $userInfo->gender
+            'avatar'   => $userInfo->avatar,
+            'motto'    => $userInfo->motto,
+            'email'    => $userInfo->email,
+            'gender'   => $userInfo->gender
         ]);
     }
 
@@ -68,17 +69,17 @@ class UsersController extends CController
         $userInfo = $this->userService->findById($this->uid(), ['id', 'nickname', 'avatar', 'motto', 'gender']);
         return $this->response->success([
             'user_info' => [
-                'uid' => $userInfo->id,
+                'uid'      => $userInfo->id,
                 'nickname' => $userInfo->nickname,
-                'avatar' => $userInfo->avatar,
-                'motto' => $userInfo->motto,
-                'gender' => $userInfo->gender
+                'avatar'   => $userInfo->avatar,
+                'motto'    => $userInfo->motto,
+                'gender'   => $userInfo->gender
             ],
-            'setting' => [
-                'theme_mode' => '',
-                'theme_bag_img' => '',
-                'theme_color' => '',
-                'notify_cue_tone' => '',
+            'setting'   => [
+                'theme_mode'            => '',
+                'theme_bag_img'         => '',
+                'theme_color'           => '',
+                'notify_cue_tone'       => '',
                 'keyboard_event_notify' => ''
             ]
         ]);
@@ -94,9 +95,9 @@ class UsersController extends CController
         $params = $this->request->inputs(['nickname', 'avatar', 'motto', 'gender']);
         $this->validate($params, [
             'nickname' => 'required',
-            'motto' => 'present|max:100',
-            'gender' => 'required|in:0,1,2',
-            'avatar' => 'present|url'
+            'motto'    => 'present|max:100',
+            'gender'   => 'required|in:0,1,2',
+            'avatar'   => 'present|url'
         ]);
 
         $isTrue = User::where('id', $this->uid())->update($params);
@@ -135,7 +136,7 @@ class UsersController extends CController
         $params = $this->request->inputs(['user_id']);
         $this->validate($params, ['user_id' => 'required|integer']);
 
-        if ($data = $this->userService->getUserCard($params['user_id'],$this->uid())) {
+        if ($data = $this->userService->getUserCard($params['user_id'], $this->uid())) {
             return $this->response->success($data);
         }
 
@@ -174,13 +175,14 @@ class UsersController extends CController
      * @RequestMapping(path="change-mobile", methods="post")
      *
      * @param SmsCodeService $smsCodeService
+     *
      * @return ResponseInterface
      */
     public function editUserMobile(SmsCodeService $smsCodeService)
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
         $this->validate($params, [
-            'mobile' => "required|regex:/^1[345789][0-9]{9}$/",
+            'mobile'   => "required|regex:/^1[345789][0-9]{9}$/",
             'password' => 'required',
             'sms_code' => 'required|digits:6'
         ]);
@@ -214,8 +216,8 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['email', 'password', 'email_code']);
         $this->validate($params, [
-            'email' => 'required|email',
-            'password' => 'required',
+            'email'      => 'required|email',
+            'password'   => 'required',
             'email_code' => 'required|digits:6'
         ]);
 
@@ -224,7 +226,7 @@ class UsersController extends CController
             return $this->response->fail('验证码填写错误...');
         }
 
-        $uid = $this->uid();
+        $uid           = $this->uid();
         $user_password = User::where('id', $uid)->value('password');
         if (!Hash::check($params['password'], $user_password)) {
             return $this->response->fail('账号密码验证失败...');
@@ -246,6 +248,7 @@ class UsersController extends CController
      * @RequestMapping(path="send-mobile-code", methods="post")
      *
      * @param SmsCodeService $smsCodeService
+     *
      * @return ResponseInterface
      */
     public function sendMobileCode(SmsCodeService $smsCodeService)
@@ -283,6 +286,7 @@ class UsersController extends CController
      * @RequestMapping(path="send-change-email-code", methods="post")
      *
      * @param SendEmailCode $sendEmailCode
+     *
      * @return ResponseInterface
      */
     public function sendChangeEmailCode(SendEmailCode $sendEmailCode)

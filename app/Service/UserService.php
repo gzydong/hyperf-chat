@@ -14,8 +14,9 @@ class UserService extends BaseService
     /**
      * 获取用户信息
      *
-     * @param int $user_id 用户ID
-     * @param array $field 查询字段
+     * @param int   $user_id 用户ID
+     * @param array $field   查询字段
+     *
      * @return mixed
      */
     public function findById(int $user_id, $field = ['*'])
@@ -26,8 +27,9 @@ class UserService extends BaseService
     /**
      * 登录逻辑
      *
-     * @param string $mobile 手机号
+     * @param string $mobile   手机号
      * @param string $password 登录密码
+     *
      * @return array|bool
      */
     public function login(string $mobile, string $password)
@@ -47,23 +49,24 @@ class UserService extends BaseService
      * 账号注册逻辑
      *
      * @param array $data 用户数据
+     *
      * @return bool
      */
     public function register(array $data)
     {
         Db::beginTransaction();
         try {
-            $data['password'] = Hash::make($data['password']);
+            $data['password']   = Hash::make($data['password']);
             $data['created_at'] = date('Y-m-d H:i:s');
 
             $result = User::create($data);
 
             // 创建用户的默认笔记分类
             ArticleClass::create([
-                'user_id' => $result->id,
+                'user_id'    => $result->id,
                 'class_name' => '我的笔记',
                 'is_default' => 1,
-                'sort' => 1,
+                'sort'       => 1,
                 'created_at' => time()
             ]);
 
@@ -79,8 +82,9 @@ class UserService extends BaseService
     /**
      * 账号重置密码
      *
-     * @param string $mobile 用户手机好
+     * @param string $mobile   用户手机好
      * @param string $password 新密码
+     *
      * @return mixed
      */
     public function resetPassword(string $mobile, string $password)
@@ -91,8 +95,9 @@ class UserService extends BaseService
     /**
      * 修改绑定的手机号
      *
-     * @param int $user_id 用户ID
-     * @param string $mobile 换绑手机号
+     * @param int    $user_id 用户ID
+     * @param string $mobile  换绑手机号
+     *
      * @return array|bool
      */
     public function changeMobile(int $user_id, string $mobile)
@@ -108,25 +113,26 @@ class UserService extends BaseService
     /**
      * 通过手机号查找用户
      *
-     * @param int $friend_id 用户ID
+     * @param int $friend_id  用户ID
      * @param int $me_user_id 当前登录用户的ID
+     *
      * @return array
      */
-    public function getUserCard(int $friend_id,int $me_user_id)
+    public function getUserCard(int $friend_id, int $me_user_id)
     {
         $info = User::select(['id', 'mobile', 'nickname', 'avatar', 'gender', 'motto'])->where('id', $friend_id)->first();
-        if(!$info)  return [];
+        if (!$info) return [];
 
-        $info = $info->toArray();
-        $info['friend_status'] = 0;//朋友关系状态  0:本人  1:陌生人 2:朋友
+        $info                    = $info->toArray();
+        $info['friend_status']   = 0;//朋友关系状态  0:本人  1:陌生人 2:朋友
         $info['nickname_remark'] = '';
-        $info['friend_apply'] = 0;
+        $info['friend_apply']    = 0;
 
         // 判断查询信息是否是自己
         if ($friend_id != $me_user_id) {
             $friendInfo = UsersFriend::
-                where('user1', '=', $friend_id > $me_user_id ? $me_user_id :$friend_id)
-                ->where('user2', '=', $friend_id < $me_user_id ? $me_user_id :$friend_id)
+            where('user1', '=', $friend_id > $me_user_id ? $me_user_id : $friend_id)
+                ->where('user2', '=', $friend_id < $me_user_id ? $me_user_id : $friend_id)
                 ->where('status', 1)
                 ->first(['id', 'user1', 'user2', 'active', 'user1_remark', 'user2_remark']);
 

@@ -15,17 +15,17 @@ use Hyperf\Contract\StdoutLoggerInterface;
 use Psr\Log\LogLevel;
 
 return [
-    'app_name' => env('APP_NAME', 'skeleton'),
-    'app_env' => env('APP_ENV', 'dev'),
+    'app_name'       => env('APP_NAME', 'skeleton'),
+    'app_env'        => env('APP_ENV', 'dev'),
     'scan_cacheable' => env('SCAN_CACHEABLE', false),
 
     'ip_address' => env('IP_ADDRESS', ''),
 
     // 运行模式（预留）
-    'run_mode' => 'cluster',
+    'run_mode'   => 'cluster',
 
     // 域名相关配置
-    'domain' => [
+    'domain'     => [
         'web_url' => env('WEB_URL', ''),//Web 端首页地址
         'img_url' => env('IMG_URL', ''),//设置文件图片访问的域名
     ],

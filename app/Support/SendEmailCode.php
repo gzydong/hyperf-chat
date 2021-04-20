@@ -6,15 +6,16 @@ namespace App\Support;
 class SendEmailCode
 {
     const FORGET_PASSWORD = 'forget_password';
-    const CHANGE_MOBILE = 'change_mobile';
+    const CHANGE_MOBILE   = 'change_mobile';
     const CHANGE_REGISTER = 'user_register';
-    const CHANGE_EMAIL = 'change_email';
+    const CHANGE_EMAIL    = 'change_email';
 
     /**
      * 获取缓存key
      *
      * @param string $type
      * @param string $mobile
+     *
      * @return string
      */
     private function getKey(string $type, string $mobile)
@@ -25,9 +26,10 @@ class SendEmailCode
     /**
      * 检测验证码是否正确
      *
-     * @param string $type 发送类型
+     * @param string $type  发送类型
      * @param string $email 手机号
-     * @param string $code 验证码
+     * @param string $code  验证码
+     *
      * @return bool
      */
     public function check(string $type, string $email, string $code)
@@ -43,9 +45,10 @@ class SendEmailCode
     /**
      * 发送邮件验证码
      *
-     * @param string $type 类型
+     * @param string $type  类型
      * @param string $title 邮件标题
      * @param string $email 邮箱地址
+     *
      * @return boolean
      */
     public function send(string $type, string $title, string $email)
@@ -67,6 +70,7 @@ class SendEmailCode
      * 获取缓存的验证码
      *
      * @param string $key
+     *
      * @return mixed
      */
     public function getCode(string $key)
@@ -77,9 +81,10 @@ class SendEmailCode
     /**
      * 设置验证码缓存
      *
-     * @param string $key 缓存key
-     * @param string $sms_code 验证码
-     * @param float|int $exp 过期时间
+     * @param string    $key      缓存key
+     * @param string    $sms_code 验证码
+     * @param float|int $exp      过期时间
+     *
      * @return mixed
      */
     public function setCode(string $key, string $sms_code, $exp = 60 * 15)
@@ -90,8 +95,9 @@ class SendEmailCode
     /**
      * 删除验证码缓存
      *
-     * @param string $type 类型
+     * @param string $type  类型
      * @param string $email 邮箱地址
+     *
      * @return mixed
      */
     public function delCode(string $type, string $email)

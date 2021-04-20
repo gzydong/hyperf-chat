@@ -8,6 +8,7 @@ use Hyperf\HttpMessage\Upload\UploadedFile;
  * 文件上传服务
  *
  * Class UploadService
+ *
  * @package App\Service
  */
 class UploadService extends BaseService
@@ -31,8 +32,8 @@ class UploadService extends BaseService
      * 上传媒体图片
      *
      * @param UploadedFile $file
-     * @param string $dir 文件夹路径
-     * @param string $filename 文件名称
+     * @param string       $dir      文件夹路径
+     * @param string       $filename 文件名称
      *
      * @return bool|string
      */

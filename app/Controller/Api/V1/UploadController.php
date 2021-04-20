@@ -56,7 +56,7 @@ class UploadController extends CController
     public function fileStream()
     {
         $fileStream = $this->request->post('fileStream', '');
-        $data = base64_decode(str_replace(['data:image/png;base64,', ' '], ['', '+'], $fileStream));
+        $data       = base64_decode(str_replace(['data:image/png;base64,', ' '], ['', '+'], $fileStream));
 
         $path = '/media/images/avatar/' . date('Ymd') . '/' . uniqid() . date('His') . '.png';
         $this->uploadService->makeDirectory($this->uploadService->driver('/media/images/avatar/' . date('Ymd') . '/'));
@@ -89,22 +89,22 @@ class UploadController extends CController
      */
     public function fileSubareaUpload()
     {
-        $file = $this->request->file('file');
+        $file   = $this->request->file('file');
         $params = $this->request->inputs(['name', 'hash', 'ext', 'size', 'split_index', 'split_num']);
         $this->validate($params, [
-            'name' => "required",
-            'hash' => 'required',
-            'ext' => 'required',
-            'size' => 'required',
+            'name'        => "required",
+            'hash'        => 'required',
+            'ext'         => 'required',
+            'size'        => 'required',
             'split_index' => 'required',
-            'split_num' => 'required'
+            'split_num'   => 'required'
         ]);
 
         if (!$file->isValid()) {
             return $this->response->fail();
         }
 
-        $user_id = $this->uid();
+        $user_id   = $this->uid();
         $uploadRes = $this->splitUploadService->upload($user_id, $file, $params['hash'], intval($params['split_index']), intval($params['size']));
         if (!$uploadRes) {
             return $this->response->fail('上传文件失败...');
@@ -118,7 +118,7 @@ class UploadController extends CController
 
             return $this->response->success([
                 'is_file_merge' => true,
-                'hash' => $params['hash']
+                'hash'          => $params['hash']
             ]);
         }
 

@@ -23,6 +23,7 @@ class Hash
      * Hash the given value.
      *
      * @param string $value
+     *
      * @return string
      */
     public static function make(string $value)
@@ -35,6 +36,7 @@ class Hash
      *
      * @param string $value
      * @param string $hashedValue
+     *
      * @return bool
      */
     public static function check(string $value, string $hashedValue)

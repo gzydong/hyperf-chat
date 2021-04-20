@@ -33,6 +33,7 @@ use App\Support\SocketIOParser;
 
 /**
  * Class WebSocketController
+ *
  * @package App\Controller
  */
 class WebSocketController implements OnMessageInterface, OnOpenInterface, OnCloseInterface
@@ -71,7 +72,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * 消息事件绑定
      */
     const EVENTS = [
-        SocketConstants::EVENT_TALK => 'onTalk',
+        SocketConstants::EVENT_TALK     => 'onTalk',
         SocketConstants::EVENT_KEYBOARD => 'onKeyboard',
     ];
 
@@ -79,11 +80,11 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * 连接创建成功回调事件
      *
      * @param Response|Server $server
-     * @param Request $request
+     * @param Request         $request
      */
     public function onOpen($server, Request $request): void
     {
-        $token = $request->get['token'] ?? '';
+        $token    = $request->get['token'] ?? '';
         $userInfo = $this->jwt->getParserData($token);
         stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
 
@@ -109,8 +110,8 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
             $this->producer->produce(
                 new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
                     'user_id' => $userInfo['user_id'],
-                    'status' => 1,
-                    'notify' => '好友上线通知...'
+                    'status'  => 1,
+                    'notify'  => '好友上线通知...'
                 ])
             );
         }
@@ -120,7 +121,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * 消息接收回调事件
      *
      * @param Response|Server $server
-     * @param Frame $frame
+     * @param Frame           $frame
      */
     public function onMessage($server, Frame $frame): void
     {
@@ -148,8 +149,8 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * 连接创建成功回调事件
      *
      * @param Response|\Swoole\Server $server
-     * @param int $fd
-     * @param int $reactorId
+     * @param int                     $fd
+     * @param int                     $reactorId
      */
     public function onClose($server, int $fd, int $reactorId): void
     {
@@ -167,8 +168,8 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
             $this->producer->produce(
                 new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
                     'user_id' => $user_id,
-                    'status' => 0,
-                    'notify' => '好友离线通知通知...'
+                    'status'  => 0,
+                    'notify'  => '好友离线通知通知...'
                 ])
             );
         }

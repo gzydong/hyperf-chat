@@ -44,6 +44,7 @@ class HashIdsHelper
      * 加密
      *
      * @param mixed ...$numbers
+     *
      * @return string
      */
     public static function encode(...$numbers)
@@ -55,6 +56,7 @@ class HashIdsHelper
      * 解密
      *
      * @param string $hash
+     *
      * @return array|mixed
      * @throws \Exception
      */

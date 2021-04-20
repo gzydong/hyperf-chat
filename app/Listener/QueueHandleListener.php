@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace App\Listener;
 
 use Hyperf\AsyncQueue\Event\AfterHandle;
@@ -38,7 +39,7 @@ class QueueHandleListener implements ListenerInterface
 
     public function __construct(LoggerFactory $loggerFactory, FormatterInterface $formatter)
     {
-        $this->logger = $loggerFactory->get('queue');
+        $this->logger    = $loggerFactory->get('queue');
         $this->formatter = $formatter;
     }
 
@@ -55,9 +56,9 @@ class QueueHandleListener implements ListenerInterface
     public function process(object $event)
     {
         if ($event instanceof Event && $event->message->job()) {
-            $job = $event->message->job();
+            $job      = $event->message->job();
             $jobClass = get_class($job);
-            $date = date('Y-m-d H:i:s');
+            $date     = date('Y-m-d H:i:s');
 
             switch (true) {
                 case $event instanceof BeforeHandle:

@@ -20,6 +20,7 @@ use App\Support\Response;
  * 基类控制器
  *
  * Class CController
+ *
  * @package App\Controller\Api\V1
  */
 class CController extends AbstractController

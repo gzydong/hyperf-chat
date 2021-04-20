@@ -23,6 +23,7 @@ class GroupService extends BaseService
      * 获取用户所在的群聊
      *
      * @param int $user_id 用户ID
+     *
      * @return array
      */
     public function getGroups(int $user_id): array
@@ -56,9 +57,10 @@ class GroupService extends BaseService
     /**
      * 创建群组
      *
-     * @param int $user_id 用户ID
+     * @param int   $user_id    用户ID
      * @param array $group_info 群聊名称
      * @param array $friend_ids 好友的用户ID
+     *
      * @return array
      */
     public function create(int $user_id, array $group_info, $friend_ids = [])
@@ -143,7 +145,8 @@ class GroupService extends BaseService
      * 解散群组(群主权限)
      *
      * @param int $group_id 群ID
-     * @param int $user_id 用户ID
+     * @param int $user_id  用户ID
+     *
      * @return bool
      */
     public function dismiss(int $group_id, int $user_id)
@@ -171,9 +174,10 @@ class GroupService extends BaseService
     /**
      * 邀请加入群组
      *
-     * @param int $user_id 用户ID
-     * @param int $group_id 聊天群ID
+     * @param int   $user_id    用户ID
+     * @param int   $group_id   聊天群ID
      * @param array $friend_ids 被邀请的用户ID
+     *
      * @return array
      */
     public function invite(int $user_id, int $group_id, $friend_ids = [])
@@ -276,8 +280,9 @@ class GroupService extends BaseService
     /**
      * 退出群组(仅普通管理员及群成员)
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id  用户ID
      * @param int $group_id 群组ID
+     *
      * @return array
      */
     public function quit(int $user_id, int $group_id)
@@ -329,9 +334,10 @@ class GroupService extends BaseService
     /**
      * 踢出群组(管理员特殊权限)
      *
-     * @param int $group_id 群ID
-     * @param int $user_id 操作用户ID
+     * @param int   $group_id   群ID
+     * @param int   $user_id    操作用户ID
      * @param array $member_ids 群成员ID
+     *
      * @return array
      */
     public function removeMember(int $group_id, int $user_id, array $member_ids)

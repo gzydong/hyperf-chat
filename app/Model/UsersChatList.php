@@ -7,16 +7,16 @@ namespace App\Model;
 /**
  * 聊天列表组数据表模型
  *
- * @property int $id 聊天列表ID
- * @property int $type 聊天类型[1:好友;2:群聊;]
- * @property int $uid 用户ID
- * @property int $friend_id 好友ID
- * @property int $group_id 群组ID
- * @property int $status 列表状态
- * @property int $is_top 是否置顶
- * @property int $not_disturb 是否消息免打扰
- * @property string $created_at 创建时间
- * @property string $updated_at 更新时间
+ * @property int    $id          聊天列表ID
+ * @property int    $type        聊天类型[1:好友;2:群聊;]
+ * @property int    $uid         用户ID
+ * @property int    $friend_id   好友ID
+ * @property int    $group_id    群组ID
+ * @property int    $status      列表状态
+ * @property int    $is_top      是否置顶
+ * @property int    $not_disturb 是否消息免打扰
+ * @property string $created_at  创建时间
+ * @property string $updated_at  更新时间
  *
  * @package App\Model
  */
@@ -52,48 +52,49 @@ class UsersChatList extends BaseModel
      * @var array
      */
     protected $casts = [
-        'id' => 'integer',
-        'type' => 'integer',
-        'uid' => 'integer',
-        'friend_id' => 'integer',
-        'group_id' => 'integer',
-        'status' => 'integer',
-        'is_top' => 'integer',
+        'id'          => 'integer',
+        'type'        => 'integer',
+        'uid'         => 'integer',
+        'friend_id'   => 'integer',
+        'group_id'    => 'integer',
+        'status'      => 'integer',
+        'is_top'      => 'integer',
         'not_disturb' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'created_at'  => 'datetime',
+        'updated_at'  => 'datetime'
     ];
 
     /**
      * 创建聊天列表记录
      *
-     * @param int $user_id 用户ID
+     * @param int $user_id    用户ID
      * @param int $receive_id 接收者ID
-     * @param int $type 创建类型 1:私聊  2:群聊
+     * @param int $type       创建类型 1:私聊  2:群聊
+     *
      * @return array
      */
     public static function addItem(int $user_id, int $receive_id, int $type)
     {
         $result = self::where('uid', $user_id)->where('type', $type)->where($type == 1 ? 'friend_id' : 'group_id', $receive_id)->first();
         if ($result) {
-            $result->status = 1;
+            $result->status     = 1;
             $result->updated_at = date('Y-m-d H:i:s');
             $result->save();
 
             return [
-                'id' => $result->id,
-                'type' => $result->type,
+                'id'        => $result->id,
+                'type'      => $result->type,
                 'friend_id' => $result->friend_id,
-                'group_id' => $result->group_id,
+                'group_id'  => $result->group_id,
             ];
         }
 
         if (!$result = self::create([
-            'type' => $type,
-            'uid' => $user_id,
-            'status' => 1,
-            'friend_id' => $type == 1 ? $receive_id : 0,
-            'group_id' => $type == 2 ? $receive_id : 0,
+            'type'       => $type,
+            'uid'        => $user_id,
+            'status'     => 1,
+            'friend_id'  => $type == 1 ? $receive_id : 0,
+            'group_id'   => $type == 2 ? $receive_id : 0,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ])) {
@@ -101,25 +102,26 @@ class UsersChatList extends BaseModel
         }
 
         return [
-            'id' => $result->id,
-            'type' => $result->type,
+            'id'        => $result->id,
+            'type'      => $result->type,
             'friend_id' => $result->friend_id,
-            'group_id' => $result->group_id,
+            'group_id'  => $result->group_id,
         ];
     }
 
     /**
      * 聊天对话列表置顶操作
      *
-     * @param int $user_id 用户ID
-     * @param int $list_id 对话列表ID
-     * @param bool $is_top 是否置顶（true:是 false:否）
+     * @param int  $user_id 用户ID
+     * @param int  $list_id 对话列表ID
+     * @param bool $is_top  是否置顶（true:是 false:否）
+     *
      * @return bool
      */
     public static function topItem(int $user_id, int $list_id, $is_top = true)
     {
         return (bool)self::where('id', $list_id)->where('uid', $user_id)->update([
-            'is_top' => $is_top ? 1 : 0,
+            'is_top'     => $is_top ? 1 : 0,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
     }
@@ -128,8 +130,9 @@ class UsersChatList extends BaseModel
      * 删除聊天列表
      *
      * @param int $user_id 用户ID
-     * @param int $id 聊天列表ID、好友ID或群聊ID
-     * @param int $type ID类型 （1：聊天列表ID  2:好友ID  3:群聊ID）
+     * @param int $id      聊天列表ID、好友ID或群聊ID
+     * @param int $type    ID类型 （1：聊天列表ID  2:好友ID  3:群聊ID）
+     *
      * @return bool
      */
     public static function delItem(int $user_id, int $id, $type = 1)
@@ -147,10 +150,11 @@ class UsersChatList extends BaseModel
     /**
      * 设置消息免打扰
      *
-     * @param int $user_id 用户ID
-     * @param int $receive_id 接收者ID
-     * @param int $type 接收者类型（1:好友  2:群组）
+     * @param int $user_id     用户ID
+     * @param int $receive_id  接收者ID
+     * @param int $type        接收者类型（1:好友  2:群组）
      * @param int $not_disturb 是否免打扰
+     *
      * @return boolean
      */
     public static function notDisturbItem(int $user_id, int $receive_id, int $type, int $not_disturb)
