@@ -378,9 +378,9 @@ class ChatMessageConsumer extends ConsumerMessage
     private function formatTalkMessage(array $data): array
     {
         $message = [
-            "id"           => 0,// 消息记录ID
-            "source"       => 1,// 消息来源[1:好友私信;2:群聊]
-            "msg_type"     => 1,
+            "id"           => 0, // 消息记录ID
+            "source"       => 1, // 消息来源[1:好友私信;2:群聊]
+            "msg_type"     => 1, // 消息类型
             "user_id"      => 0, // 发送者用户ID
             "receive_id"   => 0, // 接收者ID[好友ID或群ID]
             "content"      => '',// 文本消息

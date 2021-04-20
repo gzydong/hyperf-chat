@@ -129,12 +129,14 @@ class TalkController extends CController
         ];
 
         if ($result['type'] == 1) {
-            $data['unread_num'] = $this->unreadTalkCache->get($user_id, $result['friend_id']);
-            $userInfo           = User::where('id', $user_id)->first(['nickname', 'avatar']);
+            $userInfo = User::where('id', $user_id)->first(['nickname', 'avatar']);
+
             $data['name']       = $userInfo->nickname;
             $data['avatar']     = $userInfo->avatar;
+            $data['unread_num'] = $this->unreadTalkCache->get($user_id, $result['friend_id']);
         } else if ($result['type'] == 2) {
-            $groupInfo      = Group::where('id', $result['group_id'])->first(['group_name', 'avatar']);
+            $groupInfo = Group::where('id', $result['group_id'])->first(['group_name', 'avatar']);
+
             $data['name']   = $groupInfo->group_name;
             $data['avatar'] = $groupInfo->avatar;
         }

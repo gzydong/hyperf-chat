@@ -25,9 +25,6 @@ use Hyperf\Redis\Redis;
  */
 class ServerStart extends ServerStartCallback
 {
-    /**
-     * 回调事件
-     */
     public function beforeStart()
     {
         stdout_log()->info(sprintf('服务运行ID : %s', SERVER_RUN_ID));
