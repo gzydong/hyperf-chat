@@ -30,11 +30,10 @@ use App\Service\SocketClientService;
 use App\Service\SocketRoomService;
 use App\Constants\SocketConstants;
 
-///**
-// * 消息推送消费者队列
-// * @Consumer(name="ConsumerChat",enable=true)
-// */
-
+/**
+ * 消息推送消费者队列
+ * @Consumer(name="ConsumerChat",enable=true)
+ */
 class ChatMessageConsumer extends ConsumerMessage
 {
     /**
