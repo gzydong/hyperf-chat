@@ -175,13 +175,13 @@ class TalkService extends BaseService
             $rows[$k]['invite']     = [];
 
             switch ($row['msg_type']) {
-                case 2://2:文件消息
+                case 2:// 文件消息
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
                     if ($rows[$k]['file']) {
                         $rows[$k]['file']['file_url'] = get_media_url($rows[$k]['file']['save_dir']);
                     }
                     break;
-                case 3://3:入群消息/退群消息
+                case 3:// 入群消息/退群消息
                     if (isset($invites[$row['id']])) {
                         $rows[$k]['invite'] = [
                             'type'         => $invites[$row['id']]['type'],
@@ -199,7 +199,7 @@ class TalkService extends BaseService
                         }
                     }
                     break;
-                case 4://4:会话记录消息
+                case 4:// 会话记录消息
                     if (isset($forwards[$row['id']])) {
                         $rows[$k]['forward'] = [
                             'num'  => substr_count($forwards[$row['id']]['records_id'], ',') + 1,
@@ -207,7 +207,7 @@ class TalkService extends BaseService
                         ];
                     }
                     break;
-                case 5://5:代码块消息
+                case 5:// 代码块消息
                     $rows[$k]['code_block'] = $codes[$row['id']] ?? [];
                     if ($rows[$k]['code_block']) {
                         $rows[$k]['code_block']['code'] = htmlspecialchars_decode($rows[$k]['code_block']['code']);
@@ -298,7 +298,7 @@ class TalkService extends BaseService
             'id', 'source', 'msg_type', 'user_id', 'receive_id', 'content', 'is_revoke', 'created_at'
         ]);
 
-        //判断是否有权限查看
+        // 判断是否有权限查看
         if ($result->source == 1 && ($result->user_id != $user_id && $result->receive_id != $user_id)) {
             return [];
         } else if ($result->source == 2 && !Group::isMember($result->receive_id, $user_id)) {
@@ -338,11 +338,11 @@ class TalkService extends BaseService
      */
     public function removeRecords(int $user_id, int $source, int $receive_id, array $record_ids)
     {
-        if ($source == 1) {//私聊信息
+        if ($source == 1) {// 私聊信息
             $ids = ChatRecord::whereIn('id', $record_ids)->where(function ($query) use ($user_id, $receive_id) {
                 $query->where([['user_id', '=', $user_id], ['receive_id', '=', $receive_id]])->orWhere([['user_id', '=', $receive_id], ['receive_id', '=', $user_id]]);
             })->where('source', 1)->pluck('id');
-        } else {//群聊信息
+        } else {// 群聊信息
             $ids = ChatRecord::whereIn('id', $record_ids)->where('source', 2)->pluck('id');
         }
 
@@ -379,7 +379,7 @@ class TalkService extends BaseService
         $result = ChatRecord::where('id', $record_id)->first(['id', 'source', 'user_id', 'receive_id', 'created_at']);
         if (!$result) return [false, '消息记录不存在'];
 
-        //判断是否在两分钟之内撤回消息，超过2分钟不能撤回消息
+        // 判断是否在两分钟之内撤回消息，超过2分钟不能撤回消息
         if ((time() - strtotime($result->created_at) > 120)) {
             return [false, '已超过有效的撤回时间', []];
         }

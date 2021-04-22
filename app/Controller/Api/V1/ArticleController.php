@@ -167,6 +167,7 @@ class ArticleController extends CController
      * @RequestMapping(path="article-class-sort", methods="post")
      *
      * @return ResponseInterface
+     * @throws \Exception
      */
     public function articleClassSort()
     {
@@ -344,7 +345,6 @@ class ArticleController extends CController
             return $this->response->fail('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
         }
 
-        //获取图片信息
         $imgInfo = getimagesize($file->getRealPath());
 
         $path = $this->uploadService->media($file, 'media/images/notes/', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
@@ -433,6 +433,7 @@ class ArticleController extends CController
      * @RequestMapping(path="forever-delete-article", methods="post")
      *
      * @return ResponseInterface
+     * @throws \Exception
      */
     public function foreverDelArticle()
     {

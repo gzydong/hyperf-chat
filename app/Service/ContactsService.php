@@ -153,7 +153,6 @@ SQL;
                 $active = ($friendResult->user1 == $info->user_id && $friendResult->user2 == $info->friend_id) ? 1 : 2;
                 UsersFriend::where('id', $friendResult->id)->update(['active' => $active, 'status' => 1]);
             } else {
-                //好友昵称
                 $friend_nickname = User::where('id', $info->friend_id)->value('nickname');
 
                 UsersFriend::create([

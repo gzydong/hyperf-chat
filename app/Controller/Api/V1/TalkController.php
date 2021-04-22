@@ -267,7 +267,7 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['source', 'record_id', 'receive_id']);
         $this->validate($params, [
-            'source'     => 'required|in:1,2',//消息来源（1：好友消息 2：群聊消息）
+            'source'     => 'required|in:1,2',// 消息来源[1:好友消息;2:群聊消息;]
             'record_id'  => 'required|ids',
             'receive_id' => 'required|integer|min:0'
         ]);
@@ -296,17 +296,17 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['source', 'records_ids', 'receive_id', 'forward_mode', 'receive_user_ids', 'receive_group_ids']);
         $this->validate($params, [
-            //消息来源[1：好友消息 2：群聊消息]
+            // 消息来源[1:好友消息;2:群聊消息;]
             'source'       => 'required|in:1,2',
-            //聊天记录ID，多个逗号拼接
+            // 聊天记录ID，多个逗号拼接
             'records_ids'  => 'required',
-            //接收者ID（好友ID或者群聊ID）
+            // 接收者ID（好友ID或者群聊ID）
             'receive_id'   => 'required|integer|min:0',
-            //转发方方式[1:逐条转发;2:合并转发]
+            // 转发方方式[1:逐条转发;2:合并转发;]
             'forward_mode' => 'required|in:1,2',
-            //转发的好友的ID
+            // 转发的好友的ID
             //'receive_user_ids' => 'array',
-            //转发的群聊ID
+            // 转发的群聊ID
             //'receive_group_ids' => 'array',
         ]);
 
@@ -326,9 +326,9 @@ class TalkController extends CController
         $items = array_merge($receive_user_ids, $receive_group_ids);
 
         $user_id = $this->uid();
-        if ($params['forward_mode'] == 1) {//单条转发
+        if ($params['forward_mode'] == 1) {// 单条转发
             $ids = $this->talkService->forwardRecords($user_id, $params['receive_id'], $params['records_ids']);
-        } else {//合并转发
+        } else {// 合并转发
             $ids = $this->talkService->mergeForwardRecords($user_id, $params['receive_id'], $params['source'], $params['records_ids'], $items);
         }
 
@@ -342,13 +342,13 @@ class TalkController extends CController
             }
         }
 
-        // ...消息推送队列
+        // ... 消息推送队列
         foreach ($ids as $value) {
             $this->producer->produce(
                 new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                    'sender'    => $user_id,                      //发送者ID
-                    'receive'   => intval($value['receive_id']),  //接收者ID
-                    'source'    => intval($value['source']),      //接收者类型 1:好友;2:群组
+                    'sender'    => $user_id,                      // 发送者ID
+                    'receive'   => intval($value['receive_id']),  // 接收者ID
+                    'source'    => intval($value['source']),      // 接收者类型 1:好友;2:群组
                     'record_id' => $value['record_id']
                 ])
             );
@@ -367,7 +367,7 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['record_id', 'source', 'receive_id']);
         $this->validate($params, [
-            'source'     => 'required|in:1,2',//消息来源（1：好友消息 2：群聊消息）
+            'source'     => 'required|in:1,2',// 消息来源[1:好友消息;2:群聊消息;]
             'record_id'  => 'required|integer|min:0',
             'receive_id' => 'required|integer|min:1',
         ]);
@@ -412,10 +412,7 @@ class TalkController extends CController
             'records_id' => 'required|integer|min:0'
         ]);
 
-        $rows = $this->talkService->getForwardRecords(
-            $this->uid(),
-            $params['records_id']
-        );
+        $rows = $this->talkService->getForwardRecords($this->uid(), $params['records_id']);
 
         return $this->response->success(['rows' => $rows]);
     }
@@ -430,7 +427,7 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['record_id', 'source', 'receive_id', 'msg_type']);
         $this->validate($params, [
-            'source'     => 'required|in:1,2',//消息来源（1：好友消息 2：群聊消息）
+            'source'     => 'required|in:1,2',// 消息来源[1:好友消息;2:群聊消息;]
             'record_id'  => 'required|integer|min:0',
             'receive_id' => 'required|integer|min:1',
             'msg_type'   => 'required|in:0,1,2,3,4,5,6',
@@ -503,8 +500,7 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['source', 'receive_id']);
         $this->validate($params, [
-            //消息来源（1：好友消息 2：群聊消息）
-            'source'     => 'required|in:1,2',
+            'source'     => 'required|in:1,2',// 消息来源[1:好友消息;2:群聊消息;]
             'receive_id' => 'required|integer|min:1'
         ]);
 
@@ -518,7 +514,7 @@ class TalkController extends CController
             return $this->response->fail('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
         }
 
-        //获取图片信息
+        // 获取图片信息
         $imgInfo = getimagesize($file->getRealPath());
 
         $path = $uploadService->media($file, 'media/images/talks', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
@@ -547,12 +543,12 @@ class TalkController extends CController
             return $this->response->fail('图片上传失败');
         }
 
-        // ...消息推送队列
+        // ... 消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       //发送者ID
-                'receive'   => intval($params['receive_id']),  //接收者ID
-                'source'    => intval($params['source']),      //接收者类型 1:好友;2:群组
+                'sender'    => $user_id,                       // 发送者ID
+                'receive'   => intval($params['receive_id']),  // 接收者ID
+                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
                 'record_id' => $record_id
             ])
         );
@@ -575,8 +571,7 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['source', 'receive_id', 'lang', 'code']);
         $this->validate($params, [
-            //消息来源（1：好友消息 2：群聊消息）
-            'source'     => 'required|in:1,2',
+            'source'     => 'required|in:1,2',// 消息来源[1:好友消息;2:群聊消息;]
             'receive_id' => 'required|integer|min:1',
             'lang'       => 'required',
             'code'       => 'required'
@@ -601,9 +596,9 @@ class TalkController extends CController
         // ...消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       //发送者ID
-                'receive'   => intval($params['receive_id']),  //接收者ID
-                'source'    => intval($params['source']),      //接收者类型 1:好友;2:群组
+                'sender'    => $user_id,                       // 发送者ID
+                'receive'   => intval($params['receive_id']),  // 接收者ID
+                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
                 'record_id' => $record_id
             ])
         );
@@ -627,8 +622,7 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['hash_name', 'receive_id', 'source']);
         $this->validate($params, [
-            //消息来源（1：好友消息 2：群聊消息）
-            'source'     => 'required|in:1,2',
+            'source'     => 'required|in:1,2',// 消息来源[1:好友消息;2:群聊消息;]
             'receive_id' => 'required|integer|min:1',
             'hash_name'  => 'required',
         ]);
@@ -645,7 +639,6 @@ class TalkController extends CController
 
         $uploadService->makeDirectory($uploadService->driver("files/talks/" . date('Ymd')));
 
-        // Copy Files
         @copy($uploadService->driver($file->save_dir), $uploadService->driver($save_dir));
 
         $record_id = $this->talkService->createFileMessage([
@@ -667,12 +660,12 @@ class TalkController extends CController
             return $this->response->fail('表情发送失败');
         }
 
-        // ...消息推送队列
+        // ... 消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       //发送者ID
-                'receive'   => intval($params['receive_id']),  //接收者ID
-                'source'    => intval($params['source']),      //接收者类型 1:好友;2:群组
+                'sender'    => $user_id,                       // 发送者ID
+                'receive'   => intval($params['receive_id']),  // 接收者ID
+                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
                 'record_id' => $record_id
             ])
         );
@@ -695,8 +688,7 @@ class TalkController extends CController
     {
         $params = $this->request->inputs(['source', 'receive_id', 'emoticon_id']);
         $this->validate($params, [
-            //消息来源（1：好友消息 2：群聊消息）
-            'source'      => 'required|in:1,2',
+            'source'      => 'required|in:1,2',// 消息来源[1:好友消息;2:群聊消息;]
             'receive_id'  => 'required|integer|min:1',
             'emoticon_id' => 'required|integer|min:1',
         ]);
@@ -728,12 +720,12 @@ class TalkController extends CController
             return $this->response->fail('表情发送失败');
         }
 
-        // ...消息推送队列
+        // ... 消息推送队列
         $this->producer->produce(
             new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       //发送者ID
-                'receive'   => intval($params['receive_id']),  //接收者ID
-                'source'    => intval($params['source']),      //接收者类型 1:好友;2:群组
+                'sender'    => $user_id,                       // 发送者ID
+                'receive'   => intval($params['receive_id']),  // 接收者ID
+                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
                 'record_id' => $record_id
             ])
         );

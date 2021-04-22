@@ -222,6 +222,7 @@ class EmoticonController extends CController
      * @RequestMapping(path="del-collect-emoticon", methods="post")
      *
      * @return ResponseInterface
+     * @throws \Exception
      */
     public function delCollectEmoticon()
     {

@@ -122,7 +122,7 @@ class GroupController extends CController
 
         $this->socketRoomService->delRoom($params['group_id']);
 
-        // ... 推送群消息(预留)
+        // ... TODO 推送群消息(预留)
 
         return $this->response->success([], '群组解散成功...');
     }
@@ -224,7 +224,7 @@ class GroupController extends CController
             'avatar'     => $params['avatar']
         ]);
 
-        // ... 推送消息通知（预留）
+        // ... TODO 推送消息通知（预留）
 
         return $result
             ? $this->response->success([], '群组信息修改成功...')
@@ -496,7 +496,7 @@ class GroupController extends CController
                 return $this->response->fail('添加群公告信息失败...');
             }
 
-            // ... 推送群消息（预留）
+            // ... TODO 推送群消息（预留）
 
             return $this->response->success([], '添加群公告信息成功...');
         }

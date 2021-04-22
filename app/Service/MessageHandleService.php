@@ -49,19 +49,19 @@ class MessageHandleService
             return;
         }
 
-        //验证消息类型 私聊|群聊
+        // 验证消息类型 私聊|群聊
         if (!in_array($data['source_type'], [1, 2])) {
             return;
         }
 
-        //验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
-        if ($data['source_type'] == 1) {//私信
-            //判断发送者和接受者是否是好友关系
+        // 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
+        if ($data['source_type'] == 1) {// 私信
+            // 判断发送者和接受者是否是好友关系
             if (!UsersFriend::isFriend((int)$data['send_user'], (int)$data['receive_user'], true)) {
                 return;
             }
-        } else if ($data['source_type'] == 2) {//群聊
-            //判断是否属于群成员
+        } else if ($data['source_type'] == 2) {// 群聊
+            // 判断是否属于群成员
             if (!Group::isMember((int)$data['receive_user'], (int)$data['send_user'])) {
                 return;
             }
@@ -94,9 +94,9 @@ class MessageHandleService
 
         $this->producer->produce(
             new ChatMessageProducer('event_talk', [
-                'sender'    => intval($data['send_user']),     //发送者ID
-                'receive'   => intval($data['receive_user']),  //接收者ID
-                'source'    => intval($data['source_type']),   //接收者类型 1:好友;2:群组
+                'sender'    => intval($data['send_user']),     // 发送者ID
+                'receive'   => intval($data['receive_user']),  // 接收者ID
+                'source'    => intval($data['source_type']),   // 接收者类型[1:好友;2:群组;]
                 'record_id' => $result->id
             ])
         );
@@ -113,8 +113,8 @@ class MessageHandleService
     {
         $this->producer->produce(
             new ChatMessageProducer('event_keyboard', [
-                'send_user'    => intval($data['send_user']),     //发送者ID
-                'receive_user' => intval($data['receive_user']),  //接收者ID
+                'send_user'    => intval($data['send_user']),     // 发送者ID
+                'receive_user' => intval($data['receive_user']),  // 接收者ID
             ])
         );
     }

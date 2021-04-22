@@ -46,6 +46,7 @@ class UsersController extends CController
     public function getUserDetail()
     {
         $userInfo = $this->userService->findById($this->uid(), ['mobile', 'nickname', 'avatar', 'motto', 'email', 'gender']);
+
         return $this->response->success([
             'mobile'   => $userInfo->mobile,
             'nickname' => $userInfo->nickname,
@@ -65,6 +66,7 @@ class UsersController extends CController
     public function getUserSetting()
     {
         $userInfo = $this->userService->findById($this->uid(), ['id', 'nickname', 'avatar', 'motto', 'gender']);
+
         return $this->response->success([
             'user_info' => [
                 'uid'      => $userInfo->id,

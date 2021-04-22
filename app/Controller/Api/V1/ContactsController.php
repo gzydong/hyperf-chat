@@ -102,10 +102,9 @@ class ContactsController extends CController
         // 好友申请未读消息数自增
         ApplyNumCache::setInc(intval($params['friend_id']));
 
-        //判断对方是否在线。如果在线发送消息通知
+        // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll(intval($params['friend_id']))) {
             $this->producer->produce(
-            // 消息待完善
                 new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
                     'sender'  => $user_id,
                     'receive' => intval($params['friend_id']),
@@ -137,11 +136,11 @@ class ContactsController extends CController
             return $this->response->fail('好友关系解除失败...');
         }
 
-        //删除好友会话列表
+        // 删除好友会话列表
         UsersChatList::delItem($user_id, $params['friend_id'], 2);
         UsersChatList::delItem($params['friend_id'], $user_id, 2);
 
-        // ... 推送消息（待完善）
+        // ... TODO 推送消息（待完善）
 
         return $this->response->success([], '好友关系解除成功...');
     }
@@ -170,7 +169,7 @@ class ContactsController extends CController
             ->where('friend_id', $user_id)
             ->value('user_id');
 
-        //判断对方是否在线。如果在线发送消息通知
+        // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll($friend_id)) {
             // 待完善
             $this->producer->produce(

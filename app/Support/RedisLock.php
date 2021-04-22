@@ -18,7 +18,7 @@ class RedisLock
     /**
      * 获取Redis连接
      *
-     * @return mixed|\Redis
+     * @return \Hyperf\Redis\Redis
      */
     public static function getRedis()
     {
@@ -27,8 +27,8 @@ class RedisLock
 
     /**
      * 获得锁,如果锁被占用,阻塞,直到获得锁或者超时。
-     * -- 1、如果 $timeout 参数为 0,则立即返回锁。
-     * -- 2、建议 timeout 设置为 0,避免 redis 因为阻塞导致性能下降。请根据实际需求进行设置。
+     * 1、如果 $timeout 参数为 0,则立即返回锁。
+     * 2、建议 timeout 设置为 0,避免 redis 因为阻塞导致性能下降。请根据实际需求进行设置。
      *
      * @param string        $key        缓存KEY
      * @param string|int    $requestId  客户端请求唯一ID
@@ -60,7 +60,7 @@ class RedisLock
             \Swoole\Coroutine\System::sleep($sleep);
         } while (!is_numeric($timeout) || (self::getMicroTime()) < ($start + ($timeout * 1000000)));
 
-        return $acquired ? true : false;
+        return (bool)$acquired;
     }
 
     /**

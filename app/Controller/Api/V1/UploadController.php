@@ -56,6 +56,7 @@ class UploadController extends CController
         $path = '/media/images/avatar/' . date('Ymd') . '/' . uniqid() . date('His') . '.png';
         $this->uploadService->makeDirectory($this->uploadService->driver('/media/images/avatar/' . date('Ymd') . '/'));
         @file_put_contents($this->uploadService->driver($path), $data);
+        
         return $this->response->success(['avatar' => get_media_url($path)]);
     }
 

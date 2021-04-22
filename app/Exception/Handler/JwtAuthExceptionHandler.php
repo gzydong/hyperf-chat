@@ -29,6 +29,7 @@ class JwtAuthExceptionHandler extends ExceptionHandler
 
             // 阻止异常冒泡
             $this->stopPropagation();
+
             return $response->withAddedHeader('content-type', 'application/json; charset=utf-8')->withStatus(401)->withBody(new SwooleStream($data));
         }
 

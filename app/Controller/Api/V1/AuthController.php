@@ -15,7 +15,6 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use App\Constants\ResponseCode;
 use App\Model\User;
 use App\Service\UserService;
 use App\Service\SmsCodeService;

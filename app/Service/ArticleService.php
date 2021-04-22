@@ -213,6 +213,7 @@ class ArticleService extends BaseService
      * @param int $uid      用户ID
      * @param int $class_id 分类ID
      * @return bool
+     * @throws Exception
      */
     public function delArticleClass(int $uid, int $class_id)
     {

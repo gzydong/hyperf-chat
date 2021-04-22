@@ -156,7 +156,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 
-        // 解除fd关系
+        // 删除 fd 绑定关系
         $this->socketClientService->removeRelation($fd);
 
         // 判断是否存在异地登录

@@ -27,7 +27,7 @@ class MailerService
      * @param string $template 对应邮件模板
      * @return bool
      */
-    public function send($email, $subject, $template)
+    public function send(string $email, string $subject, string $template)
     {
         if ($this->queueSwitch) {
 
@@ -44,7 +44,7 @@ class MailerService
      * @param string $template 对应邮件模板
      * @return bool
      */
-    public function realSend($email, $subject, $template)
+    public function realSend(string $email, string $subject, string $template)
     {
         try {
             return $this->mail($email, $subject, $template);
@@ -67,10 +67,10 @@ class MailerService
         $config        = config('mail');
         $mail          = new PHPMailer();
         $mail->CharSet = 'UTF-8';
-        $mail->IsSMTP();                                                                                           // 设定使用SMTP服务
-        $mail->SMTPDebug  = 0;                                                                                      // 关闭SMTP调试功能
-        $mail->SMTPAuth  = true;                                                                                   // 启用 SMTP 验证功能
-        $mail->SMTPSecure = 'ssl';                                                                                 // 使用安全协议
+        $mail->IsSMTP();                                                                                                                                     // 设定使用SMTP服务
+        $mail->SMTPDebug  = 0;                                                                                                                                // 关闭SMTP调试功能
+        $mail->SMTPAuth  = true;                                                                                                                             // 启用 SMTP 验证功能
+        $mail->SMTPSecure = 'ssl';                                                                                                                           // 使用安全协议
         $mail->Host       = $config['host'];
         $mail->Port       = $config['port'];
         $mail->Username   = $config['username'];

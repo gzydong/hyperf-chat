@@ -33,7 +33,7 @@ class AppExceptionHandler extends ExceptionHandler
             'message' => 'Internal Server Error.'
         ], JSON_UNESCAPED_UNICODE);
 
-        return $response->withHeader('Server', 'Hyperf')->withStatus(500)->withBody(new SwooleStream($data));
+        return $response->withHeader('Server', 'Lumen IM')->withStatus(500)->withBody(new SwooleStream($data));
     }
 
     /**
