@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -44,7 +42,6 @@ class HashIdsHelper
      * 加密
      *
      * @param mixed ...$numbers
-     *
      * @return string
      */
     public static function encode(...$numbers)
@@ -56,7 +53,6 @@ class HashIdsHelper
      * 解密
      *
      * @param string $hash
-     *
      * @return array|mixed
      * @throws \Exception
      */

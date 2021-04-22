@@ -14,23 +14,12 @@ namespace App\Model;
  * @property string $remarks    备注说明
  * @property string $created_at 创建时间
  * @property string $updated_at 更新时间
- *
  * @package App\Model
  */
 class UsersFriendsApply extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'users_friends_apply';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'user_id',
         'friend_id',
@@ -40,11 +29,6 @@ class UsersFriendsApply extends BaseModel
         'updated_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'         => 'integer',
         'user_id'    => 'integer',

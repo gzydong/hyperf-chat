@@ -15,23 +15,12 @@ use App\Model\BaseModel;
  * @property string $code_lang  代码语言
  * @property string $code       代码详情
  * @property string $created_at 创建时间
- *
  * @package App\Model\Chat
  */
 class ChatRecordsCode extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'chat_records_code';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'record_id',
         'user_id',
@@ -40,11 +29,6 @@ class ChatRecordsCode extends BaseModel
         'created_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'         => 'integer',
         'record_id'  => 'integer',

@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -15,7 +13,6 @@ namespace App\Helper;
 
 /**
  * 字符串助手类
- *
  * Class StringHelper
  *
  * @package App\Helper
@@ -26,7 +23,6 @@ class StringHelper
      * 将字符串转换成二进制
      *
      * @param string $str
-     *
      * @return string
      */
     public static function str2Bin(string $str): string
@@ -47,7 +43,6 @@ class StringHelper
      * 将二进制转换成字符串
      *
      * @param string $str
-     *
      * @return string
      */
     public static function bin2Str(string $str): string

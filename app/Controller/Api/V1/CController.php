@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -18,8 +16,6 @@ use App\Support\Response;
 
 /**
  * 基类控制器
- *
- * Class CController
  *
  * @package App\Controller\Api\V1
  */

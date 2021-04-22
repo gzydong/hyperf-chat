@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -13,7 +11,6 @@
 namespace App\Controller\Api\V1;
 
 use App\Model\UsersFriendsApply;
-use Co\Context;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -32,7 +29,6 @@ use App\Constants\SocketConstants;
 
 /**
  * Class ContactsController
- *
  * @Controller(path="/api/v1/contacts")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -60,8 +56,9 @@ class ContactsController extends CController
 
     /**
      * 获取用户联系人列表
-     *
      * @RequestMapping(path="list", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getContacts()
     {
@@ -79,11 +76,9 @@ class ContactsController extends CController
 
     /**
      * 添加联系人
-     *
      * @RequestMapping(path="add", methods="post")
      *
      * @param UserService $userService
-     *
      * @return ResponseInterface
      */
     public function addContact(UserService $userService)
@@ -126,8 +121,9 @@ class ContactsController extends CController
 
     /**
      * 删除联系人
-     *
      * @RequestMapping(path="delete", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function deleteContact()
     {
@@ -152,8 +148,9 @@ class ContactsController extends CController
 
     /**
      * 同意添加联系人
-     *
      * @RequestMapping(path="accept-invitation", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function acceptInvitation()
     {
@@ -192,8 +189,9 @@ class ContactsController extends CController
 
     /**
      * 拒绝添加联系人(预留)
-     *
      * @RequestMapping(path="decline-invitation", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function declineInvitation()
     {
@@ -212,8 +210,9 @@ class ContactsController extends CController
 
     /**
      * 删除联系人申请记录
-     *
      * @RequestMapping(path="delete-apply", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function deleteContactApply()
     {
@@ -231,8 +230,9 @@ class ContactsController extends CController
 
     /**
      * 获取联系人申请未读数
-     *
      * @RequestMapping(path="apply-unread-num", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getContactApplyUnreadNum()
     {
@@ -244,8 +244,9 @@ class ContactsController extends CController
 
     /**
      * 获取联系人申请未读数
-     *
      * @RequestMapping(path="apply-records", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getContactApplyRecords()
     {
@@ -268,8 +269,9 @@ class ContactsController extends CController
 
     /**
      * 搜索联系人
-     *
      * @RequestMapping(path="search", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function searchContacts()
     {
@@ -284,8 +286,9 @@ class ContactsController extends CController
 
     /**
      * 编辑联系人备注
-     *
      * @RequestMapping(path="edit-remark", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editContactRemark()
     {

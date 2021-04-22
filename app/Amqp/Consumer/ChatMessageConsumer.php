@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -32,11 +30,11 @@ use App\Service\SocketClientService;
 use App\Service\SocketRoomService;
 use App\Constants\SocketConstants;
 
-/**
- * 消息推送消费者队列
- *
- * @Consumer(name="ConsumerChat",enable=true)
- */
+///**
+// * 消息推送消费者队列
+// * @Consumer(name="ConsumerChat",enable=true)
+// */
+
 class ChatMessageConsumer extends ConsumerMessage
 {
     /**
@@ -109,7 +107,6 @@ class ChatMessageConsumer extends ConsumerMessage
 
     /**
      * 重写创建队列生成类
-     *
      * 注释：设置自动删除队列
      *
      * @return QueueBuilder
@@ -124,7 +121,6 @@ class ChatMessageConsumer extends ConsumerMessage
      *
      * @param             $data
      * @param AMQPMessage $message
-     *
      * @return string
      */
     public function consumeMessage($data, AMQPMessage $message): string
@@ -150,7 +146,6 @@ class ChatMessageConsumer extends ConsumerMessage
      *
      * @param array       $data 队列消息
      * @param AMQPMessage $message
-     *
      * @return string
      */
     public function onConsumeTalk(array $data, AMQPMessage $message): string
@@ -266,7 +261,6 @@ class ChatMessageConsumer extends ConsumerMessage
      *
      * @param array       $data 队列消息
      * @param AMQPMessage $message
-     *
      * @return string
      */
     public function onConsumeKeyboard(array $data, AMQPMessage $message): string
@@ -283,7 +277,6 @@ class ChatMessageConsumer extends ConsumerMessage
      *
      * @param array       $data 队列消息
      * @param AMQPMessage $message
-     *
      * @return string
      */
     public function onConsumeOnlineStatus(array $data, AMQPMessage $message): string
@@ -305,7 +298,6 @@ class ChatMessageConsumer extends ConsumerMessage
      *
      * @param array       $data 队列消息
      * @param AMQPMessage $message
-     *
      * @return string
      */
     public function onConsumeRevokeTalk(array $data, AMQPMessage $message): string
@@ -342,7 +334,6 @@ class ChatMessageConsumer extends ConsumerMessage
      *
      * @param array       $data 队列消息
      * @param AMQPMessage $message
-     *
      * @return string
      */
     public function onConsumeFriendApply(array $data, AMQPMessage $message): string
@@ -372,7 +363,6 @@ class ChatMessageConsumer extends ConsumerMessage
      * 格式化对话的消息体
      *
      * @param array $data 对话的消息
-     *
      * @return array
      */
     private function formatTalkMessage(array $data): array

@@ -10,7 +10,6 @@ use App\Model\UsersEmoticon;
 
 /**
  * 表情服务层
- *
  * Class EmoticonService
  *
  * @package App\Services
@@ -22,14 +21,13 @@ class EmoticonService extends BaseService
      *
      * @param int $user_id     用户ID
      * @param int $emoticon_id 表情包ID
-     *
-     * @return mixed
+     * @return bool
      */
     public function installSysEmoticon(int $user_id, int $emoticon_id)
     {
         $info = UsersEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
         if (!$info) {
-            return UsersEmoticon::create(['user_id' => $user_id, 'emoticon_ids' => $emoticon_id]) ? true : false;
+            return (bool)UsersEmoticon::create(['user_id' => $user_id, 'emoticon_ids' => $emoticon_id]);
         }
 
         $emoticon_ids = $info->emoticon_ids;
@@ -38,9 +36,10 @@ class EmoticonService extends BaseService
         }
 
         $emoticon_ids[] = $emoticon_id;
-        return UsersEmoticon::where('user_id', $user_id)->update([
+
+        return (bool)UsersEmoticon::where('user_id', $user_id)->update([
             'emoticon_ids' => implode(',', $emoticon_ids)
-        ]) ? true : false;
+        ]);
     }
 
     /**
@@ -48,7 +47,6 @@ class EmoticonService extends BaseService
      *
      * @param int $user_id     用户ID
      * @param int $emoticon_id 表情包ID
-     *
      * @return bool
      */
     public function removeSysEmoticon(int $user_id, int $emoticon_id)
@@ -60,25 +58,22 @@ class EmoticonService extends BaseService
 
         $emoticon_ids = $info->emoticon_ids;
         foreach ($emoticon_ids as $k => $id) {
-            if ($id == $emoticon_id) {
-                unset($emoticon_ids[$k]);
-            }
+            if ($id == $emoticon_id) unset($emoticon_ids[$k]);
         }
 
         if (count($info->emoticon_ids) == count($emoticon_ids)) {
             return false;
         }
 
-        return UsersEmoticon::where('user_id', $user_id)->update([
+        return (bool)UsersEmoticon::where('user_id', $user_id)->update([
             'emoticon_ids' => implode(',', $emoticon_ids)
-        ]) ? true : false;
+        ]);
     }
 
     /**
      * 获取用户安装的表情ID
      *
      * @param int $user_id 用户ID
-     *
      * @return array
      */
     public function getInstallIds(int $user_id)
@@ -92,7 +87,6 @@ class EmoticonService extends BaseService
      *
      * @param int $user_id   用户ID
      * @param int $record_id 聊天消息ID
-     *
      * @return array
      */
     public function collect(int $user_id, int $record_id)
@@ -148,8 +142,8 @@ class EmoticonService extends BaseService
      *
      * @param int   $user_id 用户ID
      * @param array $ids     表情包详情ID
-     *
-     * @return
+     * @return bool
+     * @throws \Exception
      */
     public function deleteCollect(int $user_id, array $ids)
     {
@@ -160,17 +154,15 @@ class EmoticonService extends BaseService
      * 获取表情包列表
      *
      * @param array $where
-     *
-     * @return mixed
+     * @return array
      */
     public function getDetailsAll(array $where = [])
     {
-        $list = EmoticonDetail::where($where)->get(['id as media_id', 'url as src'])->toArray();
-
-        foreach ($list as $k => $value) {
-            $list[$k]['src'] = get_media_url($value['src']);
+        $items = EmoticonDetail::where($where)->get(['id as media_id', 'url as src'])->toArray();
+        foreach ($items as $k => $item) {
+            $items[$k]['src'] = get_media_url($item['src']);
         }
 
-        return $list;
+        return $items;
     }
 }

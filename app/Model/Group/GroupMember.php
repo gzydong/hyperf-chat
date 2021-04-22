@@ -17,23 +17,12 @@ use App\Model\BaseModel;
  * @property string  $user_card  群名片
  * @property string  $created_at 入群时间
  * @property string  $deleted_at 退群时间
- *
  * @package App\Model\Group
  */
 class GroupMember extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'group_member';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'group_id',
         'user_id',
@@ -45,11 +34,6 @@ class GroupMember extends BaseModel
         'deleted_at',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'group_id'   => 'integer',
         'user_id'    => 'integer',
@@ -64,7 +48,6 @@ class GroupMember extends BaseModel
      * 获取聊天群成员ID
      *
      * @param int $group_id 群聊ID
-     *
      * @return array
      */
     public static function getGroupMemberIds(int $group_id)
@@ -77,7 +60,6 @@ class GroupMember extends BaseModel
      *
      * @param int $user_id  用户ID
      * @param int $group_id 群ID
-     *
      * @return string
      */
     public static function visitCard(int $user_id, int $group_id)
@@ -89,7 +71,6 @@ class GroupMember extends BaseModel
      * 获取用户的所有群ID
      *
      * @param int $user_id 用户ID
-     *
      * @return array
      */
     public static function getUserGroupIds(int $user_id)

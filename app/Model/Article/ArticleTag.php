@@ -7,6 +7,8 @@ namespace App\Model\Article;
 use App\Model\BaseModel;
 
 /**
+ * 笔记标签数据表模型
+ *
  * @property integer $id         标签ID
  * @property integer $user_id    用户ID
  * @property string  $tag_name   标签名称
@@ -15,27 +17,15 @@ use App\Model\BaseModel;
  */
 class ArticleTag extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'article_tags';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
-        'user_id', 'tag_name', 'sort', 'created_at'
+        'user_id',
+        'tag_name',
+        'sort',
+        'created_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'         => 'integer',
         'user_id'    => 'integer',

@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -33,7 +31,6 @@ class ContactsService extends BaseService
      * 获取联系人列表
      *
      * @param int $user_id 用户ID
-     *
      * @return array
      */
     public function getContacts(int $user_id): array
@@ -64,7 +61,6 @@ SQL;
      * @param int    $user_id   用户ID
      * @param int    $friend_id 好友ID
      * @param string $remarks   申请备注
-     *
      * @return bool
      */
     public function addContact(int $user_id, int $friend_id, string $remarks): bool
@@ -92,7 +88,7 @@ SQL;
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
 
-            return $result ? true : false;
+            return (bool)$result;
         }
     }
 
@@ -101,7 +97,6 @@ SQL;
      *
      * @param int $user_id   用户ID
      * @param int $friend_id 好友ID
-     *
      * @return bool
      */
     public function deleteContact(int $user_id, int $friend_id): bool
@@ -126,7 +121,6 @@ SQL;
      * @param int    $user_id  用户ID
      * @param int    $apply_id 联系人申请ID
      * @param string $remarks  联系人备注名称
-     *
      * @return bool
      */
     public function acceptInvitation(int $user_id, int $apply_id, string $remarks = ''): bool
@@ -189,12 +183,11 @@ SQL;
      * @param int    $user_id  用户ID
      * @param int    $apply_id 联系人申请ID
      * @param string $remarks  拒绝申请备注信息
-     *
      * @return bool
      */
     public function declineInvitation(int $user_id, int $apply_id, string $remarks = ''): bool
     {
-        $result = UsersFriendsApply::where([
+        return (bool)UsersFriendsApply::where([
             ['id', '=', $apply_id],
             ['user_id', '=', $user_id],
             ['status', '=', 2],
@@ -203,8 +196,6 @@ SQL;
             'remarks'    => $remarks,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
-
-        return $result ? true : false;
     }
 
     /**
@@ -213,7 +204,6 @@ SQL;
      * @param int    $user_id   用户ID
      * @param int    $friend_id 朋友ID
      * @param string $remarks   好友备注名称
-     *
      * @return bool
      */
     public function editContactRemark(int $user_id, int $friend_id, string $remarks): bool
@@ -233,7 +223,6 @@ SQL;
      * 搜索联系人
      *
      * @param string $mobile 用户手机号/登录账号
-     *
      * @return array
      */
     public function findContact(string $mobile): array
@@ -249,7 +238,6 @@ SQL;
      * @param int $user_id   用户ID
      * @param int $page      当前分页
      * @param int $page_size 分页大小
-     *
      * @return array
      */
     public function getContactApplyRecords(int $user_id, $page = 1, $page_size = 30): array
@@ -283,8 +271,8 @@ SQL;
      *
      * @param int $user_id  用户ID
      * @param int $apply_id 联系人好友申请ID
-     *
      * @return bool
+     * @throws Exception
      */
     public function delContactApplyRecord(int $user_id, int $apply_id): bool
     {

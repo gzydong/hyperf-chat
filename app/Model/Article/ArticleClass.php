@@ -15,23 +15,12 @@ use App\Model\BaseModel;
  * @property integer $sort       排序[值越小越靠前]
  * @property integer $is_default 默认分类[1:是;0:不是]
  * @property string  $created_at 创建时间
- *
  * @package App\Model\Article
  */
 class ArticleClass extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'article_class';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'user_id',
         'class_name',
@@ -40,11 +29,6 @@ class ArticleClass extends BaseModel
         'created_at',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'         => 'integer',
         'user_id'    => 'integer',

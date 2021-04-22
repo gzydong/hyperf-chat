@@ -1,15 +1,4 @@
 <?php
-/**
- *
- * This is my open source code, please do not use it for commercial applications.
- *
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
-
 /*
 |--------------------------------------------------------------------------
 | Common function method
@@ -132,7 +121,6 @@ function response()
  * 从HTML文本中提取所有图片
  *
  * @param string $content HTML文本
- *
  * @return array
  */
 function get_html_images($content)
@@ -155,7 +143,6 @@ function get_html_images($content)
  *
  * @param string $day1 日期1
  * @param string $day2 日期2
- *
  * @return float|int
  */
 function diff_date($day1, $day2)
@@ -174,21 +161,19 @@ function diff_date($day1, $day2)
  * 获取媒体文件url
  *
  * @param string $path 文件相对路径
- *
  * @return string
  */
 function get_media_url(string $path)
 {
-    return sprintf('%s/%s', rtrim(config('domain.img_url'), '/'), ltrim($path,'/'));
+    return sprintf('%s/%s', rtrim(config('domain.img_url'), '/'), ltrim($path, '/'));
 }
 
 /**
  * 随机生成图片名
  *
- * @param string $ext 图片后缀名
- * @param int $width 图片宽度
- * @param int $height 图片高度
- *
+ * @param string $ext    图片后缀名
+ * @param int    $width  图片宽度
+ * @param int    $height 图片高度
  * @return string
  */
 function create_image_name(string $ext, int $width, int $height)
@@ -200,7 +185,6 @@ function create_image_name(string $ext, int $width, int $height)
  * 替换文本中的url 为 a标签
  *
  * @param string $str 字符串
- *
  * @return null|string|string[]
  */
 function replace_url_link(string $str)
@@ -214,10 +198,9 @@ function replace_url_link(string $str)
 /**
  * 二维数组排序
  *
- * @param array $array 数组
+ * @param array  $array 数组
  * @param string $field 排序字段
- * @param int $sort 排序方式
- *
+ * @param int    $sort  排序方式
  * @return array
  */
 function arraysSort(array $array, $field, $sort = SORT_DESC)
@@ -229,9 +212,8 @@ function arraysSort(array $array, $field, $sort = SORT_DESC)
 /**
  * 判断0或正整数
  *
- * @param string $int 验证字符串
- * @param bool $isZero 判断是否可为0
- *
+ * @param string $int    验证字符串
+ * @param bool   $isZero 判断是否可为0
  * @return bool
  */
 function check_int($int, $isZero = false)
@@ -244,7 +226,6 @@ function check_int($int, $isZero = false)
  * 解析英文逗号',' 拼接的 ID 字符串
  *
  * @param string $ids 字符串(例如; "1,2,3,4,5,6")
- *
  * @return array
  */
 function parse_ids($ids)

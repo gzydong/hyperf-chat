@@ -13,7 +13,6 @@ class LastMsgCache
      * 用户聊天或群聊的最后一条消息hash存储的hash名
      *
      * @param int $sender
-     *
      * @return string
      */
     private static function _name($sender = 0)
@@ -26,7 +25,6 @@ class LastMsgCache
      *
      * @param int $receive 接收者
      * @param int $sender  发送者
-     *
      * @return string
      */
     private static function _key(int $receive, int $sender)
@@ -51,7 +49,6 @@ class LastMsgCache
      *
      * @param int $receive 接收者
      * @param int $sender  发送者(注：若聊天消息类型为群聊消息 $sender 应设置为0)
-     *
      * @return mixed
      */
     public static function get(int $receive, $sender = 0)

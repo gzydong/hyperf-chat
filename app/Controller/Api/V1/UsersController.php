@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -22,12 +20,10 @@ use App\Support\SendEmailCode;
 use App\Helper\Hash;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
-use App\Constants\ResponseCode;
 use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class UsersController
- *
  * @Controller(path="/api/v1/users")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -43,8 +39,9 @@ class UsersController extends CController
 
     /**
      * 获取我的信息
-     *
      * @RequestMapping(path="detail", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getUserDetail()
     {
@@ -61,8 +58,9 @@ class UsersController extends CController
 
     /**
      * 用户相关设置
-     *
      * @RequestMapping(path="setting", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getUserSetting()
     {
@@ -87,8 +85,9 @@ class UsersController extends CController
 
     /**
      * 编辑我的信息
-     *
      * @RequestMapping(path="edit-user-detail", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editUserDetail()
     {
@@ -109,8 +108,9 @@ class UsersController extends CController
 
     /**
      * 修改用户头像
-     *
      * @RequestMapping(path="edit-avatar", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editAvatar()
     {
@@ -128,8 +128,9 @@ class UsersController extends CController
 
     /**
      * 通过手机号查找用户
-     *
      * @RequestMapping(path="search-user", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function searchUserInfo()
     {
@@ -145,8 +146,9 @@ class UsersController extends CController
 
     /**
      * 修改我的密码
-     *
      * @RequestMapping(path="change-password", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editUserPassword()
     {
@@ -171,11 +173,9 @@ class UsersController extends CController
 
     /**
      * 更换用户手机号
-     *
      * @RequestMapping(path="change-mobile", methods="post")
      *
      * @param SmsCodeService $smsCodeService
-     *
      * @return ResponseInterface
      */
     public function editUserMobile(SmsCodeService $smsCodeService)
@@ -209,8 +209,9 @@ class UsersController extends CController
 
     /**
      * 修改用户邮箱接口
-     *
      * @RequestMapping(path="change-email", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editUserEmail()
     {
@@ -244,11 +245,9 @@ class UsersController extends CController
 
     /**
      * 修改手机号发送验证码
-     *
      * @RequestMapping(path="send-mobile-code", methods="post")
      *
      * @param SmsCodeService $smsCodeService
-     *
      * @return ResponseInterface
      */
     public function sendMobileCode(SmsCodeService $smsCodeService)
@@ -282,11 +281,9 @@ class UsersController extends CController
 
     /**
      * 发送绑定邮箱的验证码
-     *
      * @RequestMapping(path="send-change-email-code", methods="post")
      *
      * @param SendEmailCode $sendEmailCode
-     *
      * @return ResponseInterface
      */
     public function sendChangeEmailCode(SendEmailCode $sendEmailCode)

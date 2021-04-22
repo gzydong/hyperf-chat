@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -26,7 +24,6 @@ use Hyperf\HttpServer\Contract\ResponseInterface;
 
 /**
  * Class DownloadController
- *
  * @Controller(path="/api/v1/download")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -36,12 +33,10 @@ class DownloadController extends CController
 {
     /**
      * 下载用户聊天文件
-     *
      * @RequestMapping(path="user-chat-file", methods="get")
      *
      * @param ResponseInterface $response
      * @param UploadService     $uploadService
-     *
      * @return \Psr\Http\Message\ResponseInterface
      */
     public function userChatFile(ResponseInterface $response, UploadService $uploadService)
@@ -81,12 +76,10 @@ class DownloadController extends CController
 
     /**
      * 下载笔记附件
-     *
      * @RequestMapping(path="article-annex", methods="get")
      *
      * @param ResponseInterface $response
      * @param UploadService     $uploadService
-     *
      * @return \Psr\Http\Message\ResponseInterface
      */
     public function articleAnnex(ResponseInterface $response, UploadService $uploadService)

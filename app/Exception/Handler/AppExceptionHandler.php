@@ -38,7 +38,6 @@ class AppExceptionHandler extends ExceptionHandler
 
     /**
      * @param Throwable $throwable
-     *
      * @return bool
      */
     public function isValid(Throwable $throwable): bool

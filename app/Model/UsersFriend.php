@@ -18,23 +18,12 @@ use Hyperf\DbConnection\Db;
  * @property int    $status       好友状态[1:好友状态;0:已解除好友关系]
  * @property string $agree_time   成为好友时间
  * @property string $created_at   创建时间
- *
  * @package App\Model
  */
 class UsersFriend extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'users_friends';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'user1',
         'user2',
@@ -46,11 +35,6 @@ class UsersFriend extends BaseModel
         'created_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'         => 'integer',
         'user1'      => 'integer',
@@ -64,7 +48,6 @@ class UsersFriend extends BaseModel
      * 获取用户所有好友
      *
      * @param int $uid 用户ID
-     *
      * @return mixed
      */
     public static function getUserFriends(int $uid)
@@ -95,7 +78,6 @@ SQL;
      * @param int  $user_id1 用户1
      * @param int  $user_id2 用户2
      * @param bool $cache    是否读取缓存
-     *
      * @return bool
      */
     public static function isFriend(int $user_id1, int $user_id2, bool $cache = false)
@@ -122,7 +104,6 @@ SQL;
      * 获取指定用户的所有朋友的用户ID
      *
      * @param int $user_id 指定用户ID
-     *
      * @return array
      */
     public static function getFriendIds(int $user_id)

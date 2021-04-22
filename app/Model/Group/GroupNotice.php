@@ -20,23 +20,12 @@ use App\Model\BaseModel;
  * @property string  $created_at    创建时间
  * @property string  $updated_at    更新时间
  * @property string  $deleted_at    删除时间
- *
  * @package App\Model\Group
  */
 class GroupNotice extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'group_notice';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'group_id',
         'creator_id',
@@ -51,11 +40,6 @@ class GroupNotice extends BaseModel
         'deleted_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'group_id'   => 'integer',
         'creator_id' => 'integer',

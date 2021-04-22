@@ -10,7 +10,6 @@ use Throwable;
 
 /**
  * 验证器异常处理类
- *
  * Class ValidateExceptionHandler
  *
  * @package App\Exception\Handler
@@ -20,7 +19,6 @@ class ValidateExceptionHandler extends ExceptionHandler
     /**
      * @param Throwable         $throwable
      * @param ResponseInterface $response
-     *
      * @return ResponseInterface
      */
     public function handle(Throwable $throwable, ResponseInterface $response)
@@ -47,7 +45,6 @@ class ValidateExceptionHandler extends ExceptionHandler
      * 判断该异常处理器是否要对该异常进行处理
      *
      * @param Throwable $throwable
-     *
      * @return bool
      */
     public function isValid(Throwable $throwable): bool

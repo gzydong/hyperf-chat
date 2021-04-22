@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -26,7 +24,6 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class EmoticonController
- *
  * @Controller(path="/api/v1/emoticon")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -42,8 +39,9 @@ class EmoticonController extends CController
 
     /**
      * 获取用户表情包列表
-     *
      * @RequestMapping(path="user-emoticon", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getUserEmoticon()
     {
@@ -76,8 +74,9 @@ class EmoticonController extends CController
 
     /**
      * 获取系统表情包
-     *
      * @RequestMapping(path="system-emoticon", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getSystemEmoticon()
     {
@@ -95,8 +94,9 @@ class EmoticonController extends CController
 
     /**
      * 安装或移除系统表情包
-     *
      * @RequestMapping(path="set-user-emoticon", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function setUserEmoticon()
     {
@@ -141,11 +141,9 @@ class EmoticonController extends CController
 
     /**
      * 自定义上传表情包
-     *
      * @RequestMapping(path="upload-emoticon", methods="post")
      *
      * @param UploadService $uploadService
-     *
      * @return ResponseInterface
      */
     public function uploadEmoticon(UploadService $uploadService)
@@ -197,8 +195,9 @@ class EmoticonController extends CController
 
     /**
      * 收藏聊天图片的我的表情包
-     *
      * @RequestMapping(path="collect-emoticon", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function collectEmoticon()
     {
@@ -220,8 +219,9 @@ class EmoticonController extends CController
 
     /**
      * 移除收藏的表情包
-     *
      * @RequestMapping(path="del-collect-emoticon", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function delCollectEmoticon()
     {

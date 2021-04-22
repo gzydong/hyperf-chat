@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -27,10 +25,10 @@ use App\Amqp\Producer\ChatMessageProducer;
 use App\Service\SocketRoomService;
 use App\Service\GroupService;
 use App\Constants\SocketConstants;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class GroupController
- *
  * @Controller(path="/api/v1/group")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -58,10 +56,9 @@ class GroupController extends CController
 
     /**
      * 创建群组
-     *
      * @RequestMapping(path="create", methods="post")
      *
-     * @return mixed
+     * @return ResponseInterface
      */
     public function create()
     {
@@ -107,8 +104,9 @@ class GroupController extends CController
 
     /**
      * 解散群组接口
-     *
      * @RequestMapping(path="dismiss", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function dismiss()
     {
@@ -131,8 +129,9 @@ class GroupController extends CController
 
     /**
      * 邀请好友加入群组接口
-     *
      * @RequestMapping(path="invite", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function invite()
     {
@@ -170,8 +169,9 @@ class GroupController extends CController
 
     /**
      * 退出群组接口
-     *
      * @RequestMapping(path="secede", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function secede()
     {
@@ -204,8 +204,9 @@ class GroupController extends CController
 
     /**
      * 编辑群组信息
-     *
      * @RequestMapping(path="edit", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editDetail()
     {
@@ -232,8 +233,9 @@ class GroupController extends CController
 
     /**
      * 移除指定成员（管理员权限）
-     *
      * @RequestMapping(path="remove-members", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function removeMembers()
     {
@@ -275,8 +277,9 @@ class GroupController extends CController
 
     /**
      * 获取群信息接口
-     *
      * @RequestMapping(path="detail", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function detail()
     {
@@ -319,8 +322,9 @@ class GroupController extends CController
 
     /**
      * 设置群名片
-     *
      * @RequestMapping(path="set-group-card", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editGroupCard()
     {
@@ -341,8 +345,9 @@ class GroupController extends CController
 
     /**
      * 获取可邀请加入群组的好友列表
-     *
      * @RequestMapping(path="invite-friends", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getInviteFriends()
     {
@@ -363,8 +368,9 @@ class GroupController extends CController
 
     /**
      * 获取群组列表
-     *
      * @RequestMapping(path="list", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getGroups()
     {
@@ -375,8 +381,9 @@ class GroupController extends CController
 
     /**
      * 获取群组成员列表
-     *
      * @RequestMapping(path="members", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getGroupMembers()
     {
@@ -409,8 +416,9 @@ class GroupController extends CController
 
     /**
      * 获取群组公告列表
-     *
      * @RequestMapping(path="notices", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getGroupNotice()
     {
@@ -448,8 +456,9 @@ class GroupController extends CController
 
     /**
      * 创建/编辑群公告
-     *
      * @RequestMapping(path="edit-notice", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editNotice()
     {
@@ -506,8 +515,9 @@ class GroupController extends CController
 
     /**
      * 删除群公告(软删除)
-     *
      * @RequestMapping(path="delete-notice", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function deleteNotice()
     {

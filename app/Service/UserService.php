@@ -16,8 +16,7 @@ class UserService extends BaseService
      *
      * @param int   $user_id 用户ID
      * @param array $field   查询字段
-     *
-     * @return mixed
+     * @return User
      */
     public function findById(int $user_id, $field = ['*'])
     {
@@ -29,7 +28,6 @@ class UserService extends BaseService
      *
      * @param string $mobile   手机号
      * @param string $password 登录密码
-     *
      * @return array|bool
      */
     public function login(string $mobile, string $password)
@@ -49,7 +47,6 @@ class UserService extends BaseService
      * 账号注册逻辑
      *
      * @param array $data 用户数据
-     *
      * @return bool
      */
     public function register(array $data)
@@ -71,12 +68,11 @@ class UserService extends BaseService
             ]);
 
             Db::commit();
+            return true;
         } catch (\Exception $e) {
             Db::rollBack();
-            $result = false;
+            return false;
         }
-
-        return $result ? true : false;
     }
 
     /**
@@ -84,12 +80,11 @@ class UserService extends BaseService
      *
      * @param string $mobile   用户手机好
      * @param string $password 新密码
-     *
-     * @return mixed
+     * @return bool
      */
     public function resetPassword(string $mobile, string $password)
     {
-        return User::where('mobile', $mobile)->update(['password' => Hash::make($password)]);
+        return (bool)User::where('mobile', $mobile)->update(['password' => Hash::make($password)]);
     }
 
     /**
@@ -97,8 +92,7 @@ class UserService extends BaseService
      *
      * @param int    $user_id 用户ID
      * @param string $mobile  换绑手机号
-     *
-     * @return array|bool
+     * @return array
      */
     public function changeMobile(int $user_id, string $mobile)
     {
@@ -115,7 +109,6 @@ class UserService extends BaseService
      *
      * @param int $friend_id  用户ID
      * @param int $me_user_id 当前登录用户的ID
-     *
      * @return array
      */
     public function getUserCard(int $friend_id, int $me_user_id)

@@ -17,23 +17,12 @@ use App\Model\BaseModel;
  * @property string $content    文本消息
  * @property int    $is_revoke  是否撤回消息[0:否;1:是]
  * @property string $created_at 创建时间
- *
  * @package App\Model\Chat
  */
 class ChatRecord extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'chat_records';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'source',
         'msg_type',
@@ -44,11 +33,6 @@ class ChatRecord extends BaseModel
         'created_at',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'         => 'integer',
         'source'     => 'integer',

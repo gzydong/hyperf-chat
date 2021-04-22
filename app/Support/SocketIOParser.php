@@ -9,7 +9,6 @@ class SocketIOParser extends Packet
      *
      * @param string $event
      * @param mixed  $data
-     *
      * @return mixed
      */
     public static function encode(string $event, $data)
@@ -26,7 +25,6 @@ class SocketIOParser extends Packet
      * Decode message from websocket client.
      *
      * @param string $string
-     *
      * @return array
      */
     public static function decode($string)

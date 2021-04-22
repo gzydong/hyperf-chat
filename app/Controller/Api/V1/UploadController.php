@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -24,9 +22,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * 上传控制器
- *
  * Class UploadController
- *
  * @Controller(path="/api/v1/upload")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -36,22 +32,21 @@ class UploadController extends CController
 {
     /**
      * @inject
-     *
      * @var UploadService
      */
     private $uploadService;
 
     /**
      * @inject
-     *
      * @var SplitUploadService
      */
     private $splitUploadService;
 
     /**
      * 图片文件流上传接口
-     *
      * @RequestMapping(path="file-stream", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function fileStream()
     {
@@ -66,8 +61,9 @@ class UploadController extends CController
 
     /**
      * 获取拆分文件信息
-     *
      * @RequestMapping(path="get-file-split-info", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getFileSplitInfo()
     {
@@ -84,8 +80,9 @@ class UploadController extends CController
 
     /**
      * 文件拆分上传接口
-     *
      * @RequestMapping(path="file-subarea-upload", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function fileSubareaUpload()
     {

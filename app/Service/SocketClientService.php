@@ -42,8 +42,6 @@ class SocketClientService
      * @param int    $fd      客户端fd
      * @param int    $user_id 用户ID
      * @param string $run_id  服务运行ID（默认当前服务ID）
-     *
-     * @return mixed
      */
     public function bindRelation(int $fd, int $user_id, $run_id = SERVER_RUN_ID)
     {
@@ -72,12 +70,11 @@ class SocketClientService
      *
      * @param int    $user_id 用户ID
      * @param string $run_id  服务运行ID（默认当前服务ID）
-     *
      * @return bool
      */
     public function isOnline(int $user_id, $run_id = SERVER_RUN_ID): bool
     {
-        return $this->redis->scard(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id)) ? true : false;
+        return (bool)$this->redis->scard(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id));
     }
 
     /**
@@ -85,7 +82,6 @@ class SocketClientService
      *
      * @param int   $user_id 用户ID
      * @param array $run_ids 服务运行ID
-     *
      * @return bool
      */
     public function isOnlineAll(int $user_id, array $run_ids = [])
@@ -104,7 +100,6 @@ class SocketClientService
      *
      * @param int    $fd     客户端ID
      * @param string $run_id 服务运行ID（默认当前服务ID）
-     *
      * @return int
      */
     public function findFdUserId(int $fd, $run_id = SERVER_RUN_ID)
@@ -117,7 +112,6 @@ class SocketClientService
      *
      * @param int    $user_id 用户ID
      * @param string $run_id  服务运行ID（默认当前服务ID）
-     *
      * @return array
      */
     public function findUserFds(int $user_id, $run_id = SERVER_RUN_ID)
@@ -132,7 +126,6 @@ class SocketClientService
      * 获取服务ID列表
      *
      * @param int $type 获取类型[1:正在运行;2:已超时;3:所有]
-     *
      * @return array
      */
     public function getServerRunIdAll(int $type = 1)

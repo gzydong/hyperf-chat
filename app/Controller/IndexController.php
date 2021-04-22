@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -13,12 +11,18 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\UsersEmoticon;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
 class IndexController extends AbstractController
 {
     public function index(ResponseInterface $response)
     {
+
+        $res = (bool)UsersEmoticon::where('user_id', 9999999)->delete();
+
+        var_dump($res);
+
         $user   = $this->request->input('user', 'Hyperf');
         $method = $this->request->getMethod();
 

@@ -19,23 +19,12 @@ namespace App\Model;
  * @property int    $file_size     临时文件大小
  * @property int    $is_delete     文件是否已被删除[1:是;0:否;]
  * @property int    $upload_at     文件上传时间
- *
  * @package App\Model
  */
 class FileSplitUpload extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'file_split_upload';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'file_type',
         'user_id',
@@ -50,11 +39,6 @@ class FileSplitUpload extends BaseModel
         'upload_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'          => 'integer',
         'file_type'   => 'integer',

@@ -24,7 +24,6 @@ class ArticleService extends BaseService
      * 获取用户文章分类列表
      *
      * @param int $user_id 用户ID
-     *
      * @return array
      */
     public function getUserClass(int $user_id)
@@ -43,15 +42,14 @@ class ArticleService extends BaseService
      * 获取用户文章标签列表
      *
      * @param int $user_id 用户ID
-     *
-     * @return mixed
+     * @return array
      */
     public function getUserTags(int $user_id)
     {
         $items = ArticleTag::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name', Db::raw('0 as count')])->toArray();
-        array_walk($items, function ($item) use ($user_id) {
-            $item['count'] = (int)Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
-        });
+        foreach ($items as $k => $item) {
+            $items[$k]['count'] = (int)Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
+        }
 
         return $items;
     }
@@ -63,7 +61,6 @@ class ArticleService extends BaseService
      * @param int   $page      分页
      * @param int   $page_size 分页大小
      * @param array $params    查询参数
-     *
      * @return array
      */
     public function getUserArticleList(int $user_id, int $page, int $page_size, $params = [])
@@ -117,7 +114,6 @@ class ArticleService extends BaseService
      *
      * @param int $article_id 文章ID
      * @param int $user_id    用户ID
-     *
      * @return array
      */
     public function getArticleDetail(int $article_id, $user_id = 0)
@@ -158,7 +154,6 @@ class ArticleService extends BaseService
      *
      * @param int $user_id    用户ID
      * @param int $article_id 笔记ID
-     *
      * @return mixed
      */
     public function findArticleAnnexAll(int $user_id, int $article_id)
@@ -176,7 +171,6 @@ class ArticleService extends BaseService
      * @param int        $uid        用户ID
      * @param int|string $class_id   分类ID
      * @param string     $class_name 分类名
-     *
      * @return bool|int
      */
     public function editArticleClass(int $uid, $class_id, string $class_name)
@@ -203,18 +197,14 @@ class ArticleService extends BaseService
                 ArticleClass::where('id', $val['id'])->update(['sort' => $val['sort']]);
             }
 
-            $insRes = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => 1, 'created_at' => time()]);
-            if (!$insRes) {
-                throw new Exception('笔记分类添加失败..,.');
-            }
+            $res = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => 1, 'created_at' => time()]);
 
             Db::commit();
+            return $res->id;
         } catch (Exception $e) {
             Db::rollBack();
             return false;
         }
-
-        return $insRes->id;
     }
 
     /**
@@ -222,7 +212,6 @@ class ArticleService extends BaseService
      *
      * @param int $uid      用户ID
      * @param int $class_id 分类ID
-     *
      * @return bool
      */
     public function delArticleClass(int $uid, int $class_id)
@@ -245,7 +234,6 @@ class ArticleService extends BaseService
      * @param int $user_id   用户ID
      * @param int $class_id  文集分类ID
      * @param int $sort_type 排序方式
-     *
      * @return bool
      */
     public function articleClassSort(int $user_id, int $class_id, int $sort_type)
@@ -254,7 +242,7 @@ class ArticleService extends BaseService
             return false;
         }
 
-        //向下排序
+        // 向下排序
         if ($sort_type == 1) {
             $maxSort = ArticleClass::where('user_id', $user_id)->max('sort');
             if ($maxSort == $info->sort) {
@@ -310,7 +298,6 @@ class ArticleService extends BaseService
      * @param int $user_id     用户ID
      * @param int $class_id    笔记分类ID
      * @param int $to_class_id 笔记分类ID
-     *
      * @return bool
      */
     public function mergeArticleClass(int $user_id, int $class_id, int $to_class_id)
@@ -320,7 +307,7 @@ class ArticleService extends BaseService
             return false;
         }
 
-        return (boolean)Article::where('class_id', $class_id)->where('user_id', $user_id)->update([
+        return (bool)Article::where('class_id', $class_id)->where('user_id', $user_id)->update([
             'class_id' => $to_class_id
         ]);
     }
@@ -331,7 +318,6 @@ class ArticleService extends BaseService
      * @param int    $uid      用户ID
      * @param int    $tag_id   标签ID
      * @param string $tag_name 标签名
-     *
      * @return bool|int
      */
     public function editArticleTag(int $uid, int $tag_id, string $tag_name)
@@ -344,10 +330,8 @@ class ArticleService extends BaseService
 
             return ArticleTag::where('id', $tag_id)->where('user_id', $uid)->update(['tag_name' => $tag_name]) ? $tag_id : false;
         } else {
-            //判断新添加的标签名是否存在
-            if ($id) {
-                return false;
-            }
+            // 判断新添加的标签名是否存在
+            if ($id) return false;
 
             $insRes = ArticleTag::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
             if (!$insRes) {
@@ -363,7 +347,6 @@ class ArticleService extends BaseService
      *
      * @param int $uid    用户ID
      * @param int $tag_id 标签ID
-     *
      * @return bool
      */
     public function delArticleTags(int $uid, int $tag_id)
@@ -373,11 +356,13 @@ class ArticleService extends BaseService
         }
 
         $count = Article::where('user_id', $uid)->whereRaw("FIND_IN_SET({$tag_id},tags_id)")->count();
-        if ($count > 0) {
+        if ($count > 0) return false;
+
+        try {
+            return (bool)ArticleTag::where('id', $tag_id)->where('user_id', $uid)->delete();
+        } catch (Exception $e) {
             return false;
         }
-
-        return (bool)ArticleTag::where('id', $tag_id)->where('user_id', $uid)->delete();
     }
 
     /**
@@ -386,13 +371,12 @@ class ArticleService extends BaseService
      * @param int   $user_id    用户ID
      * @param int   $article_id 文章ID
      * @param array $data       文章数据
-     *
      * @return bool
      */
     public function editArticle(int $user_id, int $article_id, $data = [])
     {
         if ($article_id) {
-            if (!$info = Article::where('id', $article_id)->where('user_id', $user_id)->first()) {
+            if (!Article::where('id', $article_id)->where('user_id', $user_id)->first()) {
                 return false;
             }
 
@@ -452,7 +436,6 @@ class ArticleService extends BaseService
      * @param int $user_id    用户ID
      * @param int $article_id 笔记ID
      * @param int $status     笔记状态 1:正常 2:已删除
-     *
      * @return bool
      */
     public function updateArticleStatus(int $user_id, int $article_id, int $status)
@@ -471,12 +454,11 @@ class ArticleService extends BaseService
      * @param int $user_id    用户ID
      * @param int $article_id 笔记ID
      * @param int $class_id   笔记分类ID
-     *
      * @return bool
      */
     public function moveArticle(int $user_id, int $article_id, int $class_id)
     {
-        return (boolean)Article::where('id', $article_id)->where('user_id', $user_id)->update(['class_id' => $class_id]);
+        return (bool)Article::where('id', $article_id)->where('user_id', $user_id)->update(['class_id' => $class_id]);
     }
 
     /**
@@ -485,12 +467,11 @@ class ArticleService extends BaseService
      * @param int $user_id    用户ID
      * @param int $article_id 笔记ID
      * @param int $type       1:标记星号 2:取消星号标记
-     *
      * @return bool
      */
     public function setAsteriskArticle(int $user_id, int $article_id, int $type)
     {
-        return (boolean)Article::where('id', $article_id)->where('user_id', $user_id)->update([
+        return (bool)Article::where('id', $article_id)->where('user_id', $user_id)->update([
             'is_asterisk' => $type == 1 ? 1 : 0
         ]);
     }
@@ -501,7 +482,6 @@ class ArticleService extends BaseService
      * @param int   $uid        用户ID
      * @param int   $article_id 笔记ID
      * @param array $tags       关联标签ID
-     *
      * @return bool
      */
     public function updateArticleTag(int $uid, int $article_id, array $tags)
@@ -514,7 +494,6 @@ class ArticleService extends BaseService
      *
      * @param int $uid        用户ID
      * @param int $article_id 笔记ID
-     *
      * @return bool|int|mixed|null
      * @throws Exception
      */
@@ -551,9 +530,9 @@ class ArticleService extends BaseService
         }
 
         // 从磁盘中永久删除文件附件
-        foreach ($annex_files as $item) {
-            //Storage::disk('uploads')->delete($item['save_dir']);
-        }
+        //foreach ($annex_files as $item) {
+        //Storage::disk('uploads')->delete($item['save_dir']);
+        //}
 
         return true;
     }
@@ -564,7 +543,6 @@ class ArticleService extends BaseService
      * @param int $user_id  用户ID
      * @param int $annex_id 附件ID
      * @param int $status   附件状态 1:正常 2:已删除
-     *
      * @return bool
      */
     public function updateArticleAnnexStatus(int $user_id, int $annex_id, int $status)
@@ -574,14 +552,13 @@ class ArticleService extends BaseService
             $data['deleted_at'] = date('Y-m-d H:i:s');
         }
 
-        return ArticleAnnex::where('id', $annex_id)->where('user_id', $user_id)->update($data) ? true : false;
+        return (bool)ArticleAnnex::where('id', $annex_id)->where('user_id', $user_id)->update($data);
     }
 
     /**
      * 回收站附件列表
      *
      * @param int $uid 用户ID
-     *
      * @return array
      */
     public function recoverAnnexList(int $uid)
@@ -603,15 +580,7 @@ class ArticleService extends BaseService
      *
      * @param int $uid      用户ID
      * @param int $annex_id 笔记附件ID
-     *
-     * @return bool|int|mixed|null
-     */
-
-    /**
-     * @param int $uid
-     * @param int $annex_id
-     *
-     * @return bool|int|mixed|null
+     * @return mixed
      * @throws Exception
      */
     public function foreverDelAnnex(int $uid, int $annex_id)
@@ -622,9 +591,9 @@ class ArticleService extends BaseService
         }
 
         // 将文件从磁盘中删除
-//        if (!Storage::disk('uploads')->delete($info->save_dir)) {
-//            return false;
-//        }
+        //if (!Storage::disk('uploads')->delete($info->save_dir)) {
+        //    return false;
+        //}
 
         return $info->delete();
     }
@@ -635,7 +604,6 @@ class ArticleService extends BaseService
      * @param int   $user_id    用户id
      * @param int   $article_id 笔记ID
      * @param array $annex      笔记附件信息
-     *
      * @return bool
      */
     public function insertArticleAnnex(int $user_id, int $article_id, array $annex)

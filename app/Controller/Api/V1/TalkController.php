@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -35,7 +33,6 @@ use App\Constants\SocketConstants;
 
 /**
  * Class TalkController
- *
  * @Controller(path="/api/v1/talk")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -63,8 +60,9 @@ class TalkController extends CController
 
     /**
      * 获取用户对话列表
-     *
      * @RequestMapping(path="list", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function list()
     {
@@ -85,8 +83,9 @@ class TalkController extends CController
 
     /**
      * 新增对话列表
-     *
      * @RequestMapping(path="create", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function create()
     {
@@ -152,8 +151,9 @@ class TalkController extends CController
 
     /**
      * 删除对话列表
-     *
      * @RequestMapping(path="delete", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function delete()
     {
@@ -169,8 +169,9 @@ class TalkController extends CController
 
     /**
      * 对话列表置顶
-     *
      * @RequestMapping(path="topping", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function topping()
     {
@@ -187,8 +188,9 @@ class TalkController extends CController
 
     /**
      * 设置消息免打扰状态
-     *
      * @RequestMapping(path="set-not-disturb", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function setNotDisturb()
     {
@@ -208,8 +210,9 @@ class TalkController extends CController
 
     /**
      * 更新对话列表未读数
-     *
      * @RequestMapping(path="update-unread-num", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function updateUnreadNum()
     {
@@ -229,8 +232,9 @@ class TalkController extends CController
 
     /**
      * 撤回聊天对话消息
-     *
      * @RequestMapping(path="revoke-records", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function revokeChatRecords()
     {
@@ -255,8 +259,9 @@ class TalkController extends CController
 
     /**
      * 删除聊天记录
-     *
      * @RequestMapping(path="remove-records", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function removeChatRecords()
     {
@@ -283,8 +288,9 @@ class TalkController extends CController
 
     /**
      * 转发聊天记录(待优化)
-     *
      * @RequestMapping(path="forward-records", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function forwardChatRecords()
     {
@@ -353,8 +359,9 @@ class TalkController extends CController
 
     /**
      * 获取对话面板中的聊天记录
-     *
      * @RequestMapping(path="records", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getChatRecords()
     {
@@ -394,8 +401,9 @@ class TalkController extends CController
 
     /**
      * 获取转发记录详情
-     *
      * @RequestMapping(path="get-forward-records", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getForwardRecords()
     {
@@ -414,8 +422,9 @@ class TalkController extends CController
 
     /**
      * 查询聊天记录
-     *
      * @RequestMapping(path="find-chat-records", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function findChatRecords()
     {
@@ -463,8 +472,9 @@ class TalkController extends CController
 
     /**
      * 搜索聊天记录（待开发）
-     *
      * @RequestMapping(path="search-chat-records", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function searchChatRecords()
     {
@@ -473,8 +483,9 @@ class TalkController extends CController
 
     /**
      * 获取聊天记录上下文数据（待开发）
-     *
      * @RequestMapping(path="get-records-context", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getRecordsContext()
     {
@@ -483,11 +494,9 @@ class TalkController extends CController
 
     /**
      * 上传聊天对话图片（待优化）
-     *
      * @RequestMapping(path="send-image", methods="post")
      *
      * @param UploadService $uploadService
-     *
      * @return ResponseInterface
      */
     public function sendImage(UploadService $uploadService)
@@ -558,8 +567,9 @@ class TalkController extends CController
 
     /**
      * 发送代码块消息
-     *
      * @RequestMapping(path="send-code-block", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function sendCodeBlock()
     {
@@ -608,11 +618,9 @@ class TalkController extends CController
 
     /**
      * 发送文件消息
-     *
      * @RequestMapping(path="send-file", methods="post")
      *
      * @param UploadService $uploadService
-     *
      * @return ResponseInterface
      */
     public function sendFile(UploadService $uploadService)
@@ -679,8 +687,9 @@ class TalkController extends CController
 
     /**
      * 发送表情包消息
-     *
      * @RequestMapping(path="send-emoticon", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function sendEmoticon()
     {

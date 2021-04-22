@@ -40,8 +40,7 @@ class MessageHandleService
      * @param Response|Server $server
      * @param Frame           $frame
      * @param array|string    $data 解析后数据
-     *
-     * @return bool|void
+     * @return void
      */
     public function onTalk($server, Frame $frame, $data)
     {
@@ -109,8 +108,6 @@ class MessageHandleService
      * @param Response|Server $server
      * @param Frame           $frame
      * @param array|string    $data 解析后数据
-     *
-     * @return bool|void
      */
     public function onKeyboard($server, Frame $frame, $data)
     {

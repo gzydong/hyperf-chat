@@ -5,8 +5,6 @@ namespace App\Service;
 /**
  * 短信发送服务
  *
- * Class SmsCodeService
- *
  * @package App\Services
  */
 class SmsCodeService
@@ -35,7 +33,6 @@ class SmsCodeService
      *
      * @param string $type   短信用途
      * @param string $mobile 手机号
-     *
      * @return string
      */
     private function getKey(string $type, string $mobile)
@@ -49,7 +46,6 @@ class SmsCodeService
      * @param string $type   发送类型
      * @param string $mobile 手机号
      * @param string $code   验证码
-     *
      * @return bool
      */
     public function check(string $type, string $mobile, string $code)
@@ -64,7 +60,6 @@ class SmsCodeService
      *
      * @param string $usage  验证码用途
      * @param string $mobile 手机号
-     *
      * @return array|bool
      */
     public function send(string $usage, string $mobile)
@@ -103,7 +98,6 @@ class SmsCodeService
      * 获取缓存的验证码
      *
      * @param string $key
-     *
      * @return mixed
      */
     public function getCode(string $key)
@@ -117,7 +111,6 @@ class SmsCodeService
      * @param string    $key      缓存key
      * @param string    $sms_code 验证码
      * @param float|int $exp      过期时间（默认15分钟）
-     *
      * @return mixed
      */
     public function setCode(string $key, string $sms_code, $exp = 60 * 15)
@@ -130,7 +123,6 @@ class SmsCodeService
      *
      * @param string $usage  验证码用途
      * @param string $mobile 手机号
-     *
      * @return mixed
      */
     public function delCode(string $usage, string $mobile)
@@ -143,18 +135,17 @@ class SmsCodeService
      *
      * @param string $usage  验证码用途
      * @param string $mobile 手机号
-     *
      * @return array
      */
     public function filter(string $usage, string $mobile)
     {
         // ... 省略处理
-        if (false) {
-            return [false, [
-                'msg'  => '过滤原因...',
-                'data' => []
-            ]];
-        }
+        //if (false) {
+        //    return [false, [
+        //        'msg'  => '过滤原因...',
+        //        'data' => []
+        //    ]];
+        //}
 
         return [true, [
             'msg'  => 'ok',
@@ -166,7 +157,6 @@ class SmsCodeService
      * 判断验证码用途渠道是否注册
      *
      * @param string $usage
-     *
      * @return bool
      */
     public function isUsages(string $usage)

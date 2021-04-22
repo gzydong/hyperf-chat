@@ -107,7 +107,6 @@ class Packet
      * Get socket packet type of a raw payload.
      *
      * @param string $packet
-     *
      * @return int|null
      */
     public static function getSocketType(string $packet)
@@ -125,13 +124,12 @@ class Packet
      * Get data packet from a raw payload.
      *
      * @param string $packet
-     *
      * @return array|null
      */
     public static function getPayload(string $packet)
     {
         $packet = trim($packet);
-        $start = strpos($packet, '[');
+        $start  = strpos($packet, '[');
 
         if ($start === false || substr($packet, -1) !== ']') {
             return null;
@@ -146,16 +144,15 @@ class Packet
 
         return [
             'event' => $data[0],
-            'data' => $data[1] ?? null,
+            'data'  => $data[1] ?? null,
         ];
     }
 
     /**
      * Return if a socket packet belongs to specific type.
      *
-     * @param $packet
+     * @param        $packet
      * @param string $typeName
-     *
      * @return bool
      */
     public static function isSocketType($packet, string $typeName)

@@ -19,23 +19,12 @@ use App\Model\BaseModel;
  * @property integer $status        文件状态
  * @property string  $created_at    上传时间
  * @property string  $deleted_at    删除时间
- *
  * @package App\Model\Article
  */
 class ArticleAnnex extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'article_annex';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'user_id',
         'article_id',
@@ -48,11 +37,6 @@ class ArticleAnnex extends BaseModel
         'deleted_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'         => 'integer',
         'user_id'    => 'integer',

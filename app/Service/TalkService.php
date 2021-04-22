@@ -26,7 +26,6 @@ class TalkService extends BaseService
      * 获取用户的聊天列表
      *
      * @param int $user_id 用户ID
-     *
      * @return array
      */
     public function talks(int $user_id)
@@ -51,7 +50,7 @@ class TalkService extends BaseService
         $socketFDService = make(SocketClientService::class);
         $runIdAll        = $socketFDService->getServerRunIdAll();
 
-        $rows = array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {
+        return array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {
             $data['id']          = $item['id'];
             $data['type']        = $item['type'];
             $data['friend_id']   = $item['friend_id'];
@@ -98,8 +97,6 @@ class TalkService extends BaseService
 
             return $data;
         }, $rows);
-
-        return $rows;
     }
 
     /**
@@ -127,7 +124,6 @@ class TalkService extends BaseService
      * 处理聊天记录信息
      *
      * @param array $rows 聊天记录
-     *
      * @return array
      */
     public function handleChatRecords(array $rows)
@@ -234,7 +230,6 @@ class TalkService extends BaseService
      * @param int   $record_id  上一次查询的聊天记录ID
      * @param int   $limit      查询数据长度
      * @param array $msg_type   消息类型
-     *
      * @return array
      */
     public function getChatRecords(int $user_id, int $receive_id, int $source, int $record_id, $limit = 30, $msg_type = [])
@@ -295,7 +290,6 @@ class TalkService extends BaseService
      *
      * @param int $user_id   用户ID
      * @param int $record_id 聊天记录ID
-     *
      * @return array
      */
     public function getForwardRecords(int $user_id, int $record_id)
@@ -340,7 +334,6 @@ class TalkService extends BaseService
      * @param int   $source     消息来源  1:好友消息 2:群聊消息
      * @param int   $receive_id 好友ID或者群聊ID
      * @param array $record_ids 聊天记录ID
-     *
      * @return bool
      */
     public function removeRecords(int $user_id, int $source, int $receive_id, array $record_ids)
@@ -379,7 +372,6 @@ class TalkService extends BaseService
      *
      * @param int $user_id   用户ID
      * @param int $record_id 聊天记录ID
-     *
      * @return array
      */
     public function revokeRecord(int $user_id, int $record_id)
@@ -413,8 +405,8 @@ class TalkService extends BaseService
      *
      * @param int   $user_id     转发的用户ID
      * @param int   $record_id   转发消息的记录ID
-     * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' => 1,'id' => 1658]] 二维数组
-     *
+     * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' =>
+     *                           1,'id' => 1658]] 二维数组
      * @return array
      */
     public function forwardRecords(int $user_id, int $record_id, array $receive_ids)
@@ -506,8 +498,8 @@ class TalkService extends BaseService
      * @param int   $receive_id  当前转发消息的所属者(好友ID或者群聊ID)
      * @param int   $source      消息来源  1:好友消息 2:群聊消息
      * @param array $records_ids 转发消息的记录ID
-     * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' => 1,'id' => 1658]] 二维数组
-     *
+     * @param array $receive_ids 接受者数组  例如:[['source' => 1,'id' => 3045],['source' => 1,'id' => 3046],['source' =>
+     *                           1,'id' => 1658]] 二维数组
      * @return array|bool
      */
     public function mergeForwardRecords(int $user_id, int $receive_id, int $source, $records_ids, array $receive_ids)
@@ -517,16 +509,16 @@ class TalkService extends BaseService
 
         $sqlObj = ChatRecord::whereIn('id', $records_ids);
 
-        //验证是否有权限转发
-        if ($source == 2) {//群聊消息
-            //判断是否是群聊成员
+        // 验证是否有权限转发
+        if ($source == 2) {// 群聊消息
+            // 判断是否是群聊成员
             if (!Group::isMember($receive_id, $user_id)) {
                 return false;
             }
 
             $sqlObj = $sqlObj->where('receive_id', $receive_id)->whereIn('msg_type', $msg_type)->where('source', 2)->where('is_revoke', 0);
-        } else {//私聊消息
-            //判断是否存在好友关系
+        } else {// 私聊消息
+            // 判断是否存在好友关系
             if (!UsersFriend::isFriend($user_id, $receive_id)) {
                 return [];
             }
@@ -544,7 +536,7 @@ class TalkService extends BaseService
 
         $result = $sqlObj->get();
 
-        //判断消息记录是否存在
+        // 判断消息记录是否存在
         if (count($result) != count($records_ids)) {
             return [];
         }
@@ -628,8 +620,7 @@ class TalkService extends BaseService
      * @param int   $page       当前查询分页
      * @param int   $page_size  分页大小
      * @param array $params     查询参数
-     *
-     * @return mixed
+     * @return array
      */
     public function searchRecords(int $user_id, int $receive_id, int $source, int $page, int $page_size, array $params)
     {
@@ -685,7 +676,6 @@ class TalkService extends BaseService
      *
      * @param $message
      * @param $fileInfo
-     *
      * @return bool|int
      */
     public function createImgMessage($message, $fileInfo)
@@ -719,7 +709,6 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $codeBlock
-     *
      * @return bool|int
      */
     public function createCodeMessage(array $message, array $codeBlock)
@@ -752,7 +741,6 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $emoticon
-     *
      * @return bool|int
      */
     public function createEmoticonMessage(array $message, array $emoticon)
@@ -785,7 +773,6 @@ class TalkService extends BaseService
      *
      * @param array $message
      * @param array $emoticon
-     *
      * @return bool|int
      */
     public function createFileMessage(array $message, array $emoticon)

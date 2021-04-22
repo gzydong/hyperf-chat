@@ -1,8 +1,6 @@
 <?php
 /**
- *
  * This is my open source code, please do not use it for commercial applications.
- *
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code
  *
@@ -21,10 +19,10 @@ use App\Service\ArticleService;
 use App\Service\UploadService;
 use App\Support\RedisLock;
 use Hyperf\Utils\Str;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class ArticleController
- *
  * @Controller(path="/api/v1/article")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -46,8 +44,9 @@ class ArticleController extends CController
 
     /**
      * 获取笔记分类列表
-     *
      * @RequestMapping(path="article-class", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getArticleClass()
     {
@@ -58,8 +57,9 @@ class ArticleController extends CController
 
     /**
      * 获取笔记标签列表
-     *
      * @RequestMapping(path="article-tags", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getArticleTags()
     {
@@ -70,8 +70,9 @@ class ArticleController extends CController
 
     /**
      * 获取笔记列表
-     *
      * @RequestMapping(path="article-list", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getArticleList()
     {
@@ -103,8 +104,9 @@ class ArticleController extends CController
 
     /**
      * 获取笔记详情
-     *
      * @RequestMapping(path="article-detail", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function getArticleDetail()
     {
@@ -120,8 +122,9 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记分类
-     *
      * @RequestMapping(path="edit-article-class", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editArticleClass()
     {
@@ -141,8 +144,9 @@ class ArticleController extends CController
 
     /**
      * 删除笔记分类
-     *
      * @RequestMapping(path="del-article-class", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function delArticleClass()
     {
@@ -160,8 +164,9 @@ class ArticleController extends CController
 
     /**
      * 笔记分类列表排序接口
-     *
      * @RequestMapping(path="article-class-sort", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function articleClassSort()
     {
@@ -190,8 +195,9 @@ class ArticleController extends CController
 
     /**
      * 笔记分类合并接口
-     *
      * @RequestMapping(path="merge-article-class", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function mergeArticleClass()
     {
@@ -210,8 +216,9 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记标签
-     *
      * @RequestMapping(path="edit-article-tag", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editArticleTags()
     {
@@ -230,8 +237,9 @@ class ArticleController extends CController
 
     /**
      * 删除笔记标签
-     *
      * @RequestMapping(path="del-article-tag", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function delArticleTags()
     {
@@ -249,8 +257,9 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记
-     *
      * @RequestMapping(path="edit-article", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function editArticle()
     {
@@ -279,8 +288,9 @@ class ArticleController extends CController
 
     /**
      * 删除笔记
-     *
      * @RequestMapping(path="delete-article", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function deleteArticle()
     {
@@ -298,8 +308,9 @@ class ArticleController extends CController
 
     /**
      * 恢复删除笔记
-     *
      * @RequestMapping(path="recover-article", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function recoverArticle()
     {
@@ -317,8 +328,9 @@ class ArticleController extends CController
 
     /**
      * 笔记图片上传接口
-     *
      * @RequestMapping(path="upload-article-image", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function uploadArticleImage()
     {
@@ -347,8 +359,9 @@ class ArticleController extends CController
 
     /**
      * 移动笔记至指定分类
-     *
      * @RequestMapping(path="move-article", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function moveArticle()
     {
@@ -371,8 +384,9 @@ class ArticleController extends CController
 
     /**
      * 笔记标记星号接口
-     *
      * @RequestMapping(path="set-asterisk-article", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function setAsteriskArticle()
     {
@@ -395,8 +409,9 @@ class ArticleController extends CController
 
     /**
      * 更新笔记关联标签ID
-     *
      * @RequestMapping(path="update-article-tag", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function updateArticleTag()
     {
@@ -415,8 +430,9 @@ class ArticleController extends CController
 
     /**
      * 永久删除笔记文章
-     *
      * @RequestMapping(path="forever-delete-article", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function foreverDelArticle()
     {
@@ -434,8 +450,9 @@ class ArticleController extends CController
 
     /**
      * 上传笔记附件
-     *
      * @RequestMapping(path="upload-article-annex", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function uploadArticleAnnex()
     {
@@ -476,8 +493,9 @@ class ArticleController extends CController
 
     /**
      * 删除笔记附件
-     *
      * @RequestMapping(path="delete-article-annex", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function deleteArticleAnnex()
     {
@@ -495,8 +513,9 @@ class ArticleController extends CController
 
     /**
      * 恢复笔记附件
-     *
      * @RequestMapping(path="recover-article-annex", methods="post")
+     *
+     * @return ResponseInterface
      */
     public function recoverArticleAnnex()
     {
@@ -514,8 +533,9 @@ class ArticleController extends CController
 
     /**
      * 获取附件回收站列表
-     *
      * @RequestMapping(path="recover-annex-list", methods="get")
+     *
+     * @return ResponseInterface
      */
     public function recoverAnnexList()
     {
@@ -538,8 +558,10 @@ class ArticleController extends CController
 
     /**
      * 永久删除笔记附件(从已删除附件中永久删除)
-     *
      * @RequestMapping(path="forever-delete-annex", methods="post")
+     *
+     * @return ResponseInterface
+     * @throws \Exception
      */
     public function foreverDelAnnex()
     {

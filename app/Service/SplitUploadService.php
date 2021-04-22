@@ -9,8 +9,6 @@ use Hyperf\HttpMessage\Upload\UploadedFile;
 /**
  * 文件拆分上传服务
  *
- * Class SplitUploadService
- *
  * @package App\Service
  */
 class SplitUploadService
@@ -26,7 +24,6 @@ class SplitUploadService
      * @param int    $user_id  用户ID
      * @param string $fileName 上传的文件名
      * @param string $fileSize 上传文件大小
-     *
      * @return array|bool
      */
     public function create(int $user_id, string $fileName, string $fileSize)
@@ -43,7 +40,7 @@ class SplitUploadService
         $data['file_size']     = $fileSize;
         $data['upload_at']     = time();
 
-        //文件拆分数量
+        // 文件拆分数量
         $data['split_num']   = $split_num;
         $data['split_index'] = $split_num;
 
@@ -58,7 +55,6 @@ class SplitUploadService
      * @param string       $hashName    上传临时问价hash名
      * @param int          $split_index 当前拆分文件索引
      * @param int          $fileSize    文件大小
-     *
      * @return bool
      */
     public function upload(int $user_id, UploadedFile $file, string $hashName, int $split_index, int $fileSize)
@@ -106,7 +102,6 @@ class SplitUploadService
      *
      * @param int    $user_id   用户ID
      * @param string $hash_name 上传临时问价hash名
-     *
      * @return array|bool
      */
     public function merge(int $user_id, string $hash_name)

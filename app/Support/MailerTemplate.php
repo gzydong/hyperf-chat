@@ -4,7 +4,6 @@ namespace App\Support;
 
 /**
  * 邮件视图模板
- * Class MailerViewTemplate
  *
  * @package App\Support
  */
@@ -16,7 +15,6 @@ class MailerTemplate
      * @param string $engine   模板引擎
      * @param string $template 模板名称
      * @param array  $params   模板参数
-     *
      * @return string
      */
     public function view(string $engine, string $template, $params = []): string
@@ -29,7 +27,6 @@ class MailerTemplate
      *
      * @param string $sms_code 验证码
      * @param array  $params   模板参数
-     *
      * @return string
      */
     public function emailCode(string $sms_code, array $params = [])

@@ -14,7 +14,6 @@ trait PagingTrait
      *
      * @param int $total     总记录数
      * @param int $page_size 分页大小
-     *
      * @return int 分页总数
      */
     protected function getPagingTotal(int $total, int $page_size)
@@ -30,7 +29,6 @@ trait PagingTrait
      * @param int   $page      当前分页
      * @param int   $page_size 分页大小
      * @param array $params    额外参数
-     *
      * @return array
      */
     protected function getPagingRows(array $rows, int $total, int $page, int $page_size, array $params = [])

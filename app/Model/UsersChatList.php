@@ -17,23 +17,12 @@ namespace App\Model;
  * @property int    $not_disturb 是否消息免打扰
  * @property string $created_at  创建时间
  * @property string $updated_at  更新时间
- *
  * @package App\Model
  */
 class UsersChatList extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'users_chat_list';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'type',
         'uid',
@@ -46,11 +35,6 @@ class UsersChatList extends BaseModel
         'updated_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'          => 'integer',
         'type'        => 'integer',
@@ -70,7 +54,6 @@ class UsersChatList extends BaseModel
      * @param int $user_id    用户ID
      * @param int $receive_id 接收者ID
      * @param int $type       创建类型 1:私聊  2:群聊
-     *
      * @return array
      */
     public static function addItem(int $user_id, int $receive_id, int $type)
@@ -115,7 +98,6 @@ class UsersChatList extends BaseModel
      * @param int  $user_id 用户ID
      * @param int  $list_id 对话列表ID
      * @param bool $is_top  是否置顶（true:是 false:否）
-     *
      * @return bool
      */
     public static function topItem(int $user_id, int $list_id, $is_top = true)
@@ -132,7 +114,6 @@ class UsersChatList extends BaseModel
      * @param int $user_id 用户ID
      * @param int $id      聊天列表ID、好友ID或群聊ID
      * @param int $type    ID类型 （1：聊天列表ID  2:好友ID  3:群聊ID）
-     *
      * @return bool
      */
     public static function delItem(int $user_id, int $id, $type = 1)
@@ -154,7 +135,6 @@ class UsersChatList extends BaseModel
      * @param int $receive_id  接收者ID
      * @param int $type        接收者类型（1:好友  2:群组）
      * @param int $not_disturb 是否免打扰
-     *
      * @return boolean
      */
     public static function notDisturbItem(int $user_id, int $receive_id, int $type, int $not_disturb)

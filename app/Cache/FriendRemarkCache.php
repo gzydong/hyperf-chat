@@ -28,7 +28,6 @@ class FriendRemarkCache
      *
      * @param int $user_id   用户ID
      * @param int $friend_id 好友ID
-     *
      * @return string
      */
     public static function get(int $user_id, int $friend_id)

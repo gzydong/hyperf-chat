@@ -16,8 +16,9 @@ class Response
     private $response;
 
     /**
-     * @param $data
+     * 处理json数据
      *
+     * @param $data
      * @return PsrResponseInterface
      */
     public function json($data)
@@ -30,7 +31,6 @@ class Response
      *
      * @param array  $data    响应数据
      * @param string $message 响应提示
-     *
      * @return PsrResponseInterface
      */
     public function success(array $data = [], $message = 'success')
@@ -45,7 +45,6 @@ class Response
      * @param array  $data    响应数据
      * @param string $message 响应提示
      * @param int    $code    错误码
-     *
      * @return PsrResponseInterface
      */
     public function fail($message = 'fail', $data = [], $code = ResponseCode::FAIL)
@@ -54,9 +53,10 @@ class Response
     }
 
     /**
-     * @param string $message
-     * @param int    $code
+     * 处理错误信息返回
      *
+     * @param string $message 响应提示
+     * @param int    $code    错误码
      * @return PsrResponseInterface
      */
     public function error($message = '', $code = ResponseCode::SERVER_ERROR)

@@ -21,23 +21,12 @@ use App\Model\BaseModel;
  * @property string $save_dir      文件保存路径
  * @property int    $is_delete     是否已删除
  * @property string $created_at    上传时间
- *
  * @package App\Model\Chat
  */
 class ChatRecordsFile extends BaseModel
 {
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'chat_records_file';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'record_id',
         'user_id',
@@ -52,11 +41,6 @@ class ChatRecordsFile extends BaseModel
         'created_at'
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id'          => 'integer',
         'record_id'   => 'integer',
