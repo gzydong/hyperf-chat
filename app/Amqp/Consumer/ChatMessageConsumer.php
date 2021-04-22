@@ -167,9 +167,7 @@ class ChatMessageConsumer extends ConsumerMessage
         // 客户端ID去重
         if (!$fds = array_unique($fds)) return Result::ACK;
 
-        /**
-         * @var ChatRecord
-         */
+        /** @var ChatRecord */
         $result = ChatRecord::leftJoin('users', 'users.id', '=', 'chat_records.user_id')
             ->where('chat_records.id', $data['data']['record_id'])
             ->first([
@@ -210,7 +208,7 @@ class ChatMessageConsumer extends ConsumerMessage
 
                 unset($notifyInfo, $userInfo);
                 break;
-            case 4: //会话记录消息
+            case 4:// 会话记录消息
                 $forward     = ['num' => 0, 'list' => []];
                 $forwardInfo = ChatRecordsForward::where('record_id', $result->id)->first(['records_id', 'text']);
                 if ($forwardInfo) {
@@ -221,7 +219,7 @@ class ChatMessageConsumer extends ConsumerMessage
                 }
 
                 break;
-            case 5: //代码块消息
+            case 5:// 代码块消息
                 $code_block = ChatRecordsCode::where('record_id', $result->id)->first(['record_id', 'code_lang', 'code']);
                 $code_block = $code_block ? $code_block->toArray() : [];
                 break;
