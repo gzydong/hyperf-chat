@@ -129,7 +129,7 @@ class ChatMessageConsumer extends ConsumerMessage
 
             // [加锁]防止消息重复消费
             $lockName = sprintf('ws:message-lock:%s:%s', SERVER_RUN_ID, $data['uuid']);
-            if (!$redis->rawCommand('SET', $lockName, 1, 'NX', 'EX', 60)) {
+            if (!$redis->set($lockName, 1, ['nx', 'ex' => 60])) {
                 return Result::ACK;
             }
 

@@ -15,7 +15,6 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use Hyperf\Amqp\Producer;
 use Hyperf\Utils\Str;
 use Psr\Http\Message\ResponseInterface;
 use App\Model\EmoticonDetail;
@@ -51,12 +50,6 @@ class TalkController extends CController
      * @var UnreadTalkCache
      */
     public $unreadTalkCache;
-
-    /**
-     * @Inject
-     * @var Producer
-     */
-    private $producer;
 
     /**
      * 获取用户对话列表
@@ -98,17 +91,17 @@ class TalkController extends CController
         $user_id = $this->uid();
         if ($params['type'] == 1) {
             if (!UsersFriend::isFriend($user_id, $params['receive_id'])) {
-                return $this->response->fail('暂不属于好友关系，无法进行聊天...');
+                return $this->response->fail('暂不属于好友关系，无法进行聊天！');
             }
         } else {
             if (!Group::isMember($params['receive_id'], $user_id)) {
-                return $this->response->fail('暂不属于群成员，无法进行群聊...');
+                return $this->response->fail('暂不属于群成员，无法进行群聊！');
             }
         }
 
         $result = UsersChatList::addItem($user_id, $params['receive_id'], $params['type']);
         if (!$result) {
-            return $this->response->fail('创建失败...');
+            return $this->response->fail('创建失败！');
         }
 
         $data = [
@@ -164,7 +157,7 @@ class TalkController extends CController
 
         return UsersChatList::delItem($this->uid(), $params['list_id'])
             ? $this->response->success([], '对话列表删除成功...')
-            : $this->response->fail('对话列表删除失败...');
+            : $this->response->fail('对话列表删除失败！');
     }
 
     /**
@@ -183,7 +176,7 @@ class TalkController extends CController
 
         return UsersChatList::topItem($this->uid(), $params['list_id'], $params['type'] == 1)
             ? $this->response->success([], '对话列表置顶(或取消置顶)成功...')
-            : $this->response->fail('对话列表置顶(或取消置顶)失败...');
+            : $this->response->fail('对话列表置顶(或取消置顶)失败！');
     }
 
     /**
@@ -205,7 +198,7 @@ class TalkController extends CController
 
         return $isTrue
             ? $this->response->success([], '免打扰设置成功...')
-            : $this->response->fail('免打扰设置失败...');
+            : $this->response->fail('免打扰设置失败！');
     }
 
     /**
@@ -227,7 +220,7 @@ class TalkController extends CController
             $this->unreadTalkCache->del($this->uid(), $params['receive']);
         }
 
-        return $this->response->success([], 'success');
+        return $this->response->success();
     }
 
     /**
@@ -245,11 +238,9 @@ class TalkController extends CController
 
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
         if ($isTrue) {
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_REVOKE_TALK, [
-                    'record_id' => $params['record_id']
-                ])
-            );
+            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_REVOKE_TALK, [
+                'record_id' => $params['record_id']
+            ]));
         }
 
         return $isTrue
@@ -283,7 +274,7 @@ class TalkController extends CController
 
         return $isTrue
             ? $this->response->success([], '删除成功...')
-            : $this->response->fail('删除失败...');
+            : $this->response->fail('删除失败！');
     }
 
     /**
@@ -333,7 +324,7 @@ class TalkController extends CController
         }
 
         if (!$ids) {
-            return $this->response->fail('转发失败...');
+            return $this->response->fail('转发失败！');
         }
 
         if ($receive_user_ids) {
@@ -342,16 +333,14 @@ class TalkController extends CController
             }
         }
 
-        // ... 消息推送队列
+        // 消息推送队列
         foreach ($ids as $value) {
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                    'sender'    => $user_id,                      // 发送者ID
-                    'receive'   => intval($value['receive_id']),  // 接收者ID
-                    'source'    => intval($value['source']),      // 接收者类型 1:好友;2:群组
-                    'record_id' => $value['record_id']
-                ])
-            );
+            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+                'sender'    => $user_id,                      // 发送者ID
+                'receive'   => intval($value['receive_id']),  // 接收者ID
+                'source'    => intval($value['source']),      // 接收者类型 1:好友;2:群组
+                'record_id' => $value['record_id']
+            ]));
         }
 
         return $this->response->success([], '转发成功...');
@@ -381,7 +370,7 @@ class TalkController extends CController
                 'rows'      => [],
                 'record_id' => 0,
                 'limit'     => $limit
-            ], '非群聊成员不能查看群聊信息...');
+            ], '非群聊成员不能查看群聊信息！');
         }
 
         $result = $this->talkService->getChatRecords(
@@ -442,7 +431,7 @@ class TalkController extends CController
                 'rows'      => [],
                 'record_id' => 0,
                 'limit'     => $limit
-            ], '非群聊成员不能查看群聊信息...');
+            ], '非群聊成员不能查看群聊信息！');
         }
 
         if (in_array($params['msg_type'], [1, 2, 4, 5])) {
@@ -540,18 +529,16 @@ class TalkController extends CController
         ]);
 
         if (!$record_id) {
-            return $this->response->fail('图片上传失败');
+            return $this->response->fail('图片上传失败！');
         }
 
-        // ... 消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       // 发送者ID
-                'receive'   => intval($params['receive_id']),  // 接收者ID
-                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
-                'record_id' => $record_id
-            ])
-        );
+        // 消息推送队列
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                       // 发送者ID
+            'receive'   => intval($params['receive_id']),  // 接收者ID
+            'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
+            'record_id' => $record_id
+        ]));
 
         LastMsgCache::set([
             'text'       => '[图片消息]',
@@ -590,18 +577,16 @@ class TalkController extends CController
         ]);
 
         if (!$record_id) {
-            return $this->response->fail('消息发送失败');
+            return $this->response->fail('消息发送失败！');
         }
 
-        // ...消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       // 发送者ID
-                'receive'   => intval($params['receive_id']),  // 接收者ID
-                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
-                'record_id' => $record_id
-            ])
-        );
+        // 消息推送队列
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                       // 发送者ID
+            'receive'   => intval($params['receive_id']),  // 接收者ID
+            'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
+            'record_id' => $record_id
+        ]));
 
         LastMsgCache::set([
             'text'       => '[代码消息]',
@@ -657,18 +642,16 @@ class TalkController extends CController
         ]);
 
         if (!$record_id) {
-            return $this->response->fail('表情发送失败');
+            return $this->response->fail('表情发送失败！');
         }
 
-        // ... 消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       // 发送者ID
-                'receive'   => intval($params['receive_id']),  // 接收者ID
-                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
-                'record_id' => $record_id
-            ])
-        );
+        // 消息推送队列
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                       // 发送者ID
+            'receive'   => intval($params['receive_id']),  // 接收者ID
+            'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
+            'record_id' => $record_id
+        ]));
 
         LastMsgCache::set([
             'text'       => '[文件消息]',
@@ -699,7 +682,7 @@ class TalkController extends CController
         ]);
 
         if (!$emoticon) {
-            return $this->response->fail('表情不存在...');
+            return $this->response->fail('表情不存在！');
         }
 
         $record_id = $this->talkService->createEmoticonMessage([
@@ -717,18 +700,16 @@ class TalkController extends CController
         ]);
 
         if (!$record_id) {
-            return $this->response->fail('表情发送失败');
+            return $this->response->fail('表情发送失败！');
         }
 
-        // ... 消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                       // 发送者ID
-                'receive'   => intval($params['receive_id']),  // 接收者ID
-                'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
-                'record_id' => $record_id
-            ])
-        );
+        // 消息推送队列
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                       // 发送者ID
+            'receive'   => intval($params['receive_id']),  // 接收者ID
+            'source'    => intval($params['source']),      // 接收者类型[1:好友;2:群组;]
+            'record_id' => $record_id
+        ]));
 
         LastMsgCache::set([
             'text'       => '[表情包消息]',

@@ -16,7 +16,6 @@ use App\Constants\SocketConstants;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
-use Hyperf\Amqp\Producer;
 use Swoole\Http\Request;
 use Swoole\Websocket\Frame;
 use Swoole\Http\Response;
@@ -27,7 +26,6 @@ use App\Service\MessageHandleService;
 use App\Service\SocketRoomService;
 use App\Model\Group\GroupMember;
 use App\Amqp\Producer\ChatMessageProducer;
-use App\Support\SocketIOParser;
 
 /**
  * Class WebSocketController
@@ -41,12 +39,6 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * @var JWT
      */
     private $jwt;
-
-    /**
-     * @Inject
-     * @var Producer
-     */
-    private $producer;
 
     /**
      * @inject
@@ -91,7 +83,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         // 若开启单点登录，则主动关闭之前登录的连接
         if ($isOnline) {
-            // ... 预留
+            // TODO 预留
         }
 
         // 绑定fd与用户关系
@@ -105,13 +97,11 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         if (!$isOnline) {
             // 推送消息至队列
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
-                    'user_id' => $userInfo['user_id'],
-                    'status'  => 1,
-                    'notify'  => '好友上线通知...'
-                ])
-            );
+            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
+                'user_id' => $userInfo['user_id'],
+                'status'  => 1,
+                'notify'  => '好友上线通知...'
+            ]));
         }
     }
 
@@ -126,21 +116,14 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否为心跳检测
         if ($frame->data == 'PING') return;
 
-        //$result = SocketIOParser::decode($frame->data);
         $result = json_decode($frame->data, true);
-        if (!isset(self::EVENTS[$result['event']])) {
-            return;
-        }
+        if (!isset(self::EVENTS[$result['event']])) return;
 
         // 回调事件处理函数
         call_user_func_array([
             $this->messageHandleService,
             self::EVENTS[$result['event']]
-        ], [
-            $server,
-            $frame,
-            $result['data']
-        ]);
+        ], [$server, $frame, $result['data']]);
     }
 
     /**
@@ -152,7 +135,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onClose($server, int $fd, int $reactorId): void
     {
-        $user_id = $this->socketClientService->findFdUserId($fd);
+        $user_id = (int)$this->socketClientService->findFdUserId($fd);
 
         stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 
@@ -160,16 +143,14 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $this->socketClientService->removeRelation($fd);
 
         // 判断是否存在异地登录
-        $isOnline = $this->socketClientService->isOnlineAll(intval($user_id));
+        $isOnline = $this->socketClientService->isOnlineAll($user_id);
         if (!$isOnline) {
             // 推送消息至队列
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
-                    'user_id' => $user_id,
-                    'status'  => 0,
-                    'notify'  => '好友离线通知通知...'
-                ])
-            );
+            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
+                'user_id' => $user_id,
+                'status'  => 0,
+                'notify'  => '好友离线通知通知...'
+            ]));
         }
     }
 }

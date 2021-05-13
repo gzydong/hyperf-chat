@@ -5,6 +5,7 @@
 |--------------------------------------------------------------------------
 */
 
+use Hyperf\Amqp\Message\ProducerMessage;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Logger\LoggerFactory;
@@ -15,6 +16,7 @@ use Swoole\Websocket\Frame;
 use Swoole\WebSocket\Server as WebSocketServer;
 use Hyperf\Utils\Str;
 use Hyperf\Redis\Redis;
+use Hyperf\Amqp\Producer;
 
 /**
  * 容器实例
@@ -231,4 +233,17 @@ function check_int($int, $isZero = false)
 function parse_ids($ids)
 {
     return array_unique(explode(',', trim($ids)));
+}
+
+/**
+ * 推送消息至 RabbitMQ 队列
+ *
+ * @param ProducerMessage $message
+ * @param bool            $confirm
+ * @param int             $timeout
+ * @return bool
+ */
+function push_amqp(ProducerMessage $message, bool $confirm = false, int $timeout = 5)
+{
+    return container()->get(Producer::class)->produce($message, $confirm, $timeout);
 }

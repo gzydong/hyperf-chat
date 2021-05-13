@@ -105,7 +105,7 @@ class UsersController extends CController
 
         return $isTrue
             ? $this->response->success([], '个人信息修改成功...')
-            : $this->response->fail('个人信息修改失败...');
+            : $this->response->fail('个人信息修改失败！');
     }
 
     /**
@@ -125,7 +125,7 @@ class UsersController extends CController
 
         return $isTrue
             ? $this->response->success([], '头像修改成功...')
-            : $this->response->fail('头像修改失败...');
+            : $this->response->fail('头像修改失败！');
     }
 
     /**
@@ -143,7 +143,7 @@ class UsersController extends CController
             return $this->response->success($data);
         }
 
-        return $this->response->fail('查询失败...');
+        return $this->response->fail('用户查询失败！');
     }
 
     /**
@@ -164,13 +164,13 @@ class UsersController extends CController
 
         // 验证密码是否正确
         if (!Hash::check($this->request->post('old_password'), $userInfo->password)) {
-            return $this->response->fail('旧密码验证失败...');
+            return $this->response->fail('旧密码验证失败！');
         }
 
         $isTrue = $this->userService->resetPassword($userInfo->mobile, $params['new_password']);
         return $isTrue
             ? $this->response->success([], '密码修改成功...')
-            : $this->response->fail('密码修改失败...');
+            : $this->response->fail('密码修改失败！');
     }
 
     /**
@@ -190,17 +190,17 @@ class UsersController extends CController
         ]);
 
         if (!$smsCodeService->check('change_mobile', $params['mobile'], $params['sms_code'])) {
-            return $this->response->fail('验证码填写错误...');
+            return $this->response->fail('验证码填写错误！');
         }
 
         $user_id = $this->uid();
         if (!Hash::check($params['password'], User::where('id', $user_id)->value('password'))) {
-            return $this->response->fail('账号密码验证失败...');
+            return $this->response->fail('账号密码验证失败！');
         }
 
         [$isTrue,] = $this->userService->changeMobile($user_id, $params['mobile']);
         if (!$isTrue) {
-            return $this->response->fail('手机号更换失败...');
+            return $this->response->fail('手机号更换失败！');
         }
 
         // 清除缓存信息
@@ -226,18 +226,18 @@ class UsersController extends CController
 
         $sendEmailCode = new SendEmailCode();
         if (!$sendEmailCode->check(SendEmailCode::CHANGE_EMAIL, $params['email'], $params['email_code'])) {
-            return $this->response->fail('验证码填写错误...');
+            return $this->response->fail('验证码填写错误！');
         }
 
         $uid           = $this->uid();
         $user_password = User::where('id', $uid)->value('password');
         if (!Hash::check($params['password'], $user_password)) {
-            return $this->response->fail('账号密码验证失败...');
+            return $this->response->fail('账号密码验证失败！');
         }
 
         $isTrue = User::where('id', $uid)->update(['email' => $params['email']]);
         if (!$isTrue) {
-            return $this->response->fail('邮箱设置失败...');
+            return $this->response->fail('邮箱设置失败！');
         }
 
         $sendEmailCode->delCode(SendEmailCode::CHANGE_EMAIL, $params['email']);
@@ -261,18 +261,18 @@ class UsersController extends CController
 
         $user_id = $this->uid();
         if (in_array($user_id, [2054, 2055])) {
-            return $this->response->fail('测试账号不支持修改手机号...');
+            return $this->response->fail('测试账号不支持修改手机号！');
         }
 
         if (User::where('mobile', $params['mobile'])->exists()) {
-            return $this->response->fail('手机号已被他人注册...');
+            return $this->response->fail('手机号已被他人注册！');
         }
 
         $data = ['is_debug' => true];
         [$isTrue, $result] = $smsCodeService->send('change_mobile', $params['mobile']);
         if (!$isTrue) {
             // ... 处理发送失败逻辑，当前默认发送成功
-            return $this->response->fail('验证码发送失败');
+            return $this->response->fail('验证码发送失败！');
         }
 
         // 测试环境下直接返回验证码
@@ -297,7 +297,7 @@ class UsersController extends CController
 
         $isTrue = $sendEmailCode->send(SendEmailCode::CHANGE_EMAIL, '绑定邮箱', $params['email']);
         if (!$isTrue) {
-            return $this->response->fail('验证码发送失败...');
+            return $this->response->fail('验证码发送失败！');
         }
 
         return $this->response->success([], '验证码发送成功...');

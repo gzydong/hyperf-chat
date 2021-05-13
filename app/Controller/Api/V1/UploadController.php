@@ -56,7 +56,7 @@ class UploadController extends CController
         $path = '/media/images/avatar/' . date('Ymd') . '/' . uniqid() . date('His') . '.png';
         $this->uploadService->makeDirectory($this->uploadService->driver('/media/images/avatar/' . date('Ymd') . '/'));
         @file_put_contents($this->uploadService->driver($path), $data);
-        
+
         return $this->response->success(['avatar' => get_media_url($path)]);
     }
 
@@ -76,7 +76,7 @@ class UploadController extends CController
 
         $data = $this->splitUploadService->create($this->uid(), $params['file_name'], $params['file_size']);
 
-        return $data ? $this->response->success($data) : $this->response->fail('获取文件拆分信息失败...');
+        return $data ? $this->response->success($data) : $this->response->fail('获取文件拆分信息失败！');
     }
 
     /**
@@ -105,13 +105,13 @@ class UploadController extends CController
         $user_id   = $this->uid();
         $uploadRes = $this->splitUploadService->upload($user_id, $file, $params['hash'], intval($params['split_index']), intval($params['size']));
         if (!$uploadRes) {
-            return $this->response->fail('上传文件失败...');
+            return $this->response->fail('上传文件失败！');
         }
 
         if (($params['split_index'] + 1) == $params['split_num']) {
             $fileInfo = $this->splitUploadService->merge($user_id, $params['hash']);
             if (!$fileInfo) {
-                return $this->response->fail('上传文件失败...');
+                return $this->response->fail('上传文件失败！');
             }
 
             return $this->response->success([

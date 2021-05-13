@@ -59,7 +59,7 @@ class AuthController extends CController
 
         $userInfo = $this->userService->login($params['mobile'], $params['password']);
         if (!$userInfo) {
-            return $this->response->fail('账号不存在或密码填写错误...');
+            return $this->response->fail('账号不存在或密码填写错误！');
         }
 
         try {
@@ -68,7 +68,7 @@ class AuthController extends CController
                 'platform' => $params['platform'],
             ]);
         } catch (\Exception $exception) {
-            return $this->response->error('登录异常，请稍后再试...');
+            return $this->response->error('登录异常，请稍后再试！');
         }
 
         return $this->response->success([
@@ -114,7 +114,7 @@ class AuthController extends CController
         ]);
 
         if (!$this->smsCodeService->check('user_register', $params['mobile'], $params['sms_code'])) {
-            return $this->response->fail('验证码填写错误...');
+            return $this->response->fail('验证码填写错误！');
         }
 
         $isTrue = $this->userService->register([
@@ -124,7 +124,7 @@ class AuthController extends CController
         ]);
 
         if (!$isTrue) {
-            return $this->response->fail('账号注册失败...');
+            return $this->response->fail('账号注册失败！');
         }
 
         // 删除验证码缓存
@@ -147,12 +147,12 @@ class AuthController extends CController
         ]);
 
         if (!$this->smsCodeService->check('forget_password', $params['mobile'], $params['sms_code'])) {
-            return $this->response->fail('验证码填写错误');
+            return $this->response->fail('验证码填写错误！');
         }
 
         $isTrue = $this->userService->resetPassword($params['mobile'], $params['password']);
         if (!$isTrue) {
-            return $this->response->fail('重置密码失败');
+            return $this->response->fail('重置密码失败！');
         }
 
         // 删除验证码缓存
@@ -189,16 +189,16 @@ class AuthController extends CController
         ]);
 
         if (!$this->smsCodeService->isUsages($params['type'])) {
-            return $this->response->fail('验证码发送失败...');
+            return $this->response->fail('验证码发送失败！');
         }
 
         if ($params['type'] == 'forget_password') {
             if (!User::where('mobile', $params['mobile'])->value('id')) {
-                return $this->response->fail('手机号未被注册使用...');
+                return $this->response->fail('手机号未被注册使用！');
             }
         } else if ($params['type'] == 'change_mobile' || $params['type'] == 'user_register') {
             if (User::where('mobile', $params['mobile'])->value('id')) {
-                return $this->response->fail('手机号已被他(她)人注册...');
+                return $this->response->fail('手机号已被他(她)人注册！');
             }
         }
 
@@ -206,7 +206,7 @@ class AuthController extends CController
         [$isTrue, $result] = $this->smsCodeService->send($params['type'], $params['mobile']);
         if (!$isTrue) {
             // ... 处理发送失败逻辑，当前默认发送成功
-            return $this->response->fail('验证码发送失败');
+            return $this->response->fail('验证码发送失败！');
         }
 
         // 测试环境下直接返回验证码

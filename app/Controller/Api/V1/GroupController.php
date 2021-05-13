@@ -15,7 +15,6 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use Hyperf\Amqp\Producer;
 use App\Model\UsersFriend;
 use App\Model\UsersChatList;
 use App\Model\Group\Group;
@@ -41,12 +40,6 @@ class GroupController extends CController
      * @var GroupService
      */
     private $groupService;
-
-    /**
-     * @Inject
-     * @var Producer
-     */
-    private $producer;
 
     /**
      * @Inject
@@ -78,7 +71,7 @@ class GroupController extends CController
         ], $friend_ids);
 
         if (!$isTrue) {
-            return $this->response->fail('创建群聊失败，请稍后再试...');
+            return $this->response->fail('创建群聊失败，请稍后再试！');
         }
 
         // 加入聊天室
@@ -88,14 +81,12 @@ class GroupController extends CController
         }
 
         // ... 消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                   // 发送者ID
-                'receive'   => (int)$data['group_id'],     // 接收者ID
-                'source'    => 2,                          // 接收者类型[1:好友;2:群组;]
-                'record_id' => (int)$data['record_id']
-            ])
-        );
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                   // 发送者ID
+            'receive'   => (int)$data['group_id'],     // 接收者ID
+            'source'    => 2,                          // 接收者类型[1:好友;2:群组;]
+            'record_id' => (int)$data['record_id']
+        ]));
 
         return $this->response->success([
             'group_id' => $data['group_id']
@@ -117,7 +108,7 @@ class GroupController extends CController
 
         $isTrue = $this->groupService->dismiss($params['group_id'], $this->uid());
         if (!$isTrue) {
-            return $this->response->fail('群组解散失败...');
+            return $this->response->fail('群组解散失败！');
         }
 
         $this->socketRoomService->delRoom($params['group_id']);
@@ -146,7 +137,7 @@ class GroupController extends CController
         $user_id = $this->uid();
         [$isTrue, $record_id] = $this->groupService->invite($user_id, $params['group_id'], $uids);
         if (!$isTrue) {
-            return $this->response->fail('邀请好友加入群聊失败...');
+            return $this->response->fail('邀请好友加入群聊失败！');
         }
 
         // 加入聊天室
@@ -154,15 +145,13 @@ class GroupController extends CController
             $this->socketRoomService->addRoomMember($uid, $params['group_id']);
         }
 
-        // ...消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                     // 发送者ID
-                'receive'   => (int)$params['group_id'],     // 接收者ID
-                'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
-                'record_id' => $record_id
-            ])
-        );
+        // 消息推送队列
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                     // 发送者ID
+            'receive'   => (int)$params['group_id'],     // 接收者ID
+            'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
+            'record_id' => $record_id
+        ]));
 
         return $this->response->success([], '好友已成功加入群聊...');
     }
@@ -183,21 +172,19 @@ class GroupController extends CController
         $user_id = $this->uid();
         [$isTrue, $record_id] = $this->groupService->quit($user_id, $params['group_id']);
         if (!$isTrue) {
-            return $this->response->fail('退出群组失败...');
+            return $this->response->fail('退出群组失败！');
         }
 
         // 移出聊天室
         $this->socketRoomService->delRoomMember($params['group_id'], $user_id);
 
-        // ...消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                     // 发送者ID
-                'receive'   => (int)$params['group_id'],     // 接收者ID
-                'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
-                'record_id' => $record_id
-            ])
-        );
+        // 消息推送队列
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                     // 发送者ID
+            'receive'   => (int)$params['group_id'],     // 接收者ID
+            'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
+            'record_id' => $record_id
+        ]));
 
         return $this->response->success([], '已成功退出群组...');
     }
@@ -228,7 +215,7 @@ class GroupController extends CController
 
         return $result
             ? $this->response->success([], '群组信息修改成功...')
-            : $this->response->fail('群组信息修改失败...');
+            : $this->response->fail('群组信息修改失败！');
     }
 
     /**
@@ -249,12 +236,12 @@ class GroupController extends CController
 
         $user_id = $this->uid();
         if (in_array($user_id, $params['members_ids'])) {
-            return $this->response->fail('群聊用户移除失败...');
+            return $this->response->fail('群聊用户移除失败！');
         }
 
         [$isTrue, $record_id] = $this->groupService->removeMember($params['group_id'], $user_id, $params['members_ids']);
         if (!$isTrue) {
-            return $this->response->fail('群聊用户移除失败...');
+            return $this->response->fail('群聊用户移除失败！');
         }
 
         // 移出聊天室
@@ -262,15 +249,13 @@ class GroupController extends CController
             $this->socketRoomService->delRoomMember($params['group_id'], $uid);
         }
 
-        // ... 消息推送队列
-        $this->producer->produce(
-            new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender'    => $user_id,                     // 发送者ID
-                'receive'   => (int)$params['group_id'],     // 接收者ID
-                'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
-                'record_id' => $record_id
-            ])
-        );
+        // 消息推送队列
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender'    => $user_id,                     // 发送者ID
+            'receive'   => (int)$params['group_id'],     // 接收者ID
+            'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
+            'record_id' => $record_id
+        ]));
 
         return $this->response->success([], '已成功退出群组...');
     }
@@ -340,7 +325,7 @@ class GroupController extends CController
 
         return $isTrue
             ? $this->response->success([], '群名片修改成功...')
-            : $this->response->error('群名片修改失败...');
+            : $this->response->error('群名片修改失败！');
     }
 
     /**
@@ -392,7 +377,7 @@ class GroupController extends CController
 
         // 判断用户是否是群成员
         if (!Group::isMember($group_id, $user_id)) {
-            return $this->response->fail('非法操作...');
+            return $this->response->fail('非法操作！');
         }
 
         $members = GroupMember::select([
@@ -427,7 +412,7 @@ class GroupController extends CController
 
         // 判断用户是否是群成员
         if (!Group::isMember($group_id, $user_id)) {
-            return $this->response->fail('非管理员禁止操作...');
+            return $this->response->fail('非管理员禁止操作！');
         }
 
         $rows = GroupNotice::leftJoin('users', 'users.id', '=', 'group_notice.creator_id')
@@ -476,7 +461,7 @@ class GroupController extends CController
 
         // 判断用户是否是管理员
         if (!Group::isManager($user_id, $params['group_id'])) {
-            return $this->response->fail('非管理员禁止操作...');
+            return $this->response->fail('非管理员禁止操作！');
         }
 
         // 判断是否是新增数据
@@ -493,7 +478,7 @@ class GroupController extends CController
             ]);
 
             if (!$result) {
-                return $this->response->fail('添加群公告信息失败...');
+                return $this->response->fail('添加群公告信息失败！');
             }
 
             // ... TODO 推送群消息（预留）
@@ -510,7 +495,7 @@ class GroupController extends CController
 
         return $result
             ? $this->response->success([], '修改群公告信息成功...')
-            : $this->response->fail('修改群公告信息成功...');
+            : $this->response->fail('修改群公告信息失败！');
     }
 
     /**
@@ -531,7 +516,7 @@ class GroupController extends CController
 
         // 判断用户是否是管理员
         if (!Group::isManager($user_id, $params['group_id'])) {
-            return $this->response->fail('非法操作...');
+            return $this->response->fail('非法操作！');
         }
 
         $result = GroupNotice::where('id', $params['notice_id'])
@@ -543,6 +528,6 @@ class GroupController extends CController
 
         return $result
             ? $this->response->success([], '公告删除成功...')
-            : $this->response->fail('公告删除失败...');
+            : $this->response->fail('公告删除失败！');
     }
 }

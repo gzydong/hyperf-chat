@@ -111,7 +111,7 @@ class EmoticonController extends CController
             // 移除表情包
             $isTrue = $this->emoticonService->removeSysEmoticon($user_id, $params['emoticon_id']);
             if (!$isTrue) {
-                return $this->response->fail('移除表情包失败...');
+                return $this->response->fail('移除表情包失败！');
             }
 
             return $this->response->success([], '移除表情包成功...');
@@ -119,11 +119,11 @@ class EmoticonController extends CController
             // 添加表情包
             $emoticonInfo = Emoticon::where('id', $params['emoticon_id'])->first(['id', 'name', 'url']);
             if (!$emoticonInfo) {
-                return $this->response->fail('添加表情包失败...');
+                return $this->response->fail('添加表情包失败！');
             }
 
             if (!$this->emoticonService->installSysEmoticon($user_id, $params['emoticon_id'])) {
-                return $this->response->fail('添加表情包失败...');
+                return $this->response->fail('添加表情包失败！');
             }
 
             $data = [
@@ -151,7 +151,7 @@ class EmoticonController extends CController
         $file = $this->request->file('emoticon');
         if (!$file->isValid()) {
             return $this->response->fail(
-                '图片上传失败，请稍后再试...',
+                '图片上传失败，请稍后再试！',
                 ResponseCode::VALIDATION_ERROR
             );
         }
@@ -167,12 +167,12 @@ class EmoticonController extends CController
         // 读取图片信息
         $imgInfo = @getimagesize($file->getRealPath());
         if (!$imgInfo) {
-            return $this->response->fail('表情包上传失败...');
+            return $this->response->fail('表情包上传失败！');
         }
 
         $save_path = $uploadService->media($file, 'media/images/emoticon', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
         if (!$save_path) {
-            return $this->response->fail('图片上传失败');
+            return $this->response->fail('图片上传失败！');
         }
 
         $result = EmoticonDetail::create([
@@ -184,7 +184,7 @@ class EmoticonController extends CController
         ]);
 
         if (!$result) {
-            return $this->response->fail('表情包上传失败...');
+            return $this->response->fail('表情包上传失败！');
         }
 
         return $this->response->success([
@@ -209,7 +209,7 @@ class EmoticonController extends CController
         [$isTrue, $data] = $this->emoticonService->collect($this->uid(), $params['record_id']);
 
         if (!$isTrue) {
-            return $this->response->fail('添加表情失败');
+            return $this->response->fail('添加表情失败！');
         }
 
         return $this->response->success([

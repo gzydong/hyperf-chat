@@ -136,7 +136,7 @@ class ArticleController extends CController
 
         $class_id = $this->articleService->editArticleClass($this->uid(), $params['class_id'], $params['class_name']);
         if (!$class_id) {
-            return $this->response->fail('笔记分类编辑失败...');
+            return $this->response->fail('笔记分类编辑失败！');
         }
 
         return $this->response->success(['id' => $class_id]);
@@ -156,7 +156,7 @@ class ArticleController extends CController
         ]);
 
         if (!$this->articleService->delArticleClass($this->uid(), (int)$params['class_id'])) {
-            return $this->response->fail('笔记分类删除失败...');
+            return $this->response->fail('笔记分类删除失败！');
         }
 
         return $this->response->success([], '笔记分类删除成功...');
@@ -191,7 +191,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '排序完成...')
-            : $this->response->fail('排序失败...');
+            : $this->response->fail('排序失败！');
     }
 
     /**
@@ -212,7 +212,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '合并完成...')
-            : $this->response->fail('合并完成...');
+            : $this->response->fail('合并失败！');
     }
 
     /**
@@ -233,7 +233,7 @@ class ArticleController extends CController
 
         return $id
             ? $this->response->success(['id' => $id])
-            : $this->response->fail('笔记标签编辑失败...');
+            : $this->response->fail('笔记标签编辑失败！');
     }
 
     /**
@@ -253,7 +253,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记标签删除完成...')
-            : $this->response->fail('笔记标签删除失败...');
+            : $this->response->fail('笔记标签删除失败！');
     }
 
     /**
@@ -284,7 +284,7 @@ class ArticleController extends CController
 
         return $id
             ? $this->response->success(['aid' => $id], '笔记编辑成功...')
-            : $this->response->fail('笔记编辑失败...', ['id' => null]);
+            : $this->response->fail('笔记编辑失败！', ['id' => null]);
     }
 
     /**
@@ -304,7 +304,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记删除成功...')
-            : $this->response->fail('笔记删除失败...');
+            : $this->response->fail('笔记删除失败！');
     }
 
     /**
@@ -324,7 +324,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记恢复成功...')
-            : $this->response->fail('笔记恢复失败...');
+            : $this->response->fail('笔记恢复失败！');
     }
 
     /**
@@ -379,7 +379,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记移动成功...')
-            : $this->response->fail('笔记移动失败...');
+            : $this->response->fail('笔记移动失败！');
     }
 
     /**
@@ -404,7 +404,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记标记成功...')
-            : $this->response->fail('笔记标记失败...');
+            : $this->response->fail('笔记标记失败！');
     }
 
     /**
@@ -425,7 +425,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], 'success...')
-            : $this->response->fail('编辑失败...');
+            : $this->response->fail('编辑失败！');
     }
 
     /**
@@ -446,7 +446,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记删除成功...')
-            : $this->response->fail('笔记删除失败...');
+            : $this->response->fail('笔记删除失败！');
     }
 
     /**
@@ -464,7 +464,7 @@ class ArticleController extends CController
 
         $file = $this->request->file('annex');
         if (!$file->isValid()) {
-            return $this->response->fail('上传文件验证失败...');
+            return $this->response->fail('上传文件验证失败！');
         }
 
         $annex = [
@@ -486,7 +486,7 @@ class ArticleController extends CController
         $annex['save_dir'] = $path;
         $annex['id']       = $this->articleService->insertArticleAnnex($this->uid(), (int)$params['article_id'], $annex);
         if (!$annex['id']) {
-            return $this->response->fail('附件上传失败，请稍后再试...');
+            return $this->response->fail('附件上传失败，请稍后再试！');
         }
 
         return $this->response->success($annex, '笔记附件上传成功...');
@@ -509,7 +509,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记附件删除成功...')
-            : $this->response->fail('笔记附件删除失败...');
+            : $this->response->fail('笔记附件删除失败！');
     }
 
     /**
@@ -529,7 +529,7 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记附件恢复成功...')
-            : $this->response->fail('笔记附件恢复失败...');
+            : $this->response->fail('笔记附件恢复失败！');
     }
 
     /**
@@ -575,6 +575,6 @@ class ArticleController extends CController
 
         return $isTrue
             ? $this->response->success([], '笔记附件删除成功...')
-            : $this->response->fail('笔记附件删除失败...');
+            : $this->response->fail('笔记附件删除失败！');
     }
 }

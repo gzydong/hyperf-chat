@@ -17,7 +17,6 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use Psr\Http\Message\ResponseInterface;
-use Hyperf\Amqp\Producer;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Service\ContactsService;
 use App\Service\SocketClientService;
@@ -47,12 +46,6 @@ class ContactsController extends CController
      * @var SocketClientService
      */
     private $socketClientService;
-
-    /**
-     * @Inject
-     * @var Producer
-     */
-    private $producer;
 
     /**
      * 获取用户联系人列表
@@ -91,12 +84,12 @@ class ContactsController extends CController
 
         $user = $userService->findById($params['friend_id']);
         if (!$user) {
-            return $this->response->fail('用户不存在...');
+            return $this->response->fail('用户不存在！');
         }
 
         $user_id = $this->uid();
         if (!$this->contactsService->addContact($user_id, intval($params['friend_id']), $params['remarks'])) {
-            return $this->response->fail('添加好友申请失败...');
+            return $this->response->fail('添加好友申请失败！');
         }
 
         // 好友申请未读消息数自增
@@ -104,15 +97,13 @@ class ContactsController extends CController
 
         // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll(intval($params['friend_id']))) {
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                    'sender'  => $user_id,
-                    'receive' => intval($params['friend_id']),
-                    'type'    => 1,
-                    'status'  => 1,
-                    'remark'  => ''
-                ])
-            );
+            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
+                'sender'  => $user_id,
+                'receive' => intval($params['friend_id']),
+                'type'    => 1,
+                'status'  => 1,
+                'remark'  => ''
+            ]));
         }
 
         return $this->response->success([], '发送好友申请成功...');
@@ -133,7 +124,7 @@ class ContactsController extends CController
 
         $user_id = $this->uid();
         if (!$this->contactsService->deleteContact($user_id, intval($params['friend_id']))) {
-            return $this->response->fail('好友关系解除失败...');
+            return $this->response->fail('好友关系解除失败！');
         }
 
         // 删除好友会话列表
@@ -162,7 +153,7 @@ class ContactsController extends CController
         $user_id = $this->uid();
         $isTrue  = $this->contactsService->acceptInvitation($user_id, intval($params['apply_id']), $params['remarks']);
         if (!$isTrue) {
-            return $this->response->fail('处理失败...');
+            return $this->response->fail('处理失败！');
         }
 
         $friend_id = $info = UsersFriendsApply::where('id', $params['apply_id'])
@@ -171,16 +162,14 @@ class ContactsController extends CController
 
         // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll($friend_id)) {
-            // 待完善
-            $this->producer->produce(
-                new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                    'sender'  => $user_id,
-                    'receive' => $friend_id,
-                    'type'    => 1,
-                    'status'  => 1,
-                    'remark'  => ''
-                ])
-            );
+            // TODO 待完善
+            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
+                'sender'  => $user_id,
+                'receive' => $friend_id,
+                'type'    => 1,
+                'status'  => 1,
+                'remark'  => ''
+            ]));
         }
 
         return $this->response->success([], '处理成功...');
@@ -300,7 +289,7 @@ class ContactsController extends CController
         $user_id = $this->uid();
         $isTrue  = $this->contactsService->editContactRemark($user_id, intval($params['friend_id']), $params['remarks']);
         if (!$isTrue) {
-            return $this->response->fail('备注修改失败...');
+            return $this->response->fail('备注修改失败！');
         }
 
         FriendRemarkCache::set($user_id, intval($params['friend_id']), $params['remarks']);

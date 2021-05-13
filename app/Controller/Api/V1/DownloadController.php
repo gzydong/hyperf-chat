@@ -48,7 +48,7 @@ class DownloadController extends CController
 
         $recordsInfo = ChatRecord::select(['msg_type', 'source', 'user_id', 'receive_id'])->where('id', $params['cr_id'])->first();
         if (!$recordsInfo) {
-            return $this->response->fail('文件不存在...');
+            return $this->response->fail('文件不存在！');
         }
 
         $user_id = $this->uid();
@@ -57,18 +57,18 @@ class DownloadController extends CController
         if ($recordsInfo->user_id != $user_id) {
             if ($recordsInfo->source == 1) {
                 if ($recordsInfo->receive_id != $user_id) {
-                    return $this->response->fail('非法请求...');
+                    return $this->response->fail('非法请求！');
                 }
             } else {
                 if (!Group::isMember($recordsInfo->receive_id, $user_id)) {
-                    return $this->response->fail('非法请求...');
+                    return $this->response->fail('非法请求！');
                 }
             }
         }
 
         $fileInfo = ChatRecordsFile::select(['save_dir', 'original_name'])->where('record_id', $params['cr_id'])->first();
         if (!$fileInfo || !file_exists($uploadService->driver($fileInfo->save_dir))) {
-            return $this->response->fail('文件不存在或没有下载权限...');
+            return $this->response->fail('文件不存在或没有下载权限！');
         }
 
         return $response->download($uploadService->driver($fileInfo->save_dir), $fileInfo->original_name);
@@ -95,7 +95,7 @@ class DownloadController extends CController
             ->first();
 
         if (!$info || !file_exists($uploadService->driver($info->save_dir))) {
-            return $this->response->fail('文件不存在或没有下载权限...');
+            return $this->response->fail('文件不存在或没有下载权限！');
         }
 
         return $response->download($uploadService->driver($info->save_dir), $info->original_name);

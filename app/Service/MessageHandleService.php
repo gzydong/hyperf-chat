@@ -17,12 +17,6 @@ use App\Model\UsersFriend;
 class MessageHandleService
 {
     /**
-     * @Inject
-     * @var Producer
-     */
-    private $producer;
-
-    /**
      * @inject
      * @var SocketClientService
      */
@@ -92,14 +86,13 @@ class MessageHandleService
             $data['source_type'] == 1 ? (int)$data['send_user'] : 0
         );
 
-        $this->producer->produce(
-            new ChatMessageProducer('event_talk', [
-                'sender'    => intval($data['send_user']),     // 发送者ID
-                'receive'   => intval($data['receive_user']),  // 接收者ID
-                'source'    => intval($data['source_type']),   // 接收者类型[1:好友;2:群组;]
-                'record_id' => $result->id
-            ])
-        );
+        // 推送消息
+        push_amqp(new ChatMessageProducer('event_talk', [
+            'sender'    => intval($data['send_user']),     // 发送者ID
+            'receive'   => intval($data['receive_user']),  // 接收者ID
+            'source'    => intval($data['source_type']),   // 接收者类型[1:好友;2:群组;]
+            'record_id' => $result->id
+        ]));
     }
 
     /**
@@ -111,11 +104,9 @@ class MessageHandleService
      */
     public function onKeyboard($server, Frame $frame, $data)
     {
-        $this->producer->produce(
-            new ChatMessageProducer('event_keyboard', [
-                'send_user'    => intval($data['send_user']),     // 发送者ID
-                'receive_user' => intval($data['receive_user']),  // 接收者ID
-            ])
-        );
+        push_amqp(new ChatMessageProducer('event_keyboard', [
+            'send_user'    => intval($data['send_user']),     // 发送者ID
+            'receive_user' => intval($data['receive_user']),  // 接收者ID
+        ]));
     }
 }

@@ -34,8 +34,6 @@ class CController extends AbstractController
      */
     public function uid()
     {
-        $data = $this->request->getAttribute('auth_data');
-
-        return $data['user_id'] ?? 0;
+        return $this->request->getAttribute('auth_data')['user_id'] ?? 0;
     }
 }
