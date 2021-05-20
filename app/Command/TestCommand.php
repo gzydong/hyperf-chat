@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Command;
+
+use App\Cache\Repository\HashRedis;
+use App\Cache\Repository\ListRedis;
+use App\Cache\Repository\LockRedis;
+use App\Cache\Repository\SetRedis;
+use App\Cache\Repository\StreamRedis;
+use App\Cache\Repository\StringRedis;
+use App\Cache\Repository\ZSetRedis;
+use Hyperf\Command\Command as HyperfCommand;
+use Hyperf\Command\Annotation\Command;
+use Psr\Container\ContainerInterface;
+
+/**
+ * @Command
+ */
+class TestCommand extends HyperfCommand
+{
+    /**
+     * @var ContainerInterface
+     */
+    protected $container;
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+
+        parent::__construct('test:command');
+    }
+
+    public function configure()
+    {
+        parent::configure();
+        $this->setDescription('Hyperf Demo Command');
+    }
+
+    public function handle()
+    {
+        //$lock = LockRedis::getInstance();
+        //var_dump($lock->delete('ttt'));
+        //var_dump($lock->lock('ttt', 180));
+
+        //$string = StringRedis::getInstance();
+        //var_dump($string->set('yuandong', 'dong', 30));
+        //var_dump($string->ttl('yuandong'));
+        //var_dump($string->isExist('yuandong'));
+
+        //$hash = HashRedis::getInstance();
+        //for ($i = 0; $i < 10; $i++) {
+        //    $hash->add('user:' . $i, (string)rand(0, 100));
+        //}
+        //var_dump($hash->count());
+        //var_dump($hash->all());
+        //var_dump($hash->isMember('user:1'));
+        //var_dump($hash->rem('user:3'));
+        //var_dump($hash->get('user:6'));
+        //$hash->incr('user:6',11);
+        //var_dump($hash->get('user:6'));
+
+        //$list = ListRedis::getInstance();
+        //$list->push('1','2','3','4','5');
+        //var_dump($list->all());
+        //var_dump($list->clear());
+        //var_dump($list->count());
+
+        //$set = SetRedis::getInstance();
+        //$set->add('user1','user:2','user:3');
+        //var_dump($set->all());
+        //var_dump($set->count());
+        //var_dump($set->isMember('user:3'));
+        //var_dump($set->randMember(2));
+
+        //$zset = ZSetRedis::getInstance();
+        //for ($i = 0; $i < 10; $i++) {
+        //    $zset->add('user:' . $i, rand(0, 100));
+        //}
+        //var_dump($zset->count());
+        //var_dump($zset->all());
+        //var_dump($zset->getMemberScore('user:2'));
+        //var_dump($zset->getMemberRank('user:2'));
+        //var_dump($zset->rank());
+        //var_dump($zset->range('20','60'));
+
+        //$stream = StreamRedis::getInstance();
+        //var_dump($stream->info());
+        //for ($i = 0; $i < 10; $i++) {
+        //    $stream->add([
+        //        'user_id' => $i,
+        //        'time'    => time()
+        //    ]);
+        //}
+        //
+        //$stream->run(function (string $id, array $data): bool {
+        //    echo PHP_EOL . " 消息ID: {$id} , 任务数据: " . json_encode($data);
+        //
+        //    return true;
+        //}, 'default', 'default');
+    }
+}

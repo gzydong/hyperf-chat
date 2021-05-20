@@ -226,7 +226,7 @@ class ContactsController extends CController
     {
         $num = ApplyNumCache::get($this->uid());
         return $this->response->success([
-            'unread_num' => $num ? $num : 0
+            'unread_num' => $num ?: 0
         ]);
     }
 
