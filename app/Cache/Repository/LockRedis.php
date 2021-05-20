@@ -69,6 +69,6 @@ class LockRedis implements LockRedisInterface
             end
 LAU;
 
-        return $this->redis()->eval($script, [$this->getCacheKey($key), $this->lockValue,], 1);
+        return $this->redis()->eval($script, [$this->getCacheKey($key), $this->lockValue], 1);
     }
 }

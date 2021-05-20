@@ -17,9 +17,9 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Service\ArticleService;
 use App\Service\UploadService;
-use App\Support\RedisLock;
 use Hyperf\Utils\Str;
 use Psr\Http\Message\ResponseInterface;
+use App\Cache\Repository\LockRedis;
 
 /**
  * Class ArticleController
@@ -177,14 +177,14 @@ class ArticleController extends CController
             'sort_type' => 'required|in:1,2'
         ]);
 
-        $lockKey = "article_class_sort:{$params['class_id']}_{$params['sort_type']}";
+        $lockKey = "article:sort_{$params['class_id']}_{$params['sort_type']}";
 
         // 获取Redis锁
-        if (RedisLock::lock($lockKey, 1, 3)) {
+        $lock = LockRedis::getInstance();
+        if ($lock->lock($lockKey, 3, 500)) {
             $isTrue = $this->articleService->articleClassSort($this->uid(), (int)$params['class_id'], (int)$params['sort_type']);
 
-            // 释放Redis锁
-            RedisLock::release($lockKey, 1);
+            $lock->delete($lockKey);
         } else {
             $isTrue = false;
         }

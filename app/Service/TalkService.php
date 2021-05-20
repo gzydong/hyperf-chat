@@ -93,6 +93,8 @@ class TalkService extends BaseService
             if ($records) {
                 $data['msg_text']   = $records['text'];
                 $data['updated_at'] = $records['created_at'];
+            } else {
+                $data['updated_at'] = '2020-01-01 00:00:00';
             }
 
             return $data;

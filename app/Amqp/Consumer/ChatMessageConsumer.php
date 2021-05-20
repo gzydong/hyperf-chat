@@ -11,11 +11,9 @@ declare(strict_types=1);
 
 namespace App\Amqp\Consumer;
 
-use App\Model\Group\Group;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Result;
 use Hyperf\Amqp\Message\ConsumerMessage;
-use Hyperf\Redis\Redis;
 use Hyperf\Amqp\Message\Type;
 use Hyperf\Amqp\Builder\QueueBuilder;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -26,9 +24,11 @@ use App\Model\Chat\ChatRecordsCode;
 use App\Model\Chat\ChatRecordsFile;
 use App\Model\Chat\ChatRecordsInvite;
 use App\Model\Chat\ChatRecordsForward;
+use App\Model\Group\Group;
 use App\Service\SocketClientService;
 use App\Service\SocketRoomService;
 use App\Constants\SocketConstants;
+use App\Cache\Repository\LockRedis;
 
 /**
  * 消息推送消费者队列
@@ -125,11 +125,9 @@ class ChatMessageConsumer extends ConsumerMessage
     public function consumeMessage($data, AMQPMessage $message): string
     {
         if (isset($data['event'])) {
-            $redis = container()->get(Redis::class);
-
             // [加锁]防止消息重复消费
-            $lockName = sprintf('ws:message-lock:%s:%s', SERVER_RUN_ID, $data['uuid']);
-            if (!$redis->set($lockName, 1, ['nx', 'ex' => 60])) {
+            $lockName = sprintf('ws-message:%s-%s', SERVER_RUN_ID, $data['uuid']);
+            if (LockRedis::getInstance()->lock($lockName, 60)) {
                 return Result::ACK;
             }
 
