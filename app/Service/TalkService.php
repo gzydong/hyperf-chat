@@ -2,21 +2,21 @@
 
 namespace App\Service;
 
-use App\Cache\FriendRemarkCache;
-use App\Cache\LastMsgCache;
-use App\Cache\UnreadTalkCache;
+use Exception;
+use App\Model\User;
+use App\Model\UsersChatList;
+use App\Model\UsersFriend;
+use App\Model\Group\Group;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsCode;
 use App\Model\Chat\ChatRecordsFile;
 use App\Model\Chat\ChatRecordsForward;
 use App\Model\Chat\ChatRecordsInvite;
-use App\Model\Group\Group;
-use App\Model\User;
-use App\Model\UsersChatList;
-use App\Model\UsersFriend;
 use App\Traits\PagingTrait;
-use Exception;
 use Hyperf\DbConnection\Db;
+use App\Cache\FriendRemark;
+use App\Cache\LastMessage;
+use App\Cache\UnreadTalk;
 
 class TalkService extends BaseService
 {
@@ -68,10 +68,10 @@ class TalkService extends BaseService
             if ($item['type'] == 1) {
                 $data['name']       = $item['nickname'];
                 $data['avatar']     = $item['user_avatar'];
-                $data['unread_num'] = make(UnreadTalkCache::class)->get($user_id, $item['friend_id']);
+                $data['unread_num'] = UnreadTalk::getInstance()->read((int)$item['friend_id'], $user_id);
                 $data['online']     = $socketFDService->isOnlineAll($item['friend_id'], $runIdAll);
 
-                $remark = FriendRemarkCache::get($user_id, $item['friend_id']);
+                $remark = FriendRemark::getInstance()->read($user_id, (int)$item['friend_id']);
                 if ($remark) {
                     $data['remark_name'] = $remark;
                 } else {
@@ -81,7 +81,7 @@ class TalkService extends BaseService
                     if ($info) {
                         $data['remark_name'] = ($info->user1 == $item['friend_id']) ? $info->user2_remark : $info->user1_remark;
 
-                        FriendRemarkCache::set($user_id, $item['friend_id'], $data['remark_name']);
+                        FriendRemark::getInstance()->save($user_id, (int)$item['friend_id'], $data['remark_name']);
                     }
                 }
             } else {
@@ -89,7 +89,7 @@ class TalkService extends BaseService
                 $data['avatar'] = $item['group_avatar'];
             }
 
-            $records = LastMsgCache::get($item['type'] == 1 ? $item['friend_id'] : $item['group_id'], $item['type'] == 1 ? $user_id : 0);
+            $records = LastMessage::getInstance()->read((int)$item['type'], $user_id, $item['type'] == 1 ? (int)$item['friend_id'] : (int)$item['group_id']);
             if ($records) {
                 $data['msg_text']   = $records['text'];
                 $data['updated_at'] = $records['created_at'];

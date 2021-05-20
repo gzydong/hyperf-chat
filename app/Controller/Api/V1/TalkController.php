@@ -10,6 +10,8 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Cache\LastMessage;
+use App\Cache\UnreadTalk;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -26,8 +28,6 @@ use App\Model\Group\Group;
 use App\Service\TalkService;
 use App\Service\UploadService;
 use App\Amqp\Producer\ChatMessageProducer;
-use App\Cache\LastMsgCache;
-use App\Cache\UnreadTalkCache;
 use App\Constants\SocketConstants;
 
 /**
@@ -46,12 +46,6 @@ class TalkController extends CController
     public $talkService;
 
     /**
-     * @Inject
-     * @var UnreadTalkCache
-     */
-    public $unreadTalkCache;
-
-    /**
      * 获取用户对话列表
      * @RequestMapping(path="list", methods="get")
      *
@@ -62,8 +56,8 @@ class TalkController extends CController
         $user_id = $this->uid();
 
         // 读取用户的未读消息列表
-        if ($result = $this->unreadTalkCache->getAll($user_id)) {
-            $this->talkService->updateUnreadTalkList($user_id, $result);
+        if ($list = UnreadTalk::getInstance()->reads($user_id)) {
+            $this->talkService->updateUnreadTalkList($user_id, $list);
         }
 
         // 获取聊天列表
@@ -125,7 +119,7 @@ class TalkController extends CController
 
             $data['name']       = $userInfo->nickname;
             $data['avatar']     = $userInfo->avatar;
-            $data['unread_num'] = $this->unreadTalkCache->get($user_id, $result['friend_id']);
+            $data['unread_num'] = UnreadTalk::getInstance()->read($result['friend_id'], $user_id);
         } else if ($result['type'] == 2) {
             $groupInfo = Group::where('id', $result['group_id'])->first(['group_name', 'avatar']);
 
@@ -133,7 +127,11 @@ class TalkController extends CController
             $data['avatar'] = $groupInfo->avatar;
         }
 
-        $records = LastMsgCache::get($result['type'] == 1 ? $result['friend_id'] : $result['group_id'], $result['type'] == 1 ? $user_id : 0);
+        $records = LastMessage::getInstance()->read(
+            (int)$result['type'], $user_id,
+            $result['type'] == 1 ? (int)$result['friend_id'] : (int)$result['group_id']
+        );
+
         if ($records) {
             $data['msg_text']   = $records['text'];
             $data['updated_at'] = $records['created_at'];
@@ -217,7 +215,7 @@ class TalkController extends CController
 
         // 设置好友消息未读数
         if ($params['type'] == 1) {
-            $this->unreadTalkCache->del($this->uid(), $params['receive']);
+            UnreadTalk::getInstance()->reset((int)$params['receive'], $this->uid());
         }
 
         return $this->response->success();
@@ -329,7 +327,7 @@ class TalkController extends CController
 
         if ($receive_user_ids) {
             foreach ($receive_user_ids as $v) {
-                $this->unreadTalkCache->setInc($v['id'], $user_id);
+                UnreadTalk::getInstance()->increment($user_id, (int)$v['id']);
             }
         }
 
@@ -540,10 +538,10 @@ class TalkController extends CController
             'record_id' => $record_id
         ]));
 
-        LastMsgCache::set([
+        LastMessage::getInstance()->save((int)$params['source'], $user_id, (int)$params['receive_id'], [
             'text'       => '[图片消息]',
             'created_at' => date('Y-m-d H:i:s')
-        ], intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
+        ]);
 
         return $this->response->success();
     }
@@ -588,10 +586,10 @@ class TalkController extends CController
             'record_id' => $record_id
         ]));
 
-        LastMsgCache::set([
+        LastMessage::getInstance()->save((int)$params['source'], $user_id, (int)$params['receive_id'], [
             'text'       => '[代码消息]',
             'created_at' => date('Y-m-d H:i:s')
-        ], intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
+        ]);
 
         return $this->response->success();
     }
@@ -653,10 +651,10 @@ class TalkController extends CController
             'record_id' => $record_id
         ]));
 
-        LastMsgCache::set([
+        LastMessage::getInstance()->save((int)$params['source'], $user_id, (int)$params['receive_id'], [
             'text'       => '[文件消息]',
             'created_at' => date('Y-m-d H:i:s')
-        ], intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
+        ]);
 
         return $this->response->success();
     }
@@ -711,10 +709,10 @@ class TalkController extends CController
             'record_id' => $record_id
         ]));
 
-        LastMsgCache::set([
+        LastMessage::getInstance()->save((int)$params['source'], $user_id, (int)$params['receive_id'], [
             'text'       => '[表情包消息]',
             'created_at' => date('Y-m-d H:i:s')
-        ], intval($params['receive_id']), $params['source'] == 1 ? $user_id : 0);
+        ]);
 
         return $this->response->success();
     }

@@ -48,7 +48,7 @@ trait RedisTrait
      *
      * @return string
      */
-    private function getKeyName()
+    protected function getKeyName()
     {
         return $this->getCacheKey($this->name);
     }

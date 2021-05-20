@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Cache\FriendRemark;
+use App\Cache\LastMessage;
 use App\Cache\Repository\HashRedis;
 use App\Cache\Repository\ListRedis;
 use App\Cache\Repository\LockRedis;
@@ -11,6 +13,8 @@ use App\Cache\Repository\SetRedis;
 use App\Cache\Repository\StreamRedis;
 use App\Cache\Repository\StringRedis;
 use App\Cache\Repository\ZSetRedis;
+use App\Cache\UnreadTalk;
+use App\Service\TalkService;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Psr\Container\ContainerInterface;
@@ -99,5 +103,29 @@ class TestCommand extends HyperfCommand
         //
         //    return true;
         //}, 'default', 'default');
+
+
+        //FriendRemark::getInstance()->reload();
+
+        //LastMessage::getInstance()->save(2, 1, 3, [
+        //    'created_at' => date('Y-m-d H:i:s'),
+        //    'content'    => '那三级卡那那可是那那会计师哪安顺科技那发'
+        //]);
+        //var_dump(LastMessage::getInstance()->read(3, 6, 3));
+
+        //var_dump(UnreadTalk::getInstance()->read(1, 2));
+        //UnreadTalk::getInstance()->save(1, 2);
+
+        //$talk = UnreadTalk::getInstance();
+        //for ($i = 1; $i < 10; $i++) {
+        //    for ($j = 1; $j < 10; $j++) {
+        //        $talk->increment($i, $j);
+        //    }
+        //}
+
+        //$model = new TalkService();
+        //$model->talks(2054);
+
+        var_dump(FriendRemark::getInstance()->read(2054,2055));
     }
 }

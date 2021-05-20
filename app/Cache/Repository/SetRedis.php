@@ -16,7 +16,7 @@ class SetRedis implements SetRedisInterface
 
     private $prefix = 'rds:set';
 
-    private $name = 'default';
+    public $name = 'default';
 
     /**
      * 添加集合元素

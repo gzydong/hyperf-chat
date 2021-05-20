@@ -3,16 +3,15 @@
 namespace App\Service;
 
 use Hyperf\Di\Annotation\Inject;
-use Hyperf\Amqp\Producer;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 use App\Amqp\Producer\ChatMessageProducer;
-use App\Cache\LastMsgCache;
-use App\Cache\UnreadTalkCache;
 use App\Model\Chat\ChatRecord;
 use App\Model\Group\Group;
 use App\Model\UsersFriend;
+use App\Cache\LastMessage;
+use App\Cache\UnreadTalk;
 
 class MessageHandleService
 {
@@ -21,12 +20,6 @@ class MessageHandleService
      * @var SocketClientService
      */
     private $socketClientService;
-
-    /**
-     * @Inject
-     * @var UnreadTalkCache
-     */
-    private $unreadTalkCache;
 
     /**
      * 对话消息
@@ -73,18 +66,16 @@ class MessageHandleService
         if (!$result) return;
 
         // 判断是否私聊
-        if ($data['source_type'] == 1) {
+        if ($result->source == 1) {
             // 设置好友消息未读数
-            $this->unreadTalkCache->setInc(intval($result->receive_id), strval($result->user_id));
+            UnreadTalk::getInstance()->increment($result->user_id, $result->receive_id);
         }
 
-        // 缓存最后一条消息
-        LastMsgCache::set([
+        // 缓存最后一条聊天消息
+        LastMessage::getInstance()->save($result->source, $result->user_id, $result->receive_id, [
             'text'       => mb_substr($result->content, 0, 30),
             'created_at' => $result->created_at
-        ], (int)$data['receive_user'],
-            $data['source_type'] == 1 ? (int)$data['send_user'] : 0
-        );
+        ]);
 
         // 推送消息
         push_amqp(new ChatMessageProducer('event_talk', [

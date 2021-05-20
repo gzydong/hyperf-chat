@@ -15,7 +15,7 @@ class HashRedis implements HashRedisInterface
 
     private $prefix = 'rds:hash';
 
-    private $name = 'default';
+    public $name = 'default';
 
     /**
      * 获取 Hash 值
@@ -42,10 +42,10 @@ class HashRedis implements HashRedisInterface
     /**
      * 设置 Hash 值
      *
-     * @param string $key
-     * @param string $value
+     * @param string     $key
+     * @param string|int $value
      */
-    public function add(string $key, string $value)
+    public function add(string $key, $value)
     {
         $this->redis()->hSet($this->getKeyName(), $key, $value);
     }

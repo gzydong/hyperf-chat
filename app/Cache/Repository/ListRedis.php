@@ -15,7 +15,7 @@ class ListRedis implements ListRedisInterface
 
     private $prefix = 'rds:list';
 
-    private $name = 'default';
+    public $name = 'default';
 
     /**
      * Push 队列任务

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Cache\LastMsgCache;
+use App\Cache\LastMessage;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsInvite;
 use App\Model\Group\Group;
@@ -133,8 +133,10 @@ class GroupService extends BaseService
             return [false, 0];
         }
 
-        // 设置群聊消息缓存
-        LastMsgCache::set(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $insRes->id, 0);
+        LastMessage::getInstance()->save(2, $user_id, $insRes->id, [
+            'text'       => '[入群通知]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
 
         return [true, ['record_id' => $result->id, 'group_id' => $insRes->id]];
     }
@@ -269,7 +271,11 @@ class GroupService extends BaseService
             return [false, 0];
         }
 
-        LastMsgCache::set(['created_at' => date('Y-m-d H:i:s'), 'text' => '入群通知'], $group_id, 0);
+        LastMessage::getInstance()->save(2, $user_id, $group_id, [
+            'text'       => '[入群通知]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
         return [true, $result->id];
     }
 

@@ -15,7 +15,7 @@ class ZSetRedis implements ZSetRedisInterface
 
     private $prefix = 'rds:zset';
 
-    private $name = 'default';
+    public $name = 'default';
 
     /**
      * 添加有序集合元素

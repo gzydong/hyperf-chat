@@ -11,7 +11,7 @@ class StreamRedis implements StreamRedisInterface
 
     private $prefix = 'rds:stream';
 
-    private $name = 'default';
+    public $name = 'default';
 
     /**
      * 添加消息

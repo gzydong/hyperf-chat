@@ -10,6 +10,8 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Cache\FriendApply;
+use App\Cache\FriendRemark;
 use App\Model\UsersFriendsApply;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -93,7 +95,7 @@ class ContactsController extends CController
         }
 
         // 好友申请未读消息数自增
-        ApplyNumCache::setInc(intval($params['friend_id']));
+        FriendApply::getInstance()->incr($params['friend_id'], 1);
 
         // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll(intval($params['friend_id']))) {
@@ -224,9 +226,8 @@ class ContactsController extends CController
      */
     public function getContactApplyUnreadNum()
     {
-        $num = ApplyNumCache::get($this->uid());
         return $this->response->success([
-            'unread_num' => $num ?: 0
+            'unread_num' => FriendApply::getInstance()->get(strval($this->uid()))
         ]);
     }
 
@@ -250,7 +251,7 @@ class ContactsController extends CController
 
         $data = $this->contactsService->getContactApplyRecords($user_id, $page, $page_size);
 
-        ApplyNumCache::del($user_id);
+        FriendApply::getInstance()->rem(strval($user_id));
 
         return $this->response->success($data);
     }
@@ -292,7 +293,8 @@ class ContactsController extends CController
             return $this->response->fail('备注修改失败！');
         }
 
-        FriendRemarkCache::set($user_id, intval($params['friend_id']), $params['remarks']);
+        FriendRemark::getInstance()->save($user_id, (int)$params['friend_id'], $params['remarks']);
+
         return $this->response->success([], '备注修改成功...');
     }
 }
