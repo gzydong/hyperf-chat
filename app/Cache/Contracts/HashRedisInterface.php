@@ -18,6 +18,6 @@ interface HashRedisInterface
 
     public function isMember(string $key);
 
-    public function delete(string $key);
+    public function delete();
 }
 

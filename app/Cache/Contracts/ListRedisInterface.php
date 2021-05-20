@@ -14,5 +14,5 @@ interface ListRedisInterface
 
     public function all();
 
-    public function delete(string $key);
+    public function delete();
 }

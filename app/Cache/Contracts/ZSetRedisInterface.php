@@ -22,5 +22,5 @@ interface ZSetRedisInterface
 
     public function getMemberScore(string $member);
 
-    public function delete(string $key);
+    public function delete();
 }
