@@ -9,13 +9,11 @@ use App\Cache\Contracts\HashRedisInterface;
  *
  * @package App\Cache\Repository
  */
-class HashRedis implements HashRedisInterface
+class HashRedis extends AbstractRedis implements HashRedisInterface
 {
-    use RedisTrait;
+    protected $prefix = 'rds-hash';
 
-    private $prefix = 'rds:hash';
-
-    public $name = 'default';
+    protected $name = 'default';
 
     /**
      * 获取 Hash 值
@@ -26,10 +24,10 @@ class HashRedis implements HashRedisInterface
     public function get(string ...$key)
     {
         if (func_num_args() == 1) {
-            return (string)$this->redis()->hGet($this->getKeyName(), $key[0]);
+            return (string)$this->redis()->hGet($this->getCacheKey(), $key[0]);
         }
 
-        return $this->redis()->hMGet($this->getKeyName(), $key);
+        return $this->redis()->hMGet($this->getCacheKey(), $key);
     }
 
     /**
@@ -40,7 +38,7 @@ class HashRedis implements HashRedisInterface
      */
     public function add(string $key, $value)
     {
-        $this->redis()->hSet($this->getKeyName(), $key, $value);
+        $this->redis()->hSet($this->getCacheKey(), $key, $value);
     }
 
     /**
@@ -51,7 +49,7 @@ class HashRedis implements HashRedisInterface
      */
     public function rem(string ...$key)
     {
-        return $this->redis()->hDel($this->getKeyName(), ...$key);
+        return $this->redis()->hDel($this->getCacheKey(), ...$key);
     }
 
     /**
@@ -63,7 +61,7 @@ class HashRedis implements HashRedisInterface
      */
     public function incr(string $member, int $score)
     {
-        return $this->redis()->hincrby($this->getKeyName(), $member, $score);
+        return $this->redis()->hincrby($this->getCacheKey(), $member, $score);
     }
 
     /**
@@ -73,7 +71,7 @@ class HashRedis implements HashRedisInterface
      */
     public function count()
     {
-        return (int)$this->redis()->hLen($this->getKeyName());
+        return (int)$this->redis()->hLen($this->getCacheKey());
     }
 
     /**
@@ -83,7 +81,7 @@ class HashRedis implements HashRedisInterface
      */
     public function all()
     {
-        return $this->redis()->hGetAll($this->getKeyName());
+        return $this->redis()->hGetAll($this->getCacheKey());
     }
 
     /**
@@ -94,7 +92,7 @@ class HashRedis implements HashRedisInterface
      */
     public function isMember(string $key)
     {
-        return $this->redis()->hExists($this->getKeyName(), $key);
+        return $this->redis()->hExists($this->getCacheKey(), $key);
     }
 
     /**
@@ -104,6 +102,6 @@ class HashRedis implements HashRedisInterface
      */
     public function delete()
     {
-        return (bool)$this->redis()->del($this->getKeyName());
+        return (bool)$this->redis()->del($this->getCacheKey());
     }
 }

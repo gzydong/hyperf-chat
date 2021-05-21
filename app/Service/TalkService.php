@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Cache\ServerRunID;
 use Exception;
 use App\Model\User;
 use App\Model\UsersChatList;
@@ -48,7 +49,7 @@ class TalkService extends BaseService
         if (!$rows) return [];
 
         $socketFDService = make(SocketClientService::class);
-        $runIdAll        = $socketFDService->getServerRunIdAll();
+        $runIdAll        = ServerRunID::getInstance()->getServerRunIdAll();
 
         return array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {
             $data['id']          = $item['id'];

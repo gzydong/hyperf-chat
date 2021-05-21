@@ -9,13 +9,11 @@ use App\Cache\Contracts\LockRedisInterface;
  *
  * @package App\Cache\Repository
  */
-class LockRedis implements LockRedisInterface
+class LockRedis extends AbstractRedis implements LockRedisInterface
 {
-    use RedisTrait;
+    protected $prefix = 'rds-lock';
 
-    private $prefix = 'rds:lock';
-
-    private $lockValue = 1;
+    protected $lockValue = 1;
 
     /**
      * 获取是毫秒时间戳

@@ -44,7 +44,7 @@ class UnreadTalk extends HashRedis
      */
     public function reset(int $sender, int $receive)
     {
-        $this->add($this->flag($sender, $receive), 0);
+        $this->rem($this->flag($sender, $receive));
     }
 
     /**
@@ -67,7 +67,7 @@ class UnreadTalk extends HashRedis
     {
         $iterator = null;
         $arr      = [];
-        while ($elements = $this->redis()->hscan($this->getKeyName(), $iterator, '*_' . $user_id, 20)) {
+        while ($elements = $this->redis()->hscan($this->getCacheKey(), $iterator, '*_' . $user_id, 20)) {
             foreach ($elements as $key => $value) {
                 $arr[explode('_', $key)[0]] = $value;
             }

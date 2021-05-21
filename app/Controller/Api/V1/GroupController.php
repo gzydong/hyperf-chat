@@ -10,6 +10,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Cache\SocketRoom;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -21,7 +22,6 @@ use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Model\Group\GroupNotice;
 use App\Amqp\Producer\ChatMessageProducer;
-use App\Service\SocketRoomService;
 use App\Service\GroupService;
 use App\Constants\SocketConstants;
 use Psr\Http\Message\ResponseInterface;
@@ -40,12 +40,6 @@ class GroupController extends CController
      * @var GroupService
      */
     private $groupService;
-
-    /**
-     * @Inject
-     * @var SocketRoomService
-     */
-    private $socketRoomService;
 
     /**
      * 创建群组
@@ -77,7 +71,7 @@ class GroupController extends CController
         // 加入聊天室
         $friend_ids[] = $user_id;
         foreach ($friend_ids as $uid) {
-            $this->socketRoomService->addRoomMember($uid, $data['group_id']);
+            SocketRoom::getInstance()->addRoomMember(strval($data['group_id']), $uid);
         }
 
         // ... 消息推送队列
@@ -111,7 +105,7 @@ class GroupController extends CController
             return $this->response->fail('群组解散失败！');
         }
 
-        $this->socketRoomService->delRoom($params['group_id']);
+        SocketRoom::getInstance()->delRoom($params['group_id']);
 
         // ... TODO 推送群消息(预留)
 
@@ -142,7 +136,7 @@ class GroupController extends CController
 
         // 加入聊天室
         foreach ($uids as $uid) {
-            $this->socketRoomService->addRoomMember($uid, $params['group_id']);
+            SocketRoom::getInstance()->addRoomMember($params['group_id'], $uid);
         }
 
         // 消息推送队列
@@ -176,7 +170,7 @@ class GroupController extends CController
         }
 
         // 移出聊天室
-        $this->socketRoomService->delRoomMember($params['group_id'], $user_id);
+        SocketRoom::getInstance()->delRoomMember($params['group_id'], $user_id);
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
@@ -246,7 +240,7 @@ class GroupController extends CController
 
         // 移出聊天室
         foreach ($params['members_ids'] as $uid) {
-            $this->socketRoomService->delRoomMember($params['group_id'], $uid);
+            SocketRoom::getInstance()->delRoomMember($params['group_id'], strval($uid));
         }
 
         // 消息推送队列

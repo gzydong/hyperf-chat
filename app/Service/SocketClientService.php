@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Cache\ServerRunID;
 use Hyperf\Redis\Redis;
 
 /**
@@ -20,11 +21,6 @@ class SocketClientService
      * 使用集合做处理
      */
     const BIND_USER_TO_FDS = 'ws:user:fds';
-
-    /**
-     * 运行检测超时时间（单位秒）
-     */
-    const RUN_OVERTIME = 35;
 
     /**
      * @var Redis
@@ -86,7 +82,7 @@ class SocketClientService
      */
     public function isOnlineAll(int $user_id, array $run_ids = [])
     {
-        $run_ids = $run_ids ?: $this->getServerRunIdAll();
+        $run_ids = $run_ids ?: ServerRunID::getInstance()->getServerRunIdAll();
 
         foreach ($run_ids as $run_id => $time) {
             if ($this->isOnline($user_id, $run_id)) return true;
@@ -123,27 +119,6 @@ class SocketClientService
     }
 
     /**
-     * 获取服务ID列表
-     *
-     * @param int $type 获取类型[1:正在运行;2:已超时;3:所有]
-     * @return array
-     */
-    public function getServerRunIdAll(int $type = 1)
-    {
-        $arr = $this->redis->hGetAll('SERVER_RUN_ID');
-        if ($type == 3) return $arr;
-
-        $current_time = time();
-        return array_filter($arr, function ($value) use ($current_time, $type) {
-            if ($type == 1) {
-                return ($current_time - intval($value)) <= self::RUN_OVERTIME;
-            } else {
-                return ($current_time - intval($value)) > self::RUN_OVERTIME;
-            }
-        });
-    }
-
-    /**
      * 清除绑定缓存的信息
      *
      * @param string $run_id 服务运行ID
@@ -153,7 +128,8 @@ class SocketClientService
         $this->redis->del(sprintf('%s:%s', self::BIND_FD_TO_USER, $run_id));
 
         $prefix = sprintf('%s:%s', self::BIND_USER_TO_FDS, $run_id);
-        $this->redis->hDel('SERVER_RUN_ID', $run_id);
+
+        ServerRunID::getInstance()->rem($run_id);
 
         $iterator = null;
         while (true) {

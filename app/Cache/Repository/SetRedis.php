@@ -1,8 +1,8 @@
 <?php
 
-
 namespace App\Cache\Repository;
 
+use App\Traits\StaticInstance;
 use App\Cache\Contracts\SetRedisInterface;
 
 /**
@@ -10,13 +10,11 @@ use App\Cache\Contracts\SetRedisInterface;
  *
  * @package App\Cache\Repository
  */
-class SetRedis implements SetRedisInterface
+class SetRedis extends AbstractRedis implements SetRedisInterface
 {
-    use RedisTrait;
+    protected $prefix = 'rds-set';
 
-    private $prefix = 'rds:set';
-
-    public $name = 'default';
+    protected $name = 'default';
 
     /**
      * 添加集合元素
@@ -26,7 +24,7 @@ class SetRedis implements SetRedisInterface
      */
     public function add(string ...$member)
     {
-        return $this->redis()->sAdd($this->getKeyName(), ...$member);
+        return $this->redis()->sAdd($this->getCacheKey(), ...$member);
     }
 
     /**
@@ -37,7 +35,7 @@ class SetRedis implements SetRedisInterface
      */
     public function rem(string ...$member)
     {
-        return $this->redis()->sRem($this->getKeyName(), ...$member);
+        return $this->redis()->sRem($this->getCacheKey(), ...$member);
     }
 
     /**
@@ -48,7 +46,7 @@ class SetRedis implements SetRedisInterface
      */
     public function isMember(string $member)
     {
-        return $this->redis()->sIsMember($this->getKeyName(), $member);
+        return $this->redis()->sIsMember($this->getCacheKey(), $member);
     }
 
     /**
@@ -58,7 +56,7 @@ class SetRedis implements SetRedisInterface
      */
     public function all()
     {
-        return $this->redis()->sMembers($this->getKeyName());
+        return $this->redis()->sMembers($this->getCacheKey());
     }
 
     /**
@@ -68,7 +66,7 @@ class SetRedis implements SetRedisInterface
      */
     public function count()
     {
-        return $this->redis()->scard($this->getKeyName());
+        return $this->redis()->scard($this->getCacheKey());
     }
 
     /**
@@ -79,7 +77,7 @@ class SetRedis implements SetRedisInterface
      */
     public function randMember($count = 1)
     {
-        return $this->redis()->sRandMember($this->getKeyName(), $count);
+        return $this->redis()->sRandMember($this->getCacheKey(), $count);
     }
 
     /**
@@ -89,6 +87,6 @@ class SetRedis implements SetRedisInterface
      */
     public function delete()
     {
-        return (bool)$this->redis()->del($this->getKeyName());
+        return (bool)$this->redis()->del($this->getCacheKey());
     }
 }

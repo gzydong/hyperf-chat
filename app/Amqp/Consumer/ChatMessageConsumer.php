@@ -26,9 +26,9 @@ use App\Model\Chat\ChatRecordsInvite;
 use App\Model\Chat\ChatRecordsForward;
 use App\Model\Group\Group;
 use App\Service\SocketClientService;
-use App\Service\SocketRoomService;
 use App\Constants\SocketConstants;
 use App\Cache\Repository\LockRedis;
+use App\Cache\SocketRoom;
 
 /**
  * 消息推送消费者队列
@@ -63,11 +63,6 @@ class ChatMessageConsumer extends ConsumerMessage
     private $socketClientService;
 
     /**
-     * @var SocketRoomService
-     */
-    private $socketRoomService;
-
-    /**
      * 消息事件与回调事件绑定
      *
      * @var array
@@ -93,12 +88,10 @@ class ChatMessageConsumer extends ConsumerMessage
      * ChatMessageConsumer constructor.
      *
      * @param SocketClientService $socketClientService
-     * @param SocketRoomService   $socketRoomService
      */
-    public function __construct(SocketClientService $socketClientService, SocketRoomService $socketRoomService)
+    public function __construct(SocketClientService $socketClientService)
     {
         $this->socketClientService = $socketClientService;
-        $this->socketRoomService   = $socketRoomService;
 
         // 动态设置 Rabbit MQ 消费队列名称
         $this->setQueue('queue:im_message:' . SERVER_RUN_ID);
@@ -154,7 +147,7 @@ class ChatMessageConsumer extends ConsumerMessage
         if ($source == 1) {// 私聊
             $fds = array_merge($fds, $this->socketClientService->findUserFds($data['data']['receive']));
         } else if ($source == 2) {// 群聊
-            $userIds = $this->socketRoomService->getRoomMembers(strval($data['data']['receive']));
+            $userIds = SocketRoom::getInstance()->getRoomMembers(strval($data['data']['receive']));
             foreach ($userIds as $uid) {
                 $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$uid));
             }
@@ -305,7 +298,7 @@ class ChatMessageConsumer extends ConsumerMessage
             $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$record->user_id));
             $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$record->receive_id));
         } else if ($record->source == 2) {
-            $userIds = $this->socketRoomService->getRoomMembers(strval($record->receive_id));
+            $userIds = SocketRoom::getInstance()->getRoomMembers(strval($record->receive_id));
             foreach ($userIds as $uid) {
                 $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$uid));
             }

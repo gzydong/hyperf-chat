@@ -12,6 +12,7 @@ namespace App\Controller\Api\V1;
 
 use App\Cache\FriendApply;
 use App\Cache\FriendRemark;
+use App\Cache\ServerRunID;
 use App\Model\UsersFriendsApply;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -59,7 +60,7 @@ class ContactsController extends CController
     {
         $rows = $this->contactsService->getContacts($this->uid());
         if ($rows) {
-            $runArr = $this->socketClientService->getServerRunIdAll();
+            $runArr = ServerRunID::getInstance()->getServerRunIdAll();
             foreach ($rows as $k => $row) {
                 // 查询用户当前是否在线
                 $rows[$k]['online'] = $this->socketClientService->isOnlineAll($row['id'], $runArr);

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Cache\SocketRoom;
 use Hyperf\Di\Annotation\Inject;
 use App\Constants\SocketConstants;
 use Hyperf\Contract\OnCloseInterface;
@@ -23,7 +24,6 @@ use Swoole\WebSocket\Server;
 use Phper666\JWTAuth\JWT;
 use App\Service\SocketClientService;
 use App\Service\MessageHandleService;
-use App\Service\SocketRoomService;
 use App\Model\Group\GroupMember;
 use App\Amqp\Producer\ChatMessageProducer;
 
@@ -45,12 +45,6 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * @var SocketClientService
      */
     private $socketClientService;
-
-    /**
-     * @inject
-     * @var SocketRoomService
-     */
-    private $socketRoomService;
 
     /**
      * @inject
@@ -92,7 +86,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 加入群聊
         $groupIds = GroupMember::getUserGroupIds($userInfo['user_id']);
         foreach ($groupIds as $group_id) {
-            $this->socketRoomService->addRoomMember($userInfo['user_id'], $group_id);
+            SocketRoom::getInstance()->addRoomMember(strval($group_id), strval($userInfo['user_id']));
         }
 
         if (!$isOnline) {

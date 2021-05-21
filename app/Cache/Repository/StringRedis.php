@@ -2,6 +2,7 @@
 
 namespace App\Cache\Repository;
 
+use App\Traits\StaticInstance;
 use App\Cache\Contracts\StringRedisInterface;
 
 /**
@@ -9,11 +10,11 @@ use App\Cache\Contracts\StringRedisInterface;
  *
  * @package App\Cache\Repository
  */
-class StringRedis implements StringRedisInterface
+class StringRedis extends AbstractRedis implements StringRedisInterface
 {
-    use RedisTrait;
+    protected $prefix = 'rds-string';
 
-    private $prefix = 'rds:string';
+    protected $name = '';
 
     /**
      * 设置缓存

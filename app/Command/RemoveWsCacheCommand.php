@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Cache\ServerRunID;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\Command\Command as HyperfCommand;
 use Psr\Container\ContainerInterface;
@@ -45,8 +46,7 @@ class RemoveWsCacheCommand extends HyperfCommand
         $this->line('此过程可能耗时较长，请耐心等待!', 'info');
 
         // 获取所有已停止运行的服务ID
-        $arr = $socket->getServerRunIdAll(2);
-
+        $arr = ServerRunID::getInstance()->getServerRunIdAll(2);
         foreach ($arr as $run_id => $value) {
             go(function () use ($socket, $run_id) {
                 $socket->removeRedisCache(strval($run_id));

@@ -3,15 +3,14 @@
 namespace App\Cache\Repository;
 
 use Closure;
+use App\Traits\StaticInstance;
 use App\Cache\Contracts\StreamRedisInterface;
 
-class StreamRedis implements StreamRedisInterface
+class StreamRedis extends AbstractRedis implements StreamRedisInterface
 {
-    use RedisTrait;
+    protected $prefix = 'rds-stream';
 
-    private $prefix = 'rds:stream';
-
-    public $name = 'default';
+    protected $name = 'default';
 
     /**
      * 添加消息
@@ -23,7 +22,7 @@ class StreamRedis implements StreamRedisInterface
      */
     public function add(array $messages, $maxLen = 0, $isApproximate = false)
     {
-        return $this->redis()->xAdd($this->getKeyName(), '*', $messages, $maxLen, $isApproximate);
+        return $this->redis()->xAdd($this->getCacheKey(), '*', $messages, $maxLen, $isApproximate);
     }
 
     /**
@@ -34,7 +33,7 @@ class StreamRedis implements StreamRedisInterface
      */
     public function rem(string ...$id)
     {
-        return $this->redis()->xDel($this->getKeyName(), $id);
+        return $this->redis()->xDel($this->getCacheKey(), $id);
     }
 
     /**
@@ -46,7 +45,7 @@ class StreamRedis implements StreamRedisInterface
      */
     public function ack(string $group, string $id)
     {
-        return $this->redis()->xAck($this->getKeyName(), $group, [$id]);
+        return $this->redis()->xAck($this->getCacheKey(), $group, [$id]);
     }
 
     /**
@@ -56,7 +55,7 @@ class StreamRedis implements StreamRedisInterface
      */
     public function count()
     {
-        return $this->redis()->xLen($this->getKeyName());
+        return $this->redis()->xLen($this->getCacheKey());
     }
 
     /**
@@ -66,7 +65,7 @@ class StreamRedis implements StreamRedisInterface
      */
     public function all()
     {
-        return $this->redis()->xRange($this->getKeyName(), '-', '+');
+        return $this->redis()->xRange($this->getCacheKey(), '-', '+');
     }
 
     /**
@@ -90,7 +89,7 @@ class StreamRedis implements StreamRedisInterface
      */
     public function delete()
     {
-        return $this->redis()->del($this->getKeyName());
+        return $this->redis()->del($this->getCacheKey());
     }
 
     /**
@@ -102,17 +101,17 @@ class StreamRedis implements StreamRedisInterface
      */
     public function trim(int $maxLen, bool $isApproximate = false)
     {
-        return $this->redis()->xTrim($this->getKeyName(), $maxLen, $isApproximate);
+        return $this->redis()->xTrim($this->getCacheKey(), $maxLen, $isApproximate);
     }
 
     public function group($operation, $group, $msgId = '', $mkStream = false)
     {
-        return $this->redis()->xGroup($operation, $this->getKeyName(), $group, $msgId, $mkStream);
+        return $this->redis()->xGroup($operation, $this->getCacheKey(), $group, $msgId, $mkStream);
     }
 
     public function pending($group, $start = null, $end = null, $count = null, $consumer = null)
     {
-        return $this->redis()->xPending($this->getKeyName(), $group, $start, $end, $count, $consumer);
+        return $this->redis()->xPending($this->getCacheKey(), $group, $start, $end, $count, $consumer);
     }
 
     /**
@@ -123,7 +122,7 @@ class StreamRedis implements StreamRedisInterface
      */
     public function info(string $operation = 'stream')
     {
-        return $this->redis()->xInfo($operation, $this->getKeyName());
+        return $this->redis()->xInfo($operation, $this->getCacheKey());
     }
 
     /**
@@ -139,13 +138,13 @@ class StreamRedis implements StreamRedisInterface
         $this->group('create', $group, '0');
 
         while (true) {
-            $tasks = $this->redis()->xReadGroup($group, $consumer, [$this->getKeyName() => '>'], $count);
+            $tasks = $this->redis()->xReadGroup($group, $consumer, [$this->getCacheKey() => '>'], $count);
             if (empty($tasks)) {
                 sleep(1);// 获取不到任务，延时一秒
                 continue;
             }
 
-            foreach ($tasks[$this->getKeyName()] as $id => $task) {
+            foreach ($tasks[$this->getCacheKey()] as $id => $task) {
                 if ($closure($id, $task)) {
                     $this->ack($group, $id);
                 }

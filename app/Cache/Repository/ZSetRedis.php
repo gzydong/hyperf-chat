@@ -9,13 +9,11 @@ use App\Cache\Contracts\ZSetRedisInterface;
  *
  * @package App\Cache\Repository
  */
-class ZSetRedis implements ZSetRedisInterface
+class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
 {
-    use RedisTrait;
+    protected $prefix = 'rds-zset';
 
-    private $prefix = 'rds:zset';
-
-    public $name = 'default';
+    protected $name = 'default';
 
     /**
      * 添加有序集合元素
@@ -26,7 +24,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function add(string $member, float $score)
     {
-        return $this->redis()->zAdd($this->getKeyName(), $score, $member);
+        return $this->redis()->zAdd($this->getCacheKey(), $score, $member);
     }
 
     /**
@@ -37,7 +35,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function rem(string ...$member)
     {
-        return $this->redis()->zRem($this->getKeyName(), ...$member);
+        return $this->redis()->zRem($this->getCacheKey(), ...$member);
     }
 
     /**
@@ -49,7 +47,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function incr(string $member, float $score)
     {
-        return $this->redis()->zIncrBy($this->getKeyName(), $score, $member);
+        return $this->redis()->zIncrBy($this->getCacheKey(), $score, $member);
     }
 
     /**
@@ -59,7 +57,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function count()
     {
-        return $this->redis()->zCard($this->getKeyName());
+        return $this->redis()->zCard($this->getCacheKey());
     }
 
     /**
@@ -71,7 +69,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function all($asc = true, $is_score = true)
     {
-        return $this->redis()->{$asc ? 'zRevRange' : 'zRange'}($this->getKeyName(), 0, -1, $is_score);
+        return $this->redis()->{$asc ? 'zRevRange' : 'zRange'}($this->getCacheKey(), 0, -1, $is_score);
     }
 
     /**
@@ -88,7 +86,7 @@ class ZSetRedis implements ZSetRedisInterface
 
         [$start, $end] = $asc ? ['+inf', '-inf'] : ['-inf', '+inf'];
 
-        $rows = $this->redis()->{$asc ? 'zRevRangeByScore' : 'zRangeByScore'}($this->getKeyName(), $start, $end, [
+        $rows = $this->redis()->{$asc ? 'zRevRangeByScore' : 'zRangeByScore'}($this->getCacheKey(), $start, $end, [
             'withscores' => true,
             'limit'      => [($page - 1) * $size, $size]
         ]);
@@ -120,7 +118,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function range(string $start, string $end, array $options = [])
     {
-        return $this->redis()->zRangeByScore($this->getKeyName(), $start, $end, $options);
+        return $this->redis()->zRangeByScore($this->getCacheKey(), $start, $end, $options);
     }
 
     /**
@@ -132,7 +130,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function getMemberRank(string $member, $asc = true)
     {
-        return $this->redis()->{$asc ? 'zRevRank' : 'zRank'}($this->getKeyName(), $member) + 1;
+        return $this->redis()->{$asc ? 'zRevRank' : 'zRank'}($this->getCacheKey(), $member) + 1;
     }
 
     /**
@@ -143,7 +141,7 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function getMemberScore(string $member)
     {
-        return $this->redis()->zScore($this->getKeyName(), $member);
+        return $this->redis()->zScore($this->getCacheKey(), $member);
     }
 
     /**
@@ -164,6 +162,6 @@ class ZSetRedis implements ZSetRedisInterface
      */
     public function delete()
     {
-        return (bool)$this->redis()->del($this->getKeyName());
+        return (bool)$this->redis()->del($this->getCacheKey());
     }
 }

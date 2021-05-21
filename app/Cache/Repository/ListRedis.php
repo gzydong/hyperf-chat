@@ -9,13 +9,11 @@ use App\Cache\Contracts\ListRedisInterface;
  *
  * @package App\Cache\Repository
  */
-class ListRedis implements ListRedisInterface
+class ListRedis extends AbstractRedis implements ListRedisInterface
 {
-    use RedisTrait;
+    protected $prefix = 'rds-list';
 
-    private $prefix = 'rds:list';
-
-    public $name = 'default';
+    protected $name = 'default';
 
     /**
      * Push 队列任务
@@ -25,7 +23,7 @@ class ListRedis implements ListRedisInterface
      */
     public function push(string ...$value)
     {
-        return $this->redis()->lPush($this->getKeyName(), ...$value);
+        return $this->redis()->lPush($this->getCacheKey(), ...$value);
     }
 
     /**
@@ -35,7 +33,7 @@ class ListRedis implements ListRedisInterface
      */
     public function pop()
     {
-        return $this->redis()->rPop($this->getKeyName());
+        return $this->redis()->rPop($this->getCacheKey());
     }
 
     /**
@@ -45,7 +43,7 @@ class ListRedis implements ListRedisInterface
      */
     public function count()
     {
-        return (int)$this->redis()->lLen($this->getKeyName());
+        return (int)$this->redis()->lLen($this->getCacheKey());
     }
 
     /**
@@ -55,7 +53,7 @@ class ListRedis implements ListRedisInterface
      */
     public function clear()
     {
-        return $this->redis()->lTrim($this->getKeyName(), 1, 0);
+        return $this->redis()->lTrim($this->getCacheKey(), 1, 0);
     }
 
     /**
@@ -65,7 +63,7 @@ class ListRedis implements ListRedisInterface
      */
     public function all()
     {
-        return $this->redis()->lRange($this->getKeyName(), 0, -1);
+        return $this->redis()->lRange($this->getCacheKey(), 0, -1);
     }
 
     /**
@@ -75,6 +73,6 @@ class ListRedis implements ListRedisInterface
      */
     public function delete()
     {
-        return (bool)$this->redis()->del($this->getKeyName());
+        return (bool)$this->redis()->del($this->getCacheKey());
     }
 }

@@ -10,9 +10,9 @@
 
 namespace App\Bootstrap;
 
+use App\Cache\ServerRunID;
 use Hyperf\Framework\Bootstrap\ServerStartCallback;
 use Swoole\Timer;
-use Hyperf\Redis\Redis;
 
 /**
  * 自定义服务启动前回调事件
@@ -37,6 +37,6 @@ class ServerStart extends ServerStartCallback
      */
     public function setRunIdTime()
     {
-        container()->get(Redis::class)->hset('SERVER_RUN_ID', SERVER_RUN_ID, time());
+        ServerRunID::getInstance()->add(SERVER_RUN_ID, time());
     }
 }

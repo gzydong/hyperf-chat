@@ -9,10 +9,13 @@ use App\Cache\LastMessage;
 use App\Cache\Repository\HashRedis;
 use App\Cache\Repository\ListRedis;
 use App\Cache\Repository\LockRedis;
+use App\Cache\Repository\HashGroupRedis;
+use App\Cache\Repository\SetGroupRedis;
 use App\Cache\Repository\SetRedis;
 use App\Cache\Repository\StreamRedis;
 use App\Cache\Repository\StringRedis;
 use App\Cache\Repository\ZSetRedis;
+use App\Cache\SocketRoom;
 use App\Cache\UnreadTalk;
 use App\Service\TalkService;
 use Hyperf\Command\Command as HyperfCommand;
@@ -53,7 +56,7 @@ class TestCommand extends HyperfCommand
         //var_dump($string->ttl('yuandong'));
         //var_dump($string->isExist('yuandong'));
 
-        $hash = HashRedis::getInstance();
+        //$hash = HashRedis::getInstance();
         //for ($i = 0; $i < 10; $i++) {
         //    $hash->add('user:' . $i, (string)rand(0, 100));
         //}
@@ -128,5 +131,13 @@ class TestCommand extends HyperfCommand
         //$model->talks(2054);
 
         //var_dump(FriendRemark::getInstance()->read(2054,2055));
+
+        //$socketRoom = SocketRoom::getInstance();
+        //$socketRoom->addRoomMember('');
+
+        //$keys = redis()->keys('rds-set*');
+        //foreach ($keys as $key) {
+        //    redis()->del($keys);
+        //}
     }
 }
