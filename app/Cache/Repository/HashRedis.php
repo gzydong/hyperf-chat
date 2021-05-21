@@ -25,18 +25,11 @@ class HashRedis implements HashRedisInterface
      */
     public function get(string ...$key)
     {
-        $func = function ($k) {
-            return (string)$this->redis()->hGet($this->getKeyName(), $k);
-        };
-
-        if (func_num_args() == 1) return $func($key[0]);
-
-        $array = [];
-        foreach ($key as $arg) {
-            $array[$arg] = $func($arg);
+        if (func_num_args() == 1) {
+            return (string)$this->redis()->hGet($this->getKeyName(), $key[0]);
         }
 
-        return $array;
+        return $this->redis()->hMGet($this->getKeyName(), $key);
     }
 
     /**

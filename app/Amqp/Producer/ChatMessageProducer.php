@@ -63,6 +63,6 @@ class ChatMessageProducer extends ProducerMessage
      */
     private function uuid()
     {
-        return Str::random() . mt_rand(100000, 999999) . uniqid();
+        return Str::random(8) . uniqid();
     }
 }

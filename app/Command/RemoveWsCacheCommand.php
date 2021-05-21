@@ -49,7 +49,7 @@ class RemoveWsCacheCommand extends HyperfCommand
 
         foreach ($arr as $run_id => $value) {
             go(function () use ($socket, $run_id) {
-                $socket->removeRedisCache($run_id);
+                $socket->removeRedisCache(strval($run_id));
             });
         }
 

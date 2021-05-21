@@ -127,7 +127,7 @@ class ChatMessageConsumer extends ConsumerMessage
         if (isset($data['event'])) {
             // [加锁]防止消息重复消费
             $lockName = sprintf('ws-message:%s-%s', SERVER_RUN_ID, $data['uuid']);
-            if (LockRedis::getInstance()->lock($lockName, 60)) {
+            if (!LockRedis::getInstance()->lock($lockName, 60)) {
                 return Result::ACK;
             }
 

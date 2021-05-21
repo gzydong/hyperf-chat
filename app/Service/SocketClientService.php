@@ -86,7 +86,7 @@ class SocketClientService
      */
     public function isOnlineAll(int $user_id, array $run_ids = [])
     {
-        if (empty($run_ids)) $run_ids = $this->getServerRunIdAll();
+        $run_ids = $run_ids ?: $this->getServerRunIdAll();
 
         foreach ($run_ids as $run_id => $time) {
             if ($this->isOnline($user_id, $run_id)) return true;

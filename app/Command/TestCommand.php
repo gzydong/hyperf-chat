@@ -53,7 +53,7 @@ class TestCommand extends HyperfCommand
         //var_dump($string->ttl('yuandong'));
         //var_dump($string->isExist('yuandong'));
 
-        //$hash = HashRedis::getInstance();
+        $hash = HashRedis::getInstance();
         //for ($i = 0; $i < 10; $i++) {
         //    $hash->add('user:' . $i, (string)rand(0, 100));
         //}
@@ -61,7 +61,7 @@ class TestCommand extends HyperfCommand
         //var_dump($hash->all());
         //var_dump($hash->isMember('user:1'));
         //var_dump($hash->rem('user:3'));
-        //var_dump($hash->get('user:6'));
+        //var_dump($hash->get('user:6','user:7'));
         //$hash->incr('user:6',11);
         //var_dump($hash->get('user:6'));
 
@@ -79,11 +79,12 @@ class TestCommand extends HyperfCommand
         //var_dump($set->randMember(2));
 
         //$zset = ZSetRedis::getInstance();
-        //for ($i = 0; $i < 10; $i++) {
-        //    $zset->add('user:' . $i, rand(0, 100));
+        //for ($i = 1; $i < 100; $i++) {
+        //    $zset->add('user:' . $i, $i);
         //}
+        //$zset->delete();
         //var_dump($zset->count());
-        //var_dump($zset->all());
+        //var_dump($zset->rank(2,10));
         //var_dump($zset->getMemberScore('user:2'));
         //var_dump($zset->getMemberRank('user:2'));
         //var_dump($zset->rank());
@@ -126,6 +127,6 @@ class TestCommand extends HyperfCommand
         //$model = new TalkService();
         //$model->talks(2054);
 
-        var_dump(FriendRemark::getInstance()->read(2054,2055));
+        //var_dump(FriendRemark::getInstance()->read(2054,2055));
     }
 }
