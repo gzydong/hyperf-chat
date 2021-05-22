@@ -56,15 +56,15 @@ class TalkService extends BaseService
             $data['type']        = $item['type'];
             $data['friend_id']   = $item['friend_id'];
             $data['group_id']    = $item['group_id'];
-            $data['name']        = '';//对方昵称/群名称
-            $data['unread_num']  = 0; //未读消息数量
-            $data['avatar']      = '';//默认头像
-            $data['remark_name'] = '';//好友备注
+            $data['name']        = ''; // 对方昵称/群名称
+            $data['avatar']      = ''; // 默认头像
+            $data['remark_name'] = ''; // 好友备注
+            $data['unread_num']  = 0;  // 未读消息数量
             $data['msg_text']    = '......';
             $data['updated_at']  = $item['updated_at'];
             $data['online']      = 0;
-            $data['not_disturb'] = $item['not_disturb'];
             $data['is_top']      = $item['is_top'];
+            $data['not_disturb'] = $item['not_disturb'];
 
             if ($item['type'] == 1) {
                 $data['name']       = $item['nickname'];
@@ -80,7 +80,7 @@ class TalkService extends BaseService
                         ->where('user1', ($user_id < $item['friend_id']) ? $user_id : $item['friend_id'])
                         ->where('user2', ($user_id < $item['friend_id']) ? $item['friend_id'] : $user_id)->first();
                     if ($info) {
-                        $data['remark_name'] = ($info->user1 == $item['friend_id']) ? $info->user2_remark : $info->user1_remark;
+                        $data['remark_name'] = $info->user1 == $item['friend_id'] ? $info->user2_remark : $info->user1_remark;
 
                         FriendRemark::getInstance()->save($user_id, (int)$item['friend_id'], $data['remark_name']);
                     }
@@ -505,7 +505,7 @@ class TalkService extends BaseService
      *                           1,'id' => 1658]] 二维数组
      * @return array|bool
      */
-    public function mergeForwardRecords(int $user_id, int $receive_id, int $source, $records_ids, array $receive_ids)
+    public function mergeForwardRecords(int $user_id, int $receive_id, int $source, array $records_ids, array $receive_ids)
     {
         // 支持转发的消息类型
         $msg_type = [1, 2, 5];

@@ -10,10 +10,6 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Cache\FriendApply;
-use App\Cache\FriendRemark;
-use App\Cache\ServerRunID;
-use App\Model\UsersFriendsApply;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -24,10 +20,12 @@ use App\Amqp\Producer\ChatMessageProducer;
 use App\Service\ContactsService;
 use App\Service\SocketClientService;
 use App\Service\UserService;
-use App\Cache\ApplyNumCache;
-use App\Cache\FriendRemarkCache;
-use App\Model\UsersChatList;
 use App\Constants\SocketConstants;
+use App\Model\UsersFriendsApply;
+use App\Model\UsersChatList;
+use App\Cache\FriendApply;
+use App\Cache\FriendRemark;
+use App\Cache\ServerRunID;
 
 /**
  * Class ContactsController
