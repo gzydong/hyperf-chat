@@ -44,7 +44,7 @@ class SocketFdBindUser extends HashGroupRedis
      * @param string $run_id 服务运行ID（默认当前服务ID）
      * @return int
      */
-    public function findUserId(int $fd, $run_id = SERVER_RUN_ID)
+    public function findUserId(int $fd, $run_id = SERVER_RUN_ID): int
     {
         return (int)$this->get($run_id, strval($fd)) ?: 0;
     }

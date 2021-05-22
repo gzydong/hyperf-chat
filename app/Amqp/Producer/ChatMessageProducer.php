@@ -14,7 +14,6 @@ namespace App\Amqp\Producer;
 use App\Constants\SocketConstants;
 use Hyperf\Amqp\Message\ProducerMessage;
 use Hyperf\Amqp\Message\Type;
-use Hyperf\Utils\Str;
 
 /**
  * 消息生产者

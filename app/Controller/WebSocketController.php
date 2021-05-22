@@ -68,12 +68,14 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onOpen($server, Request $request): void
     {
-        $token    = $request->get['token'] ?? '';
-        $userInfo = $this->jwt->getParserData($token);
+        $token               = $request->get['token'] ?? '';
+        $userInfo            = $this->jwt->getParserData($token);
+        $userInfo['user_id'] = intval($userInfo['user_id']);
+
         stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
 
         // 判断是否存在异地登录
-        $isOnline = $this->socketClientService->isOnlineAll(intval($userInfo['user_id']));
+        $isOnline = $this->socketClientService->isOnlineAll($userInfo['user_id']);
 
         // 若开启单点登录，则主动关闭之前登录的连接
         if ($isOnline) {
@@ -129,7 +131,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onClose($server, int $fd, int $reactorId): void
     {
-        $user_id = (int)$this->socketClientService->findFdUserId($fd);
+        $user_id = $this->socketClientService->findFdUserId($fd);
 
         stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 

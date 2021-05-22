@@ -33,7 +33,7 @@ class FriendRemark extends HashRedis
      * @param int $friend_id 好友ID
      * @return string
      */
-    public function read(int $user_id, int $friend_id)
+    public function read(int $user_id, int $friend_id): string
     {
         return $this->get($this->_flag($user_id, $friend_id));
     }
@@ -45,7 +45,7 @@ class FriendRemark extends HashRedis
      * @param int $friend_id 好友ID
      * @return string
      */
-    private function _flag(int $user_id, int $friend_id)
+    private function _flag(int $user_id, int $friend_id): string
     {
         return "{$user_id}_{$friend_id}";
     }

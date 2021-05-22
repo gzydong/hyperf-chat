@@ -4,6 +4,11 @@ namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
 
+/**
+ * 服务运行ID - 缓存助手
+ *
+ * @package App\Cache
+ */
 class ServerRunID extends HashRedis
 {
     protected $prefix = 'SERVER_RUN_ID';
@@ -21,7 +26,7 @@ class ServerRunID extends HashRedis
      * @param int $type 获取类型[1:正在运行;2:已超时;3:所有]
      * @return array
      */
-    public function getServerRunIdAll(int $type = 1)
+    public function getServerRunIdAll(int $type = 1): array
     {
         $arr = $this->all();
 

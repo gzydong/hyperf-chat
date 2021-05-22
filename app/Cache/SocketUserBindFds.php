@@ -71,7 +71,7 @@ class SocketUserBindFds extends SetGroupRedis
      * @param string $run_id  服务运行ID（默认当前服务ID）
      * @return array
      */
-    public function findFds(int $user_id, $run_id = SERVER_RUN_ID)
+    public function findFds(int $user_id, $run_id = SERVER_RUN_ID): array
     {
         $arr = $this->all($this->filter([$run_id, $user_id]));
         foreach ($arr as $k => $value) {
@@ -81,7 +81,7 @@ class SocketUserBindFds extends SetGroupRedis
         return $arr;
     }
 
-    public function getCachePrefix(string $run_id)
+    public function getCachePrefix(string $run_id): string
     {
         return $this->getCacheKey($run_id);
     }

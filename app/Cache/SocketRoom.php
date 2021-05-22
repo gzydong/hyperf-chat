@@ -4,6 +4,11 @@ namespace App\Cache;
 
 use App\Cache\Repository\SetGroupRedis;
 
+/**
+ * 聊天室 - 缓存助手
+ *
+ * @package App\Cache
+ */
 class SocketRoom extends SetGroupRedis
 {
     protected $name = 'ws:room';

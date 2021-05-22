@@ -34,7 +34,7 @@ class LastMessage extends HashRedis
      * @param int $receive 接收者ID
      * @return array
      */
-    public function read(int $type, int $sender, int $receive)
+    public function read(int $type, int $sender, int $receive): array
     {
         $message = $this->get($this->flag($type, $sender, $receive));
 

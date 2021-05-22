@@ -31,7 +31,7 @@ class UnreadTalk extends HashRedis
      * @param int $receive 接收者ID
      * @return int
      */
-    public function read(int $sender, int $receive)
+    public function read(int $sender, int $receive): int
     {
         return (int)$this->get($this->flag($sender, $receive));
     }
@@ -63,7 +63,7 @@ class UnreadTalk extends HashRedis
      * @param int $user_id 用户ID
      * @return array
      */
-    public function reads(int $user_id)
+    public function reads(int $user_id): array
     {
         $iterator = null;
         $arr      = [];

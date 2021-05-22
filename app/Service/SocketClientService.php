@@ -58,7 +58,7 @@ class SocketClientService
      * @param array $run_ids 服务运行ID
      * @return bool
      */
-    public function isOnlineAll(int $user_id, array $run_ids = [])
+    public function isOnlineAll(int $user_id, array $run_ids = []): bool
     {
         return SocketUserBindFds::getInstance()->isOnlineAll($user_id, $run_ids);
     }
@@ -70,7 +70,7 @@ class SocketClientService
      * @param string $run_id 服务运行ID（默认当前服务ID）
      * @return int
      */
-    public function findFdUserId(int $fd, $run_id = SERVER_RUN_ID)
+    public function findFdUserId(int $fd, $run_id = SERVER_RUN_ID): int
     {
         return SocketFdBindUser::getInstance()->findUserId($fd, $run_id);
     }
