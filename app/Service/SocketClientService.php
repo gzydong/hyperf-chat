@@ -2,8 +2,8 @@
 
 namespace App\Service;
 
-use App\Cache\ServerRunID;
-use Hyperf\Redis\Redis;
+use App\Cache\SocketFdBindUser;
+use App\Cache\SocketUserBindFds;
 
 /**
  * Socket客户端ID服务
@@ -13,26 +13,6 @@ use Hyperf\Redis\Redis;
 class SocketClientService
 {
     /**
-     * fd与用户绑定(使用hash 做处理)
-     */
-    const BIND_FD_TO_USER = 'ws:fd:user';
-
-    /**
-     * 使用集合做处理
-     */
-    const BIND_USER_TO_FDS = 'ws:user:fds';
-
-    /**
-     * @var Redis
-     */
-    private $redis;
-
-    public function __construct()
-    {
-        $this->redis = container()->get(Redis::class);
-    }
-
-    /**
      * 客户端fd与用户ID绑定关系
      *
      * @param int    $fd      客户端fd
@@ -41,10 +21,8 @@ class SocketClientService
      */
     public function bindRelation(int $fd, int $user_id, $run_id = SERVER_RUN_ID)
     {
-        $this->redis->multi();
-        $this->redis->hSet(sprintf('%s:%s', self::BIND_FD_TO_USER, $run_id), (string)$fd, (string)$user_id);
-        $this->redis->sadd(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id), $fd);
-        $this->redis->exec();
+        SocketFdBindUser::getInstance()->bind($fd, $user_id, $run_id);
+        SocketUserBindFds::getInstance()->bind($fd, $user_id, $run_id);
     }
 
     /**
@@ -55,10 +33,10 @@ class SocketClientService
      */
     public function removeRelation(int $fd, $run_id = SERVER_RUN_ID)
     {
-        $user_id = $this->findFdUserId($fd) | 0;
+        $user_id = $this->findFdUserId($fd);
 
-        $this->redis->hdel(sprintf('%s:%s', self::BIND_FD_TO_USER, $run_id), (string)$fd);
-        $this->redis->srem(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id), $fd);
+        SocketFdBindUser::getInstance()->unBind($fd, $run_id);
+        SocketUserBindFds::getInstance()->unBind($fd, $user_id, $run_id);
     }
 
     /**
@@ -70,7 +48,7 @@ class SocketClientService
      */
     public function isOnline(int $user_id, $run_id = SERVER_RUN_ID): bool
     {
-        return (bool)$this->redis->scard(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id));
+        return SocketUserBindFds::getInstance()->isOnline($user_id, $run_id);
     }
 
     /**
@@ -82,13 +60,7 @@ class SocketClientService
      */
     public function isOnlineAll(int $user_id, array $run_ids = [])
     {
-        $run_ids = $run_ids ?: ServerRunID::getInstance()->getServerRunIdAll();
-
-        foreach ($run_ids as $run_id => $time) {
-            if ($this->isOnline($user_id, $run_id)) return true;
-        }
-
-        return false;
+        return SocketUserBindFds::getInstance()->isOnlineAll($user_id, $run_ids);
     }
 
     /**
@@ -100,7 +72,7 @@ class SocketClientService
      */
     public function findFdUserId(int $fd, $run_id = SERVER_RUN_ID)
     {
-        return $this->redis->hget(sprintf('%s:%s', self::BIND_FD_TO_USER, $run_id), (string)$fd) ?: 0;
+        return SocketFdBindUser::getInstance()->findUserId($fd, $run_id);
     }
 
     /**
@@ -112,34 +84,6 @@ class SocketClientService
      */
     public function findUserFds(int $user_id, $run_id = SERVER_RUN_ID)
     {
-        $arr = $this->redis->smembers(sprintf('%s:%s:%s', self::BIND_USER_TO_FDS, $run_id, $user_id));
-        return $arr ? array_map(function ($fd) {
-            return (int)$fd;
-        }, $arr) : [];
-    }
-
-    /**
-     * 清除绑定缓存的信息
-     *
-     * @param string $run_id 服务运行ID
-     */
-    public function removeRedisCache(string $run_id)
-    {
-        $this->redis->del(sprintf('%s:%s', self::BIND_FD_TO_USER, $run_id));
-
-        $prefix = sprintf('%s:%s', self::BIND_USER_TO_FDS, $run_id);
-
-        ServerRunID::getInstance()->rem($run_id);
-
-        $iterator = null;
-        while (true) {
-            $keys = $this->redis->scan($iterator, "{$prefix}*");
-
-            if ($keys === false) return;
-
-            if (!empty($keys)) {
-                $this->redis->del(...$keys);
-            }
-        }
+        return SocketUserBindFds::getInstance()->findFds($user_id, $run_id);
     }
 }

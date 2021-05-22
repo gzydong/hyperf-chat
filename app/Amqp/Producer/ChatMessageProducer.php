@@ -47,22 +47,12 @@ class ChatMessageProducer extends ProducerMessage
     public function __construct(string $event, array $data, array $options = [])
     {
         $message = [
-            'uuid'    => $this->uuid(),
+            'uuid'    => uniqid(),
             'event'   => $event,
             'data'    => $data,
             'options' => $options
         ];
 
         $this->payload = $message;
-    }
-
-    /**
-     * 生成唯一的消息ID
-     *
-     * @return string
-     */
-    private function uuid()
-    {
-        return Str::random(8) . uniqid();
     }
 }

@@ -15,7 +15,9 @@ use App\Cache\Repository\SetRedis;
 use App\Cache\Repository\StreamRedis;
 use App\Cache\Repository\StringRedis;
 use App\Cache\Repository\ZSetRedis;
+use App\Cache\SocketFdBindUser;
 use App\Cache\SocketRoom;
+use App\Cache\SocketUserBindFds;
 use App\Cache\UnreadTalk;
 use App\Service\TalkService;
 use Hyperf\Command\Command as HyperfCommand;
@@ -134,10 +136,12 @@ class TestCommand extends HyperfCommand
 
         //$socketRoom = SocketRoom::getInstance();
         //$socketRoom->addRoomMember('');
-
         //$keys = redis()->keys('rds-set*');
         //foreach ($keys as $key) {
         //    redis()->del($keys);
         //}
+
+        //SocketFdBindUser::getInstance()->bind(1, 2054);
+        //SocketUserBindFds::getInstance()->bind(1, 2054);
     }
 }

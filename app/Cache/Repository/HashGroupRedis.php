@@ -4,7 +4,7 @@ namespace App\Cache\Repository;
 
 class HashGroupRedis extends AbstractRedis
 {
-    protected $prefix = 'rds-hash:multi';
+    protected $prefix = 'rds-hash';
 
     protected $name = 'default';
 
@@ -20,11 +20,11 @@ class HashGroupRedis extends AbstractRedis
     }
 
     /**
-     * @param string $name
-     * @param        $key
+     * @param string     $name
+     * @param string|int $key
      * @return false|string
      */
-    public function get(string $name, $key)
+    public function get(string $name, string $key)
     {
         return $this->redis()->hGet($this->getCacheKey($name), $key);
     }
@@ -76,5 +76,10 @@ class HashGroupRedis extends AbstractRedis
     public function count(string $name)
     {
         return $this->redis()->hLen($this->getCacheKey($name));
+    }
+
+    public function delete(string $name)
+    {
+        return $this->redis()->del($this->getCacheKey($name));
     }
 }

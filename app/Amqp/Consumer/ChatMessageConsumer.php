@@ -343,7 +343,7 @@ class ChatMessageConsumer extends ConsumerMessage
     {
         $server = server();
         foreach ($fds as $fd) {
-            $server->exist($fd) && $server->push($fd, $message);
+            $server->exist(intval($fd)) && $server->push(intval($fd), $message);
         }
     }
 
