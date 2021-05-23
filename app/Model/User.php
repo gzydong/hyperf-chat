@@ -4,6 +4,9 @@ declare (strict_types=1);
 
 namespace App\Model;
 
+use Qbhy\HyperfAuth\AuthAbility;
+use Qbhy\HyperfAuth\Authenticatable;
+
 /**
  * Class User
  *
@@ -18,8 +21,10 @@ namespace App\Model;
  * @property integer $created_at 注册时间
  * @package App\Model
  */
-class User extends BaseModel
+class User extends BaseModel implements Authenticatable
 {
+    use AuthAbility;
+
     protected $table = 'users';
 
     protected $fillable = [
@@ -34,4 +39,8 @@ class User extends BaseModel
     ];
 
     protected $casts = [];
+
+    protected $hidden = [
+        'password'
+    ];
 }

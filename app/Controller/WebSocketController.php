@@ -21,7 +21,6 @@ use Swoole\Http\Request;
 use Swoole\Websocket\Frame;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Server;
-use Phper666\JWTAuth\JWT;
 use App\Service\SocketClientService;
 use App\Service\MessageHandleService;
 use App\Model\Group\GroupMember;
@@ -34,12 +33,6 @@ use App\Amqp\Producer\ChatMessageProducer;
  */
 class WebSocketController implements OnMessageInterface, OnOpenInterface, OnCloseInterface
 {
-    /**
-     * @Inject
-     * @var JWT
-     */
-    private $jwt;
-
     /**
      * @inject
      * @var SocketClientService
@@ -68,14 +61,13 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onOpen($server, Request $request): void
     {
-        $token               = $request->get['token'] ?? '';
-        $userInfo            = $this->jwt->getParserData($token);
-        $userInfo['user_id'] = intval($userInfo['user_id']);
+        // 当前连接的用户
+        $user_id = auth('jwt')->user()->getId();
 
-        stdout_log()->notice("用户连接信息 : user_id:{$userInfo['user_id']} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
+        stdout_log()->notice("用户连接信息 : user_id:{$user_id} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
 
         // 判断是否存在异地登录
-        $isOnline = $this->socketClientService->isOnlineAll($userInfo['user_id']);
+        $isOnline = $this->socketClientService->isOnlineAll($user_id);
 
         // 若开启单点登录，则主动关闭之前登录的连接
         if ($isOnline) {
@@ -83,18 +75,18 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         }
 
         // 绑定fd与用户关系
-        $this->socketClientService->bindRelation($request->fd, $userInfo['user_id']);
+        $this->socketClientService->bindRelation($request->fd, $user_id);
 
         // 加入群聊
-        $groupIds = GroupMember::getUserGroupIds($userInfo['user_id']);
+        $groupIds = GroupMember::getUserGroupIds($user_id);
         foreach ($groupIds as $group_id) {
-            SocketRoom::getInstance()->addRoomMember(strval($group_id), strval($userInfo['user_id']));
+            SocketRoom::getInstance()->addRoomMember(strval($group_id), strval($user_id));
         }
 
         if (!$isOnline) {
             // 推送消息至队列
             push_amqp(new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
-                'user_id' => $userInfo['user_id'],
+                'user_id' => $user_id,
                 'status'  => 1,
                 'notify'  => '好友上线通知...'
             ]));

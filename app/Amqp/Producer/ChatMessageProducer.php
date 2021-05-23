@@ -46,7 +46,7 @@ class ChatMessageProducer extends ProducerMessage
     public function __construct(string $event, array $data, array $options = [])
     {
         $message = [
-            'uuid'    => uniqid(),
+            'uuid'    => uniqid((strval(mt_rand(0, 1000)))),
             'event'   => $event,
             'data'    => $data,
             'options' => $options

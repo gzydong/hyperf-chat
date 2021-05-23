@@ -13,12 +13,9 @@ namespace App\Controller\Api\V1;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
-use Hyperf\HttpServer\Annotation\Middleware;
-use App\Middleware\JWTAuthMiddleware;
 use App\Model\User;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
-use Phper666\JWTAuth\JWT;
 
 /**
  * 授权相关控制器
@@ -39,12 +36,6 @@ class AuthController extends CController
     private $smsCodeService;
 
     /**
-     * @Inject
-     * @var JWT
-     */
-    protected $jwt;
-
-    /**
      * 授权登录接口
      * @RequestMapping(path="login", methods="post")
      */
@@ -63,10 +54,7 @@ class AuthController extends CController
         }
 
         try {
-            $token = $this->jwt->getToken([
-                'user_id'  => $userInfo['id'],
-                'platform' => $params['platform'],
-            ]);
+            $token = auth('jwt')->login($userInfo);
         } catch (\Exception $exception) {
             return $this->response->error('登录异常，请稍后再试！');
         }
@@ -74,14 +62,14 @@ class AuthController extends CController
         return $this->response->success([
             'authorize' => [
                 'access_token' => $token,
-                'expires_in'   => $this->jwt->getTTL()
+                'expires_in'   => auth('jwt')->getJwtManager()->getTtl()
             ],
             'user_info' => [
-                'nickname' => $userInfo['nickname'],
-                'avatar'   => $userInfo['avatar'],
-                'gender'   => $userInfo['gender'],
-                'motto'    => $userInfo['motto'],
-                'email'    => $userInfo['email'],
+                'nickname' => $userInfo->nickname,
+                'avatar'   => $userInfo->avatar,
+                'gender'   => $userInfo->gender,
+                'motto'    => $userInfo->motto,
+                'email'    => $userInfo->email,
             ]
         ]);
     }
@@ -89,11 +77,10 @@ class AuthController extends CController
     /**
      * 退出登录接口
      * @RequestMapping(path="logout", methods="post")
-     * @Middleware(JWTAuthMiddleware::class)
      */
     public function logout()
     {
-        $this->jwt->logout();
+        auth('jwt')->check() && auth('jwt')->logout();
 
         return $this->response->success([], 'Successfully logged out');
     }
@@ -164,14 +151,17 @@ class AuthController extends CController
     /**
      * 授权刷新接口
      * @RequestMapping(path="refresh", methods="post")
-     * @Middleware(JWTAuthMiddleware::class)
      */
     public function refresh()
     {
+        if (auth('jwt')->guest()) {
+            return $this->response->fail('登录 token 刷新失败！');
+        }
+
         return $this->response->success([
             'authorize' => [
-                'token'  => $this->jwt->refreshToken(),
-                'expire' => $this->jwt->getTTL()
+                'token'  => auth('jwt')->refresh(),
+                'expire' => auth('jwt')->getJwtManager()->getTtl()
             ]
         ]);
     }

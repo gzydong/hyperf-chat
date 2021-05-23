@@ -28,7 +28,7 @@ class UserService extends BaseService
      *
      * @param string $mobile   手机号
      * @param string $password 登录密码
-     * @return array|bool
+     * @return User|bool
      */
     public function login(string $mobile, string $password)
     {
@@ -40,7 +40,7 @@ class UserService extends BaseService
             return false;
         }
 
-        return $user->toArray();
+        return $user;
     }
 
     /**
