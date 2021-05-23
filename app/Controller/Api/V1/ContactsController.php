@@ -226,7 +226,7 @@ class ContactsController extends CController
     public function getContactApplyUnreadNum()
     {
         return $this->response->success([
-            'unread_num' => FriendApply::getInstance()->get(strval($this->uid()))
+            'unread_num' => (int)FriendApply::getInstance()->get(strval($this->uid()))
         ]);
     }
 
