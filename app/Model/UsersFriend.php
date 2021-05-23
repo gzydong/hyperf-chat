@@ -92,7 +92,7 @@ SQL;
             return true;
         }
 
-        $isTrue = self::where('user1', $user_id1)->where('user2', $user_id2)->where('status', 1)->exists();
+        $isTrue = self::query()->where('user1', $user_id1)->where('user2', $user_id2)->where('status', 1)->exists();
         if ($isTrue) {
             redis()->setex($cacheKey, 60 * 5, 1);
         }

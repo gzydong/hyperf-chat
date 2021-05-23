@@ -52,7 +52,7 @@ class GroupMember extends BaseModel
      */
     public static function getGroupMemberIds(int $group_id)
     {
-        return self::where('group_id', $group_id)->where('is_quit', 0)->pluck('user_id')->toArray() ?? [];
+        return self::query()->where('group_id', $group_id)->where('is_quit', 0)->pluck('user_id')->toArray() ?? [];
     }
 
     /**
@@ -64,7 +64,7 @@ class GroupMember extends BaseModel
      */
     public static function visitCard(int $user_id, int $group_id)
     {
-        return self::where('group_id', $group_id)->where('user_id', $user_id)->value('user_card') ?? "";
+        return self::query()->where('group_id', $group_id)->where('user_id', $user_id)->value('user_card') ?? "";
     }
 
     /**
@@ -75,6 +75,6 @@ class GroupMember extends BaseModel
      */
     public static function getUserGroupIds(int $user_id)
     {
-        return self::where('user_id', $user_id)->where('is_quit', 0)->pluck('group_id')->toArray() ?? [];
+        return self::query()->where('user_id', $user_id)->where('is_quit', 0)->pluck('group_id')->toArray() ?? [];
     }
 }

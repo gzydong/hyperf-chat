@@ -2,12 +2,11 @@
 
 namespace App\Exception\Handler;
 
+use Qbhy\HyperfAuth\Exception\AuthException;
 use Throwable;
 use Hyperf\ExceptionHandler\ExceptionHandler;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Http\Message\ResponseInterface;
-use Phper666\JWTAuth\Exception\TokenValidException;
-use Hyperf\WebSocketServer\Exception\WebSocketHandeShakeException;
 
 /**
  * Class JwtAuthExceptionHandler
@@ -19,7 +18,7 @@ class JwtAuthExceptionHandler extends ExceptionHandler
     public function handle(Throwable $throwable, ResponseInterface $response)
     {
         // 判断被捕获到的异常是希望被捕获的异常
-        if ($throwable instanceof TokenValidException) {
+        if ($throwable instanceof AuthException) {
             // 格式化输出
             $data = json_encode([
                 'code'    => $throwable->getCode(),

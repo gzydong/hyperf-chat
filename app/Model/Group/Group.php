@@ -70,7 +70,7 @@ class Group extends BaseModel
      */
     public static function isManager(int $user_id, int $group_id, $leader = 2)
     {
-        return self::where('id', $group_id)->where('creator_id', $user_id)->exists();
+        return self::query()->where('id', $group_id)->where('creator_id', $user_id)->exists();
     }
 
     /**
@@ -81,7 +81,7 @@ class Group extends BaseModel
      */
     public static function isDismiss(int $group_id)
     {
-        return self::where('id', $group_id)->where('is_dismiss', 1)->exists();
+        return self::query()->where('id', $group_id)->where('is_dismiss', 1)->exists();
     }
 
     /**

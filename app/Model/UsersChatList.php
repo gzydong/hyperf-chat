@@ -58,7 +58,7 @@ class UsersChatList extends BaseModel
      */
     public static function addItem(int $user_id, int $receive_id, int $type)
     {
-        $result = self::where('uid', $user_id)->where('type', $type)->where($type == 1 ? 'friend_id' : 'group_id', $receive_id)->first();
+        $result = self::query()->where('uid', $user_id)->where('type', $type)->where($type == 1 ? 'friend_id' : 'group_id', $receive_id)->first();
         if ($result) {
             $result->status     = 1;
             $result->updated_at = date('Y-m-d H:i:s');
@@ -72,7 +72,7 @@ class UsersChatList extends BaseModel
             ];
         }
 
-        if (!$result = self::create([
+        if (!$result = self::query()->create([
             'type'       => $type,
             'uid'        => $user_id,
             'status'     => 1,
@@ -102,7 +102,7 @@ class UsersChatList extends BaseModel
      */
     public static function topItem(int $user_id, int $list_id, $is_top = true)
     {
-        return (bool)self::where('id', $list_id)->where('uid', $user_id)->update([
+        return (bool)self::query()->where('id', $list_id)->where('uid', $user_id)->update([
             'is_top'     => $is_top ? 1 : 0,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -120,11 +120,11 @@ class UsersChatList extends BaseModel
     {
         $data = ['status' => 0, 'updated_at' => date('Y-m-d H:i:s')];
         if ($type == 1) {
-            return (bool)self::where('id', $id)->where('uid', $user_id)->update($data);
+            return (bool)self::query()->where('id', $id)->where('uid', $user_id)->update($data);
         } else if ($type == 2) {
-            return (bool)self::where('uid', $user_id)->where('friend_id', $id)->update($data);
+            return (bool)self::query()->where('uid', $user_id)->where('friend_id', $id)->update($data);
         } else {
-            return (bool)self::where('uid', $user_id)->where('group_id', $id)->update($data);
+            return (bool)self::query()->where('uid', $user_id)->where('group_id', $id)->update($data);
         }
     }
 
@@ -139,11 +139,11 @@ class UsersChatList extends BaseModel
      */
     public static function notDisturbItem(int $user_id, int $receive_id, int $type, int $not_disturb)
     {
-        $result = self::where('uid', $user_id)->where($type == 1 ? 'friend_id' : 'group_id', $receive_id)->where('status', 1)->first(['id', 'not_disturb']);
+        $result = self::query()->where('uid', $user_id)->where($type == 1 ? 'friend_id' : 'group_id', $receive_id)->where('status', 1)->first(['id', 'not_disturb']);
         if (!$result || $not_disturb == $result->not_disturb) {
             return false;
         }
 
-        return (bool)self::where('id', $result->id)->update(['not_disturb' => $not_disturb]);
+        return (bool)self::query()->where('id', $result->id)->update(['not_disturb' => $not_disturb]);
     }
 }
