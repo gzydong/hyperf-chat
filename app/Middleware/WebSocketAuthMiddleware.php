@@ -30,6 +30,13 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
      */
     protected $container;
 
+    /**
+     * 授权验证守卫
+     *
+     * @var string
+     */
+    private $guard = 'jwt';
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -38,7 +45,7 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         // 授权验证拦截握手请求并实现权限检查
-        if (auth('jwt')->guest()) {
+        if (auth($this->guard)->guest()) {
             return $this->container->get(\Hyperf\HttpServer\Contract\ResponseInterface::class)->raw('Forbidden');
         }
 

@@ -34,6 +34,13 @@ class JWTAuthMiddleware implements MiddlewareInterface
      */
     protected $response;
 
+    /**
+     * 授权验证守卫
+     *
+     * @var string
+     */
+    private $guard = 'jwt';
+
     public function __construct(HttpResponse $response, RequestInterface $request)
     {
         $this->response = $response;
@@ -42,7 +49,7 @@ class JWTAuthMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (auth('jwt')->guest()) {
+        if (auth($this->guard)->guest()) {
             return $this->response->withStatus(401)->json([
                 'code'    => 401,
                 'message' => 'Token authentication does not pass !',

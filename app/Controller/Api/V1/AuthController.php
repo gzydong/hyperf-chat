@@ -54,7 +54,7 @@ class AuthController extends CController
         }
 
         try {
-            $token = auth('jwt')->login($userInfo);
+            $token = $this->guard()->login($userInfo);
         } catch (\Exception $exception) {
             return $this->response->error('登录异常，请稍后再试！');
         }
@@ -62,7 +62,7 @@ class AuthController extends CController
         return $this->response->success([
             'authorize' => [
                 'access_token' => $token,
-                'expires_in'   => auth('jwt')->getJwtManager()->getTtl()
+                'expires_in'   => $this->guard()->getJwtManager()->getTtl()
             ],
             'user_info' => [
                 'nickname' => $userInfo->nickname,
@@ -71,7 +71,7 @@ class AuthController extends CController
                 'motto'    => $userInfo->motto,
                 'email'    => $userInfo->email,
             ]
-        ]);
+        ], '账号登录成功...');
     }
 
     /**
@@ -80,9 +80,9 @@ class AuthController extends CController
      */
     public function logout()
     {
-        auth('jwt')->check() && auth('jwt')->logout();
+        $this->guard()->check() && $this->guard()->logout();
 
-        return $this->response->success([], 'Successfully logged out');
+        return $this->response->success([], '退出登录成功...');
     }
 
     /**
@@ -154,14 +154,14 @@ class AuthController extends CController
      */
     public function refresh()
     {
-        if (auth('jwt')->guest()) {
+        if ($this->guard()->guest()) {
             return $this->response->fail('登录 token 刷新失败！');
         }
 
         return $this->response->success([
             'authorize' => [
-                'token'  => auth('jwt')->refresh(),
-                'expire' => auth('jwt')->getJwtManager()->getTtl()
+                'token'  => $this->guard()->refresh(),
+                'expire' => $this->guard()->getJwtManager()->getTtl()
             ]
         ]);
     }

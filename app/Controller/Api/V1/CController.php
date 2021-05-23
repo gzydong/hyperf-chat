@@ -34,8 +34,18 @@ class CController extends AbstractController
      */
     public function uid()
     {
-        $guard = auth('jwt');
+        $guard = $this->guard();
 
         return $guard->check() ? $guard->user()->getId() : 0;
+    }
+
+    /**
+     * 获取授权守卫
+     *
+     * @return mixed|\Qbhy\HyperfAuth\AuthGuard|\Qbhy\HyperfAuth\AuthManager
+     */
+    public function guard()
+    {
+        return auth('jwt');
     }
 }
