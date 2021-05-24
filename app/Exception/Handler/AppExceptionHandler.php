@@ -57,6 +57,10 @@ class AppExceptionHandler extends ExceptionHandler
      */
     public function sendAdminEmail(Throwable $throwable)
     {
+        if (config('app_env') != 'dev') {
+            return;
+        }
+
         $error = implode(':', [
             'error',
             md5($throwable->getFile() . $throwable->getCode() . $throwable->getLine()),

@@ -176,4 +176,5 @@ return [
     'sequential_array' => ':attribute 必须是一个有序数组',
 
     'ids' => ' :attribute 字段 ids 格式不正确',
+    'phone' => ':attribute 必须为一个有效的电话号码',
 ];

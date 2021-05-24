@@ -184,7 +184,7 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
         $this->validate($params, [
-            'mobile'   => "required|regex:/^1[345789][0-9]{9}$/",
+            'mobile'   => "required|phone",
             'password' => 'required',
             'sms_code' => 'required|digits:6'
         ]);
@@ -256,7 +256,7 @@ class UsersController extends CController
     {
         $params = $this->request->inputs(['mobile']);
         $this->validate($params, [
-            'mobile' => "present|regex:/^1[345789][0-9]{9}$/"
+            'mobile' => "present|phone"
         ]);
 
         $user_id = $this->uid();
