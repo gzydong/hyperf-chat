@@ -19,18 +19,16 @@ return [
     'app_env'        => env('APP_ENV', 'dev'),
     'scan_cacheable' => env('SCAN_CACHEABLE', false),
 
-    'ip_address' => env('IP_ADDRESS', ''),
-
-    // 运行模式（预留）
-    'run_mode'   => 'cluster',
-
     // 域名相关配置
-    'domain'     => [
+    'domain'         => [
         'web_url' => env('WEB_URL', ''),//Web 端首页地址
         'img_url' => env('IMG_URL', ''),//设置文件图片访问的域名
     ],
 
-    'upload_dir' => env('UPLOAD_PATH', ''),
+    'upload_dir'  => env('UPLOAD_PATH', ''),
+
+    // 管理员邮箱
+    'admin_email' => env('ADMIN_EMAIL', ''),
 
     StdoutLoggerInterface::class => [
         'log_level' => [

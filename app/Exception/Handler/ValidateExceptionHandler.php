@@ -23,22 +23,17 @@ class ValidateExceptionHandler extends ExceptionHandler
      */
     public function handle(Throwable $throwable, ResponseInterface $response)
     {
-        // 判断被捕获到的异常是希望被捕获的异常
-        if ($throwable instanceof ValidateException) {
-            // 格式化输出
-            $data = json_encode([
-                'code'    => $throwable->getCode(),
-                'message' => $throwable->getMessage(),
-                'data'    => []
-            ], JSON_UNESCAPED_UNICODE);
+        // 格式化输出
+        $data = json_encode([
+            'code'    => $throwable->getCode(),
+            'message' => $throwable->getMessage(),
+            'data'    => []
+        ], JSON_UNESCAPED_UNICODE);
 
-            // 阻止异常冒泡
-            $this->stopPropagation();
+        // 阻止异常冒泡
+        $this->stopPropagation();
 
-            return $response->withAddedHeader('content-type', 'application/json; charset=utf-8')->withStatus(200)->withBody(new SwooleStream($data));
-        }
-
-        return $response;
+        return $response->withAddedHeader('content-type', 'application/json; charset=utf-8')->withStatus(200)->withBody(new SwooleStream($data));
     }
 
     /**
@@ -49,6 +44,6 @@ class ValidateExceptionHandler extends ExceptionHandler
      */
     public function isValid(Throwable $throwable): bool
     {
-        return true;
+        return $throwable instanceof ValidateException;
     }
 }

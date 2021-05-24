@@ -204,4 +204,15 @@ class AuthController extends CController
 
         return $this->response->success($data, '验证码发送成功...');
     }
+
+    /**
+     * 发送验证码
+     * @RequestMapping(path="test", methods="get")
+     */
+    public function test()
+    {
+        //$user = User::first();
+        //$name = $user->yuanodng;
+        var_dump($name);
+    }
 }

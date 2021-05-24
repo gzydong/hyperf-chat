@@ -119,13 +119,20 @@ function response()
     return container()->get(ResponseInterface::class);
 }
 
+
+function email()
+{
+    return container()->get(\App\Support\Mail::class);
+}
+
+
 /**
  * 从HTML文本中提取所有图片
  *
  * @param string $content HTML文本
  * @return array
  */
-function get_html_images($content)
+function get_html_images(string $content)
 {
     $pattern = "/<img.*?src=[\'|\"](.*?)[\'|\"].*?[\/]?>/";
     preg_match_all($pattern, htmlspecialchars_decode($content), $match);
@@ -147,7 +154,7 @@ function get_html_images($content)
  * @param string $day2 日期2
  * @return float|int
  */
-function diff_date($day1, $day2)
+function diff_date(string $day1, string $day2)
 {
     $second1 = strtotime($day1);
     $second2 = strtotime($day2);
@@ -180,7 +187,7 @@ function get_media_url(string $path)
  */
 function create_image_name(string $ext, int $width, int $height)
 {
-    return uniqid() . Str::random(16) . uniqid() . '_' . $width . 'x' . $height . '.' . $ext;
+    return uniqid() . Str::random() . '_' . $width . 'x' . $height . '.' . $ext;
 }
 
 /**
@@ -205,7 +212,7 @@ function replace_url_link(string $str)
  * @param int    $sort  排序方式
  * @return array
  */
-function arraysSort(array $array, $field, $sort = SORT_DESC)
+function arraysSort(array $array, string $field, $sort = SORT_DESC)
 {
     array_multisort(array_column($array, $field), $sort, $array);
     return $array;
@@ -214,20 +221,20 @@ function arraysSort(array $array, $field, $sort = SORT_DESC)
 /**
  * 判断0或正整数
  *
- * @param string $int    验证字符串
- * @param bool   $isZero 判断是否可为0
+ * @param string|int $value  验证字符串
+ * @param bool       $isZero 判断是否可为0
  * @return bool
  */
-function check_int($int, $isZero = false)
+function check_int($value, $isZero = false)
 {
     $reg = $isZero ? '/^[+]{0,1}(\d+)$/' : '/^[1-9]\d*$/';
-    return is_numeric($int) && preg_match($reg, $int);
+    return is_numeric($value) && preg_match($reg, $value);
 }
 
 /**
  * 解析英文逗号',' 拼接的 ID 字符串
  *
- * @param string $ids 字符串(例如; "1,2,3,4,5,6")
+ * @param string|int $ids 字符串(例如; "1,2,3,4,5,6")
  * @return array
  */
 function parse_ids($ids)
@@ -247,3 +254,5 @@ function push_amqp(ProducerMessage $message, bool $confirm = false, int $timeout
 {
     return container()->get(Producer::class)->produce($message, $confirm, $timeout);
 }
+
+
