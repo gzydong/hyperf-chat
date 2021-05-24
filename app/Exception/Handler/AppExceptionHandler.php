@@ -59,7 +59,6 @@ class AppExceptionHandler extends ExceptionHandler
     {
         $error = implode(':', [
             'error',
-            time(),
             md5($throwable->getFile() . $throwable->getCode() . $throwable->getLine()),
         ]);
 
