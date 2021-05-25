@@ -15,13 +15,18 @@ namespace App\Process;
 use Hyperf\AsyncQueue\Process\ConsumerProcess;
 use Hyperf\Process\Annotation\Process;
 
-///**
-// * @Process
-// */
+/**
+ * @Process
+ */
 class AsyncQueueConsumer extends ConsumerProcess
 {
     public function handle(): void
     {
 
+    }
+
+    public function isEnable($server): bool
+    {
+        return false;
     }
 }
