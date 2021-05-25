@@ -9,12 +9,13 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 /**
  * 测试相关控制器
  * @Controller()
+ *
  * @package App\Controller
  */
 class TestController extends AbstractController
 {
     /**
-     * @RequestMapping(path="indexss", methods="get")
+     * @RequestMapping(path="index", methods="get")
      */
     public function index()
     {

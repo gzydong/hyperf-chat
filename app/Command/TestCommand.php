@@ -49,9 +49,9 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
-        //$lock = LockRedis::getInstance();
+        $lock = LockRedis::getInstance();
         //var_dump($lock->delete('ttt'));
-        //var_dump($lock->lock('ttt', 180));
+        //var_dump($lock->lock('ttt', 180, 5));
 
         //$string = StringRedis::getInstance();
         //var_dump($string->set('yuandong', 'dong', 30));

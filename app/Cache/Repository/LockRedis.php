@@ -3,6 +3,8 @@
 namespace App\Cache\Repository;
 
 use App\Cache\Contracts\LockRedisInterface;
+use Swoole\Coroutine;
+use Exception;
 
 /**
  * Redis Lock
@@ -13,40 +15,33 @@ class LockRedis extends AbstractRedis implements LockRedisInterface
 {
     protected $prefix = 'rds-lock';
 
-    protected $lockValue = 1;
-
-    /**
-     * 获取是毫秒时间戳
-     *
-     * @return int
-     */
-    private function time()
-    {
-        return intval(microtime(true) * 1000);
-    }
+    protected $value = 1;
 
     /**
      * 获取 Redis 锁
      *
-     * @param string $key      锁标识
-     * @param int    $lockTime 过期时间/秒
-     * @param int    $timeout  获取超时/毫秒
+     * @param string $key     锁标识
+     * @param int    $expired 过期时间/秒
+     * @param int    $timeout 获取超时/秒，默认每隔 0.1 秒获取一次锁
      * @return bool
      */
-    public function lock(string $key, $lockTime = 1, $timeout = 0)
+    public function lock(string $key, $expired = 1, int $timeout = 0)
     {
         $lockName = $this->getCacheKey($key);
 
-        $start = $this->time();
+        // 重复获取次数
+        $retry = $timeout > 0 ? intdiv($timeout * 100, 10) : 1;
         do {
-            $lock = $this->redis()->set($lockName, $this->lockValue, ['nx', 'ex' => $lockTime]);
+            $lock = $this->redis()->set($lockName, $this->value, ['nx', 'ex' => $expired]);
             if ($lock || $timeout === 0) {
                 break;
             }
 
             // 默认 0.1 秒一次取锁
-            usleep(100000);
-        } while ($this->time() < $start + $timeout);
+            Coroutine::getCid() ? Coroutine::sleep(0.1) : usleep(100000);
+
+            $retry--;
+        } while ($retry);
 
         return $lock;
     }
@@ -67,6 +62,31 @@ class LockRedis extends AbstractRedis implements LockRedisInterface
             end
 LAU;
 
-        return $this->redis()->eval($script, [$this->getCacheKey($key), $this->lockValue], 1);
+        return $this->redis()->eval($script, [$this->getCacheKey($key), $this->value], 1);
+    }
+
+    /**
+     * 获取锁并执行
+     *
+     * @param \Closure $closure   闭包函数
+     * @param string   $lock_name 锁名
+     * @param int      $expired   过期时间/秒
+     * @param int      $timeout   获取超时/秒
+     * @return bool
+     * @throws Exception
+     */
+    public function try(\Closure $closure, string $lock_name, int $expired = 1, int $timeout = 0)
+    {
+        if (!$this->lock($lock_name, $expired, $timeout)) return false;
+
+        try {
+            call_user_func($closure);
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            $this->delete($lock_name);
+        }
+
+        return true;
     }
 }
