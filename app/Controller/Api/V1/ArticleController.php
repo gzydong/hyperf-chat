@@ -336,7 +336,7 @@ class ArticleController extends CController
     public function uploadArticleImage()
     {
         $file = $this->request->file('image');
-        if (!$file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return $this->response->fail();
         }
 
@@ -463,7 +463,7 @@ class ArticleController extends CController
         ]);
 
         $file = $this->request->file('annex');
-        if (!$file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return $this->response->fail('上传文件验证失败！');
         }
 

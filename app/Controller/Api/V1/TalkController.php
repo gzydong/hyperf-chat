@@ -487,7 +487,7 @@ class TalkController extends CController
         ]);
 
         $file = $this->request->file('img');
-        if (!$file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return $this->response->fail();
         }
 

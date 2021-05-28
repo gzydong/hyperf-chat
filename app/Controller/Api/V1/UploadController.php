@@ -98,7 +98,7 @@ class UploadController extends CController
             'split_num'   => 'required'
         ]);
 
-        if (!$file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return $this->response->fail();
         }
 
