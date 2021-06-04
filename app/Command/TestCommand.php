@@ -49,7 +49,7 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
-        $lock = LockRedis::getInstance();
+        //$lock = LockRedis::getInstance();
         //var_dump($lock->delete('ttt'));
         //var_dump($lock->lock('ttt', 180, 5));
 
@@ -143,5 +143,31 @@ class TestCommand extends HyperfCommand
 
         //SocketFdBindUser::getInstance()->bind(1, 2054);
         //SocketUserBindFds::getInstance()->bind(1, 2054);
+
+        $model1 = SocketUserBindFds::getInstance();
+        $model2 = FriendRemark::getInstance();
+
+        var_dump($model1 === SocketUserBindFds::getInstance());
+        var_dump($model2 === FriendRemark::getInstance());
+
+        var_dump(SocketUserBindFds::getInstance());
+        var_dump(FriendRemark::getInstance());
+
+        //SocketUserBindFds::getInstance();
+        //SocketUserBindFds::getInstance();
+        //SocketRoom::getInstance();
+        //FriendRemark::getInstance();
+        //SocketUserBindFds::getInstance();
+        //SocketRoom::getInstance();
+        //FriendRemark::getInstance();
+
+        //var_dump(SocketUserBindFds::getInstance());
+        //var_dump(SocketRoom::getInstance());
+        //var_dump(FriendRemark::getInstance());
+        //
+        //var_dump('------');
+        //var_dump(SocketUserBindFds::getInstance());
+        //var_dump(SocketRoom::getInstance());
+        //var_dump(FriendRemark::getInstance());
     }
 }

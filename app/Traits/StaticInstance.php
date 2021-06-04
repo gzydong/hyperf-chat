@@ -11,10 +11,6 @@ trait StaticInstance
 {
     private static $instance;
 
-    private function __construct()
-    {
-    }
-
     /**
      * 获取单例
      *
@@ -23,13 +19,9 @@ trait StaticInstance
     static public function getInstance()
     {
         if (is_null(static::$instance)) {
-            static::$instance = new static;
+            static::$instance = new static();
         }
 
         return static::$instance;
-    }
-
-    private function __clone()
-    {
     }
 }

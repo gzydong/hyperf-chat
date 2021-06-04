@@ -2,16 +2,18 @@
 
 namespace App\Cache\Repository;
 
-use App\Traits\StaticInstance;
 use Hyperf\Redis\Redis;
 
 abstract class AbstractRedis
 {
-    use StaticInstance;
-
     protected $prefix = 'rds';
 
     protected $name = '';
+
+    public static function getInstance()
+    {
+        return container()->get(static::class);
+    }
 
     /**
      * 获取 Redis 连接
