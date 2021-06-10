@@ -28,7 +28,7 @@ class CorsMiddleware implements MiddlewareInterface
 
         Context::set(ResponseInterface::class, $response);
 
-        if ($request->getMethod() == 'OPTIONS') {
+        if ($request->getMethod() == 'OPTIONS' || $request->getUri()->getPath() == '/favicon.ico') {
             return $response;
         }
 
