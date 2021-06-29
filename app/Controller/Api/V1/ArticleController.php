@@ -147,6 +147,7 @@ class ArticleController extends CController
      * @RequestMapping(path="del-article-class", methods="post")
      *
      * @return ResponseInterface
+     * @throws \Exception
      */
     public function delArticleClass()
     {
@@ -418,7 +419,7 @@ class ArticleController extends CController
         $params = $this->request->inputs(['article_id', 'tags']);
         $this->validate($params, [
             'article_id' => 'required|integer|min:0',
-            'tags'       => 'required|array'
+            'tags'       => 'present|array'
         ]);
 
         $isTrue = $this->articleService->updateArticleTag($this->uid(), (int)$params['article_id'], $params['tags']);

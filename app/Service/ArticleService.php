@@ -487,7 +487,7 @@ class ArticleService extends BaseService
      */
     public function updateArticleTag(int $uid, int $article_id, array $tags)
     {
-        return (bool)Article::where('id', $article_id)->where('user_id', $uid)->update(['tags_id' => implode(',', $tags)]);
+        return (bool)Article::where('id', $article_id)->where('user_id', $uid)->update(['tags_id' => implode(',', $tags), 'updated_at' => date('Y-m-d H:i:s')]);
     }
 
     /**

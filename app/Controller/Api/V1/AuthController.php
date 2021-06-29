@@ -61,8 +61,9 @@ class AuthController extends CController
 
         return $this->response->success([
             'authorize' => [
+                'type'         => 'Bearer',
                 'access_token' => $token,
-                'expires_in'   => $this->guard()->getJwtManager()->getTtl()
+                'expires_in'   => $this->guard()->getJwtManager()->getTtl(),
             ],
             'user_info' => [
                 'nickname' => $userInfo->nickname,
@@ -155,11 +156,12 @@ class AuthController extends CController
     public function refresh()
     {
         if ($this->guard()->guest()) {
-            return $this->response->fail('登录 token 刷新失败！');
+            return $this->response->fail('token 刷新失败！');
         }
 
         return $this->response->success([
             'authorize' => [
+                'type'   => 'Bearer',
                 'token'  => $this->guard()->refresh(),
                 'expire' => $this->guard()->getJwtManager()->getTtl()
             ]

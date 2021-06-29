@@ -288,6 +288,7 @@ class GroupService extends BaseService
      */
     public function quit(int $user_id, int $group_id)
     {
+        // 判断是否属于管理员
         if (Group::isManager($user_id, $group_id)) {
             return [false, 0];
         }

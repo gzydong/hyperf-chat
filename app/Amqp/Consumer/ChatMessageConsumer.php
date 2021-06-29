@@ -141,11 +141,14 @@ class ChatMessageConsumer extends ConsumerMessage
     public function onConsumeTalk(array $data, AMQPMessage $message): string
     {
         $source    = $data['data']['source'];
-        $fds       = $this->socketClientService->findUserFds($data['data']['sender']);
+        $fds       = [];
         $groupInfo = null;
 
         if ($source == 1) {// 私聊
-            $fds = array_merge($fds, $this->socketClientService->findUserFds($data['data']['receive']));
+            $fds = array_merge(
+                $this->socketClientService->findUserFds($data['data']['sender']),
+                $this->socketClientService->findUserFds($data['data']['receive'])
+            );
         } else if ($source == 2) {// 群聊
             $userIds = SocketRoom::getInstance()->getRoomMembers(strval($data['data']['receive']));
             foreach ($userIds as $uid) {

@@ -19,6 +19,8 @@ use App\Cache\SocketFdBindUser;
 use App\Cache\SocketRoom;
 use App\Cache\SocketUserBindFds;
 use App\Cache\UnreadTalk;
+use App\Model\Group\Group;
+use App\Model\Group\GroupMember;
 use App\Service\TalkService;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
@@ -144,14 +146,14 @@ class TestCommand extends HyperfCommand
         //SocketFdBindUser::getInstance()->bind(1, 2054);
         //SocketUserBindFds::getInstance()->bind(1, 2054);
 
-        $model1 = SocketUserBindFds::getInstance();
-        $model2 = FriendRemark::getInstance();
-
-        var_dump($model1 === SocketUserBindFds::getInstance());
-        var_dump($model2 === FriendRemark::getInstance());
-
-        var_dump(SocketUserBindFds::getInstance());
-        var_dump(FriendRemark::getInstance());
+        //$model1 = SocketUserBindFds::getInstance();
+        //$model2 = FriendRemark::getInstance();
+        //
+        //var_dump($model1 === SocketUserBindFds::getInstance());
+        //var_dump($model2 === FriendRemark::getInstance());
+        //
+        //var_dump(SocketUserBindFds::getInstance());
+        //var_dump(FriendRemark::getInstance());
 
         //SocketUserBindFds::getInstance();
         //SocketUserBindFds::getInstance();
@@ -169,5 +171,7 @@ class TestCommand extends HyperfCommand
         //var_dump(SocketUserBindFds::getInstance());
         //var_dump(SocketRoom::getInstance());
         //var_dump(FriendRemark::getInstance());
+
+        //var_dump(Group::isManager(2054,116));
     }
 }
