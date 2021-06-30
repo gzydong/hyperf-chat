@@ -49,7 +49,8 @@ class MailerTemplate
     public function errorNotice(Throwable $throwable)
     {
         return $this->view(config('view.engine'), 'emails.error-notice', [
-            'throwable' => $throwable->getTraceAsString()
+            'throwable' => $throwable->getTraceAsString(),
+            'message'   => $throwable->getMessage()
         ]);
     }
 }

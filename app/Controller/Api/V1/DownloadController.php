@@ -19,8 +19,8 @@ use App\Model\Article\ArticleAnnex;
 use App\Model\Chat\ChatRecord;
 use App\Model\Chat\ChatRecordsFile;
 use App\Model\Group\Group;
-use App\Service\UploadService;
 use Hyperf\HttpServer\Contract\ResponseInterface;
+use League\Flysystem\Filesystem;
 
 /**
  * Class DownloadController
@@ -31,15 +31,20 @@ use Hyperf\HttpServer\Contract\ResponseInterface;
  */
 class DownloadController extends CController
 {
+    private function getFilePath(string $path)
+    {
+        return container()->get(Filesystem::class)->getConfig()->get('root') . '/' . $path;
+    }
+
     /**
      * 下载用户聊天文件
      * @RequestMapping(path="user-chat-file", methods="get")
      *
      * @param ResponseInterface $response
-     * @param UploadService     $uploadService
+     * @param Filesystem        $filesystem
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function userChatFile(ResponseInterface $response, UploadService $uploadService)
+    public function userChatFile(ResponseInterface $response, Filesystem $filesystem)
     {
         $params = $this->request->inputs(['cr_id']);
         $this->validate($params, [
@@ -66,12 +71,12 @@ class DownloadController extends CController
             }
         }
 
-        $fileInfo = ChatRecordsFile::select(['save_dir', 'original_name'])->where('record_id', $params['cr_id'])->first();
-        if (!$fileInfo || !file_exists($uploadService->driver($fileInfo->save_dir))) {
+        $info = ChatRecordsFile::select(['save_dir', 'original_name'])->where('record_id', $params['cr_id'])->first();
+        if (!$info || !$filesystem->has($info->save_dir)) {
             return $this->response->fail('文件不存在或没有下载权限！');
         }
 
-        return $response->download($uploadService->driver($fileInfo->save_dir), $fileInfo->original_name);
+        return $response->download($this->getFilePath($info->save_dir), $info->original_name);
     }
 
     /**
@@ -79,10 +84,10 @@ class DownloadController extends CController
      * @RequestMapping(path="article-annex", methods="get")
      *
      * @param ResponseInterface $response
-     * @param UploadService     $uploadService
+     * @param Filesystem        $filesystem
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function articleAnnex(ResponseInterface $response, UploadService $uploadService)
+    public function articleAnnex(ResponseInterface $response, Filesystem $filesystem)
     {
         $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [
@@ -94,10 +99,10 @@ class DownloadController extends CController
             ->where('user_id', $this->uid())
             ->first();
 
-        if (!$info || !file_exists($uploadService->driver($info->save_dir))) {
+        if (!$info || !$filesystem->has($info->save_dir)) {
             return $this->response->fail('文件不存在或没有下载权限！');
         }
 
-        return $response->download($uploadService->driver($info->save_dir), $info->original_name);
+        return $response->download($this->getFilePath($info->save_dir), $info->original_name);
     }
 }

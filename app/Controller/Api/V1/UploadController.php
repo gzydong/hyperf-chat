@@ -17,12 +17,11 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Service\SplitUploadService;
-use App\Service\UploadService;
+use League\Flysystem\Filesystem;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * 上传控制器
- * Class UploadController
+ * 上传文件控制器
  * @Controller(path="/api/v1/upload")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -30,12 +29,6 @@ use Psr\Http\Message\ResponseInterface;
  */
 class UploadController extends CController
 {
-    /**
-     * @inject
-     * @var UploadService
-     */
-    private $uploadService;
-
     /**
      * @inject
      * @var SplitUploadService
@@ -48,14 +41,19 @@ class UploadController extends CController
      *
      * @return ResponseInterface
      */
-    public function fileStream()
+    public function fileStream(Filesystem $filesystem)
     {
         $fileStream = $this->request->post('fileStream', '');
-        $data       = base64_decode(str_replace(['data:image/png;base64,', ' '], ['', '+'], $fileStream));
+        if (empty($fileStream)) {
+            return $this->response->fail();
+        }
 
-        $path = '/media/images/avatar/' . date('Ymd') . '/' . uniqid() . date('His') . '.png';
-        $this->uploadService->makeDirectory($this->uploadService->driver('/media/images/avatar/' . date('Ymd') . '/'));
-        @file_put_contents($this->uploadService->driver($path), $data);
+        $path = 'media/images/avatar/' . date('Ymd') . '/' . create_random_filename('png');
+        try {
+            $filesystem->write($path, base64_decode(str_replace(['data:image/png;base64,', ' '], ['', '+'], $fileStream)));
+        } catch (\Exception $e) {
+            return $this->response->fail();
+        }
 
         return $this->response->success(['avatar' => get_media_url($path)]);
     }
@@ -105,7 +103,7 @@ class UploadController extends CController
         $user_id   = $this->uid();
         $uploadRes = $this->splitUploadService->upload($user_id, $file, $params['hash'], intval($params['split_index']), intval($params['size']));
         if (!$uploadRes) {
-            return $this->response->fail('上传文件失败！');
+            return $this->response->fail('上传文件失败111！');
         }
 
         if (($params['split_index'] + 1) == $params['split_num']) {

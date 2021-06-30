@@ -70,6 +70,7 @@
                     </strong>
                 </div>
                 <div style="margin-bottom:30px;">
+                    <p>{{$message}}</p>
                     <pre>{{$throwable}}</pre>
                 </div>
             </div>

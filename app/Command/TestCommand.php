@@ -24,6 +24,7 @@ use App\Model\Group\GroupMember;
 use App\Service\TalkService;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
+use League\Flysystem\Filesystem;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -173,5 +174,7 @@ class TestCommand extends HyperfCommand
         //var_dump(FriendRemark::getInstance());
 
         //var_dump(Group::isManager(2054,116));
+
+        var_dump(pathinfo('spring-boot相关',PATHINFO_EXTENSION));
     }
 }

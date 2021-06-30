@@ -21,14 +21,12 @@ return [
 
     // 域名相关配置
     'domain'         => [
-        'web_url' => env('WEB_URL', ''),//Web 端首页地址
-        'img_url' => env('IMG_URL', ''),//设置文件图片访问的域名
+        'web_url' => env('WEB_URL', ''),// Web 端首页地址
+        'img_url' => env('IMG_URL', ''),// 设置文件图片访问的域名
     ],
 
-    'upload_dir'  => env('UPLOAD_PATH', ''),
-
     // 管理员邮箱
-    'admin_email' => env('ADMIN_EMAIL', ''),
+    'admin_email'    => env('ADMIN_EMAIL', ''),
 
     StdoutLoggerInterface::class => [
         'log_level' => [

@@ -17,7 +17,6 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use Hyperf\Utils\Str;
 use Psr\Http\Message\ResponseInterface;
 use App\Model\EmoticonDetail;
 use App\Model\FileSplitUpload;
@@ -26,9 +25,9 @@ use App\Model\UsersChatList;
 use App\Model\UsersFriend;
 use App\Model\Group\Group;
 use App\Service\TalkService;
-use App\Service\UploadService;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Constants\SocketConstants;
+use League\Flysystem\Filesystem;
 
 /**
  * Class TalkController
@@ -475,10 +474,10 @@ class TalkController extends CController
      * 上传聊天对话图片（待优化）
      * @RequestMapping(path="send-image", methods="post")
      *
-     * @param UploadService $uploadService
+     * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function sendImage(UploadService $uploadService)
+    public function sendImage(Filesystem $filesystem)
     {
         $params = $this->request->inputs(['source', 'receive_id']);
         $this->validate($params, [
@@ -496,11 +495,10 @@ class TalkController extends CController
             return $this->response->fail('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
         }
 
-        // 获取图片信息
-        $imgInfo = getimagesize($file->getRealPath());
-
-        $path = $uploadService->media($file, 'media/images/talks', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
-        if (!$path) {
+        try {
+            $path = 'media/images/talks/' . date('Ymd') . '/' . create_image_name($ext, getimagesize($file->getRealPath()));
+            $filesystem->write($path, file_get_contents($file->getRealPath()));
+        } catch (\Exception $e) {
             return $this->response->fail();
         }
 
@@ -593,10 +591,10 @@ class TalkController extends CController
      * 发送文件消息
      * @RequestMapping(path="send-file", methods="post")
      *
-     * @param UploadService $uploadService
+     * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function sendFile(UploadService $uploadService)
+    public function sendFile(Filesystem $filesystem)
     {
         $params = $this->request->inputs(['hash_name', 'receive_id', 'source']);
         $this->validate($params, [
@@ -612,12 +610,13 @@ class TalkController extends CController
             return $this->response->fail('文件不存在...');
         }
 
-        $file_hash_name = uniqid() . Str::random(10) . '.' . $file->file_ext;
-        $save_dir       = "files/talks/" . date('Ymd') . '/' . $file_hash_name;
+        $save_dir = "files/talks/" . date('Ymd') . '/' . create_random_filename($file->file_ext);
 
-        $uploadService->makeDirectory($uploadService->driver("files/talks/" . date('Ymd')));
-
-        @copy($uploadService->driver($file->save_dir), $uploadService->driver($save_dir));
+        try {
+            $filesystem->copy($file->save_dir, $save_dir);
+        } catch (\Exception $e) {
+            return $this->response->fail('文件不存在...');
+        }
 
         $record_id = $this->talkService->createFileMessage([
             'source'     => $params['source'],

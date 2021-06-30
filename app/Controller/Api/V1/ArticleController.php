@@ -16,8 +16,7 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Service\ArticleService;
-use App\Service\UploadService;
-use Hyperf\Utils\Str;
+use League\Flysystem\Filesystem;
 use Psr\Http\Message\ResponseInterface;
 use App\Cache\Repository\LockRedis;
 
@@ -35,12 +34,6 @@ class ArticleController extends CController
      * @var ArticleService
      */
     private $articleService;
-
-    /**
-     * @inject
-     * @var UploadService
-     */
-    private $uploadService;
 
     /**
      * 获取笔记分类列表
@@ -180,7 +173,6 @@ class ArticleController extends CController
 
         $lockKey = "article:sort_{$params['class_id']}_{$params['sort_type']}";
 
-        // 获取Redis锁
         $lock = LockRedis::getInstance();
         if ($lock->lock($lockKey, 3, 500)) {
             $isTrue = $this->articleService->articleClassSort($this->uid(), (int)$params['class_id'], (int)$params['sort_type']);
@@ -332,9 +324,10 @@ class ArticleController extends CController
      * 笔记图片上传接口
      * @RequestMapping(path="upload-article-image", methods="post")
      *
+     * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function uploadArticleImage()
+    public function uploadArticleImage(Filesystem $filesystem)
     {
         $file = $this->request->file('image');
         if (!$file || !$file->isValid()) {
@@ -346,10 +339,10 @@ class ArticleController extends CController
             return $this->response->fail('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
         }
 
-        $imgInfo = getimagesize($file->getRealPath());
-
-        $path = $this->uploadService->media($file, 'media/images/notes/', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
-        if (!$path) {
+        try {
+            $path = 'media/images/notes/' . date('Ymd') . '/' . create_image_name($ext, getimagesize($file->getRealPath()));
+            $filesystem->write($path, file_get_contents($file->getRealPath()));
+        } catch (\Exception $e) {
             return $this->response->fail();
         }
 
@@ -456,7 +449,7 @@ class ArticleController extends CController
      *
      * @return ResponseInterface
      */
-    public function uploadArticleAnnex()
+    public function uploadArticleAnnex(Filesystem $filesystem)
     {
         $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
@@ -469,23 +462,22 @@ class ArticleController extends CController
         }
 
         $annex = [
-            'file_suffix'   => $file->getExtension(),
+            'file_suffix'   => pathinfo($file->getClientFilename(), PATHINFO_EXTENSION),
             'file_size'     => $file->getSize(),
             'save_dir'      => '',
             'original_name' => $file->getClientFilename()
         ];
 
-        $path = $this->uploadService->media($file,
-            'files/notes/' . date('Ymd'),
-            "[{$annex['file_suffix']}]" . uniqid() . Str::random(16) . '.' . 'tmp'
-        );
-
-        if (!$path) {
+        try {
+            $path = 'files/notes/' . date('Ymd') . '/' . "[{$annex['file_suffix']}]" . create_random_filename('tmp');
+            $filesystem->write($path, file_get_contents($file->getRealPath()));
+        } catch (\Exception $e) {
             return $this->response->fail();
         }
 
         $annex['save_dir'] = $path;
         $annex['id']       = $this->articleService->insertArticleAnnex($this->uid(), (int)$params['article_id'], $annex);
+
         if (!$annex['id']) {
             return $this->response->fail('附件上传失败，请稍后再试！');
         }

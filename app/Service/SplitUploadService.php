@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Model\FileSplitUpload;
 use Hyperf\Utils\Str;
 use Hyperf\HttpMessage\Upload\UploadedFile;
+use League\Flysystem\Filesystem;
 
 /**
  * 文件拆分上传服务
@@ -63,18 +64,12 @@ class SplitUploadService
             ->where([['user_id', '=', $user_id], ['hash_name', '=', $hashName], ['file_type', '=', 1]])
             ->first();
 
-        if (!$fileInfo) {
-            return false;
-        }
+        if (!$fileInfo) return false;
 
-        // 保存文件名及保存文件相对目录
-        $fileName      = "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp";
-        $uploadService = make(UploadService::class);
-
-        $uploadService->makeDirectory($uploadService->driver("tmp/{$hashName}"));
-        $file->moveTo(sprintf('%s/%s', $uploadService->driver("tmp/{$hashName}"), $fileName));
-
-        if (!$file->isMoved()) {
+        $save_path = "tmp/{$hashName}/" . "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp";
+        try {
+            container()->get(Filesystem::class)->write($save_path, file_get_contents($file->getRealPath()));
+        } catch (\Exception $e) {
             return false;
         }
 
@@ -87,7 +82,7 @@ class SplitUploadService
                 'original_name' => $fileInfo->original_name,
                 'split_index'   => $split_index,
                 'split_num'     => $fileInfo->split_num,
-                'save_dir'      => sprintf('%s/%s', "tmp/{$hashName}", $fileName),
+                'save_dir'      => $save_path,
                 'file_ext'      => $fileInfo->file_ext,
                 'file_size'     => $fileSize,
                 'upload_at'     => time(),
@@ -112,9 +107,7 @@ class SplitUploadService
             ->where('file_type', 1)
             ->first();
 
-        if (!$fileInfo) {
-            return false;
-        }
+        if (!$fileInfo) return false;
 
         $files = FileSplitUpload::where('user_id', $user_id)
             ->where('hash_name', $hash_name)
@@ -122,30 +115,27 @@ class SplitUploadService
             ->orderBy('split_index', 'asc')
             ->get(['split_index', 'save_dir'])->toArray();
 
-        if (!$files) {
-            return false;
-        }
+        if (!$files || count($files) != $fileInfo->split_num) return false;
 
-        if (count($files) != $fileInfo->split_num) {
-            return false;
-        }
+        $file_merge = "tmp/{$hash_name}/{$fileInfo->original_name}.tmp";
 
-        $fileMerge     = "tmp/{$hash_name}/{$fileInfo->original_name}.tmp";
-        $uploadService = make(UploadService::class);
-
-        // 文件合并
-        $merge_save_path = $uploadService->driver($fileMerge);
+        $filesystem = container()->get(Filesystem::class);
+        $root_path  = $filesystem->getConfig()->get('root');
         foreach ($files as $file) {
-            file_put_contents($merge_save_path, file_get_contents($uploadService->driver($file['save_dir'])), FILE_APPEND);
+            file_put_contents(
+                "{$root_path}/{$file_merge}",
+                $filesystem->read($file['save_dir']),
+                FILE_APPEND
+            );
         }
 
         FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext', 'file_size'])
             ->where('user_id', $user_id)->where('hash_name', $hash_name)
             ->where('file_type', 1)
-            ->update(['save_dir' => $fileMerge]);
+            ->update(['save_dir' => $file_merge]);
 
         return [
-            'path'          => $fileMerge,
+            'path'          => $file_merge,
             'tmp_file_name' => "{$fileInfo->original_name}.tmp",
             'original_name' => $fileInfo->original_name,
             'file_size'     => $fileInfo->file_size

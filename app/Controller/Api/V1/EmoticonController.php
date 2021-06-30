@@ -19,7 +19,7 @@ use App\Constants\ResponseCode;
 use App\Model\Emoticon;
 use App\Model\EmoticonDetail;
 use App\Service\EmoticonService;
-use App\Service\UploadService;
+use League\Flysystem\Filesystem;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -143,10 +143,10 @@ class EmoticonController extends CController
      * 自定义上传表情包
      * @RequestMapping(path="upload-emoticon", methods="post")
      *
-     * @param UploadService $uploadService
+     * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function uploadEmoticon(UploadService $uploadService)
+    public function uploadEmoticon(Filesystem $filesystem)
     {
         $file = $this->request->file('emoticon');
         if (!$file->isValid()) {
@@ -164,20 +164,16 @@ class EmoticonController extends CController
             );
         }
 
-        // 读取图片信息
-        $imgInfo = @getimagesize($file->getRealPath());
-        if (!$imgInfo) {
-            return $this->response->fail('表情包上传失败！');
-        }
-
-        $save_path = $uploadService->media($file, 'media/images/emoticon', create_image_name($ext, $imgInfo[0], $imgInfo[1]));
-        if (!$save_path) {
+        try {
+            $path = 'media/images/emoticon/' . date('Ymd') . '/' . create_image_name($ext, getimagesize($file->getRealPath()));
+            $filesystem->write($path, file_get_contents($file->getRealPath()));
+        } catch (\Exception $e) {
             return $this->response->fail('图片上传失败！');
         }
 
         $result = EmoticonDetail::create([
             'user_id'     => $this->uid(),
-            'url'         => $save_path,
+            'url'         => $path,
             'file_suffix' => $ext,
             'file_size'   => $file->getSize(),
             'created_at'  => time()

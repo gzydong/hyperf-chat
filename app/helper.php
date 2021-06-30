@@ -180,14 +180,13 @@ function get_media_url(string $path)
 /**
  * 随机生成图片名
  *
- * @param string $ext    图片后缀名
- * @param int    $width  图片宽度
- * @param int    $height 图片高度
+ * @param string $ext      图片后缀名
+ * @param array  $filesize 图片文件大小信息
  * @return string
  */
-function create_image_name(string $ext, int $width, int $height)
+function create_image_name(string $ext, array $filesize)
 {
-    return uniqid() . Str::random() . '_' . $width . 'x' . $height . '.' . $ext;
+    return uniqid() . Str::random() . '_' . $filesize[0] . 'x' . $filesize[1] . '.' . $ext;
 }
 
 /**
@@ -255,4 +254,14 @@ function push_amqp(ProducerMessage $message, bool $confirm = false, int $timeout
     return container()->get(Producer::class)->produce($message, $confirm, $timeout);
 }
 
-
+/**
+ * 生成随机文件名
+ *
+ * @param string $ext 文件后缀名
+ * @return string
+ */
+function create_random_filename(string $ext)
+{
+    $ext = $ext ? '.' . $ext : '';
+    return Str::random(10) . uniqid() . $ext;
+}
