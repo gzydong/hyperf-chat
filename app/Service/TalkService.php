@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Cache\ServerRunID;
+use App\Constants\FileMediaType;
 use Exception;
 use App\Model\User;
 use App\Model\UsersChatList;
@@ -677,11 +678,11 @@ class TalkService extends BaseService
     /**
      * 创建图片消息
      *
-     * @param $message
-     * @param $fileInfo
+     * @param array $message
+     * @param array $fileInfo
      * @return bool|int
      */
-    public function createImgMessage($message, $fileInfo)
+    public function createImgMessage(array $message, array $fileInfo)
     {
         Db::beginTransaction();
         try {
@@ -693,7 +694,9 @@ class TalkService extends BaseService
             }
 
             $fileInfo['record_id']  = $insert->id;
+            $fileInfo['file_type']  = FileMediaType::getMediaType($fileInfo['file_suffix']);
             $fileInfo['created_at'] = date('Y-m-d H:i:s');
+
             if (!ChatRecordsFile::create($fileInfo)) {
                 throw new Exception('插入聊天记录(文件消息)失败...');
             }

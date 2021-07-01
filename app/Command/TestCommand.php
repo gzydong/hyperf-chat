@@ -19,6 +19,7 @@ use App\Cache\SocketFdBindUser;
 use App\Cache\SocketRoom;
 use App\Cache\SocketUserBindFds;
 use App\Cache\UnreadTalk;
+use App\Constants\FileMediaType;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Service\TalkService;
@@ -175,6 +176,6 @@ class TestCommand extends HyperfCommand
 
         //var_dump(Group::isManager(2054,116));
 
-        var_dump(pathinfo('spring-boot相关',PATHINFO_EXTENSION));
+        echo FileMediaType::getMediaType('png');
     }
 }

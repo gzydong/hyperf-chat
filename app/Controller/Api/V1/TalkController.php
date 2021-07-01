@@ -512,7 +512,6 @@ class TalkController extends CController
             'receive_id' => $params['receive_id'],
         ], [
             'user_id'       => $user_id,
-            'file_type'     => 1,
             'file_suffix'   => $ext,
             'file_size'     => $file->getSize(),
             'save_dir'      => $path,
@@ -626,7 +625,6 @@ class TalkController extends CController
         ], [
             'user_id'       => $user_id,
             'file_source'   => 1,
-            'file_type'     => 4,
             'original_name' => $file->original_name,
             'file_suffix'   => $file->file_ext,
             'file_size'     => $file->file_size,
@@ -684,7 +682,6 @@ class TalkController extends CController
             'receive_id' => $params['receive_id'],
         ], [
             'user_id'       => $user_id,
-            'file_type'     => 1,
             'file_suffix'   => $emoticon->file_suffix,
             'file_size'     => $emoticon->file_size,
             'save_dir'      => $emoticon->url,
