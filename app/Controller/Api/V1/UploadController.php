@@ -103,7 +103,7 @@ class UploadController extends CController
         $user_id   = $this->uid();
         $uploadRes = $this->splitUploadService->upload($user_id, $file, $params['hash'], intval($params['split_index']), intval($params['size']));
         if (!$uploadRes) {
-            return $this->response->fail('上传文件失败111！');
+            return $this->response->fail('上传文件失败！');
         }
 
         if (($params['split_index'] + 1) == $params['split_num']) {

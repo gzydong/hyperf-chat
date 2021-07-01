@@ -40,7 +40,7 @@ class ValidatorFactoryResolvedListener implements ListenerInterface
         $validatorFactory->extend('phone', function ($attribute, $value) {
             if (!is_string($value)) return false;
 
-            return (bool)preg_match('/^1[345789][0-9]{9}$/', $value);
+            return (bool)preg_match('/^1[3456789][0-9]{9}$/', $value);
         });
     }
 }
