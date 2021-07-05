@@ -176,11 +176,11 @@ class TalkController extends CController
 
     /**
      * 设置消息免打扰状态
-     * @RequestMapping(path="set-not-disturb", methods="post")
+     * @RequestMapping(path="disturb", methods="post")
      *
      * @return ResponseInterface
      */
-    public function setNotDisturb()
+    public function disturb()
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'is_disturb']);
         $this->validate($params, [

@@ -37,7 +37,7 @@ class ArticleController extends CController
 
     /**
      * 获取笔记分类列表
-     * @RequestMapping(path="article-class", methods="get")
+     * @RequestMapping(path="classifys", methods="get")
      *
      * @return ResponseInterface
      */
@@ -50,7 +50,7 @@ class ArticleController extends CController
 
     /**
      * 获取笔记标签列表
-     * @RequestMapping(path="article-tags", methods="get")
+     * @RequestMapping(path="tags", methods="get")
      *
      * @return ResponseInterface
      */
@@ -63,7 +63,7 @@ class ArticleController extends CController
 
     /**
      * 获取笔记列表
-     * @RequestMapping(path="article-list", methods="get")
+     * @RequestMapping(path="search", methods="get")
      *
      * @return ResponseInterface
      */
@@ -97,7 +97,7 @@ class ArticleController extends CController
 
     /**
      * 获取笔记详情
-     * @RequestMapping(path="article-detail", methods="get")
+     * @RequestMapping(path="detail", methods="get")
      *
      * @return ResponseInterface
      */
@@ -115,7 +115,7 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记分类
-     * @RequestMapping(path="edit-article-class", methods="post")
+     * @RequestMapping(path="classify/editor", methods="post")
      *
      * @return ResponseInterface
      */
@@ -137,7 +137,7 @@ class ArticleController extends CController
 
     /**
      * 删除笔记分类
-     * @RequestMapping(path="del-article-class", methods="post")
+     * @RequestMapping(path="classify/delete", methods="post")
      *
      * @return ResponseInterface
      * @throws \Exception
@@ -158,7 +158,7 @@ class ArticleController extends CController
 
     /**
      * 笔记分类列表排序接口
-     * @RequestMapping(path="article-class-sort", methods="post")
+     * @RequestMapping(path="classify/sort", methods="post")
      *
      * @return ResponseInterface
      * @throws \Exception
@@ -189,7 +189,7 @@ class ArticleController extends CController
 
     /**
      * 笔记分类合并接口
-     * @RequestMapping(path="merge-article-class", methods="post")
+     * @RequestMapping(path="classify/merge", methods="post")
      *
      * @return ResponseInterface
      */
@@ -210,7 +210,7 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记标签
-     * @RequestMapping(path="edit-article-tag", methods="post")
+     * @RequestMapping(path="tag/editor", methods="post")
      *
      * @return ResponseInterface
      */
@@ -251,7 +251,7 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记
-     * @RequestMapping(path="edit-article", methods="post")
+     * @RequestMapping(path="editor", methods="post")
      *
      * @return ResponseInterface
      */
@@ -282,7 +282,7 @@ class ArticleController extends CController
 
     /**
      * 删除笔记
-     * @RequestMapping(path="delete-article", methods="post")
+     * @RequestMapping(path="delete", methods="post")
      *
      * @return ResponseInterface
      */
@@ -302,7 +302,7 @@ class ArticleController extends CController
 
     /**
      * 恢复删除笔记
-     * @RequestMapping(path="recover-article", methods="post")
+     * @RequestMapping(path="recover", methods="post")
      *
      * @return ResponseInterface
      */
@@ -322,7 +322,7 @@ class ArticleController extends CController
 
     /**
      * 笔记图片上传接口
-     * @RequestMapping(path="upload-article-image", methods="post")
+     * @RequestMapping(path="upload-image", methods="post")
      *
      * @param Filesystem $filesystem
      * @return ResponseInterface
@@ -353,7 +353,7 @@ class ArticleController extends CController
 
     /**
      * 移动笔记至指定分类
-     * @RequestMapping(path="move-article", methods="post")
+     * @RequestMapping(path="move", methods="post")
      *
      * @return ResponseInterface
      */
@@ -378,11 +378,11 @@ class ArticleController extends CController
 
     /**
      * 笔记标记星号接口
-     * @RequestMapping(path="set-asterisk-article", methods="post")
+     * @RequestMapping(path="asterisk", methods="post")
      *
      * @return ResponseInterface
      */
-    public function setAsteriskArticle()
+    public function setAsterisk()
     {
         $params = $this->request->inputs(['article_id', 'type']);
         $this->validate($params, [
@@ -403,7 +403,7 @@ class ArticleController extends CController
 
     /**
      * 更新笔记关联标签ID
-     * @RequestMapping(path="update-article-tag", methods="post")
+     * @RequestMapping(path="update-tag", methods="post")
      *
      * @return ResponseInterface
      */
@@ -424,7 +424,7 @@ class ArticleController extends CController
 
     /**
      * 永久删除笔记文章
-     * @RequestMapping(path="forever-delete-article", methods="post")
+     * @RequestMapping(path="forever-delete", methods="post")
      *
      * @return ResponseInterface
      * @throws \Exception
@@ -445,7 +445,7 @@ class ArticleController extends CController
 
     /**
      * 上传笔记附件
-     * @RequestMapping(path="upload-article-annex", methods="post")
+     * @RequestMapping(path="annex/upload", methods="post")
      *
      * @return ResponseInterface
      */
@@ -487,7 +487,7 @@ class ArticleController extends CController
 
     /**
      * 删除笔记附件
-     * @RequestMapping(path="delete-article-annex", methods="post")
+     * @RequestMapping(path="annex/delete", methods="post")
      *
      * @return ResponseInterface
      */
@@ -507,7 +507,7 @@ class ArticleController extends CController
 
     /**
      * 恢复笔记附件
-     * @RequestMapping(path="recover-article-annex", methods="post")
+     * @RequestMapping(path="annex/recover", methods="post")
      *
      * @return ResponseInterface
      */
@@ -527,7 +527,7 @@ class ArticleController extends CController
 
     /**
      * 获取附件回收站列表
-     * @RequestMapping(path="recover-annex-list", methods="get")
+     * @RequestMapping(path="annex/recover-list", methods="get")
      *
      * @return ResponseInterface
      */
@@ -552,7 +552,7 @@ class ArticleController extends CController
 
     /**
      * 永久删除笔记附件(从已删除附件中永久删除)
-     * @RequestMapping(path="forever-delete-annex", methods="post")
+     * @RequestMapping(path="annex/forever-delete", methods="post")
      *
      * @return ResponseInterface
      * @throws \Exception
