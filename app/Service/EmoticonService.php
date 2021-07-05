@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
-use App\Model\Chat\ChatRecord;
-use App\Model\Chat\ChatRecordsFile;
-use App\Model\EmoticonDetail;
+use App\Constants\TalkMsgType;
+use App\Constants\TalkType;
+use App\Model\Chat\TalkRecords;
+use App\Model\Chat\TalkRecordsFile;
+use App\Model\EmoticonItem;
 use App\Model\Group\Group;
 use App\Model\UsersEmoticon;
 
@@ -91,47 +93,42 @@ class EmoticonService extends BaseService
      */
     public function collect(int $user_id, int $record_id)
     {
-        $result = ChatRecord::where([
+        $result = TalkRecords::where([
             ['id', '=', $record_id],
-            ['msg_type', '=', 2],
+            ['msg_type', '=', TalkMsgType::FILE_MESSAGE],
             ['is_revoke', '=', 0],
-        ])->first(['id', 'source', 'msg_type', 'user_id', 'receive_id', 'is_revoke']);
+        ])->first(['id', 'talk_type', 'receiver_id', 'msg_type', 'user_id', 'is_revoke']);
 
-        if (!$result) {
-            return [false, []];
-        }
+        if (!$result) return [false, []];
 
-        if ($result->source == 1) {
-            if ($result->user_id != $user_id && $result->receive_id != $user_id) {
+        if ($result->talk_type == TalkType::PRIVATE_CHAT) {
+            if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
                 return [false, []];
             }
         } else {
-            if (!Group::isMember($result->receive_id, $user_id)) {
+            if (!Group::isMember($result->receiver_id, $user_id)) {
                 return [false, []];
             }
         }
 
-        $fileInfo = ChatRecordsFile::where('record_id', $result->id)->where('file_type', 1)->first([
+        $fileInfo = TalkRecordsFile::where('record_id', $result->id)->where('file_type', 1)->first([
             'file_suffix',
             'file_size',
             'save_dir'
         ]);
 
-        if (!$fileInfo) {
-            return [false, []];
-        }
+        if (!$fileInfo) return [false, []];
 
-        $result = EmoticonDetail::where('user_id', $user_id)->where('url', $fileInfo->save_dir)->first();
-        if ($result) {
-            return [false, []];
-        }
+        $result = EmoticonItem::where('user_id', $user_id)->where('url', $fileInfo->save_dir)->first();
+        if ($result) return [false, []];
 
-        $res = EmoticonDetail::create([
+        $res = EmoticonItem::create([
             'user_id'     => $user_id,
             'url'         => $fileInfo->save_dir,
             'file_suffix' => $fileInfo->file_suffix,
             'file_size'   => $fileInfo->file_size,
-            'created_at'  => time()
+            'created_at'  => date('Y-m-d H:i:s'),
+            'updated_at'  => date('Y-m-d H:i:s'),
         ]);
 
         return $res ? [true, ['media_id' => $res->id, 'src' => get_media_url($res->url)]] : [false, []];
@@ -147,7 +144,7 @@ class EmoticonService extends BaseService
      */
     public function deleteCollect(int $user_id, array $ids)
     {
-        return EmoticonDetail::whereIn('id', $ids)->where('user_id', $user_id)->delete();
+        return EmoticonItem::whereIn('id', $ids)->where('user_id', $user_id)->delete();
     }
 
     /**
@@ -158,7 +155,7 @@ class EmoticonService extends BaseService
      */
     public function getDetailsAll(array $where = [])
     {
-        $items = EmoticonDetail::where($where)->get(['id as media_id', 'url as src'])->toArray();
+        $items = EmoticonItem::where($where)->get(['id as media_id', 'url as src'])->toArray();
         foreach ($items as $k => $item) {
             $items[$k]['src'] = get_media_url($item['src']);
         }

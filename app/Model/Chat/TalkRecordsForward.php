@@ -17,9 +17,9 @@ use App\Model\BaseModel;
  * @property int    $created_at 转发时间
  * @package App\Model\Chat
  */
-class ChatRecordsForward extends BaseModel
+class TalkRecordsForward extends BaseModel
 {
-    protected $table = 'chat_records_forward';
+    protected $table = 'talk_records_forward';
 
     protected $fillable = [
         'record_id',

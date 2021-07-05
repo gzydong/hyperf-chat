@@ -11,13 +11,14 @@
 namespace App\Controller\Api\V1;
 
 use App\Cache\SocketRoom;
+use App\Constants\TalkType;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Model\UsersFriend;
-use App\Model\UsersChatList;
+use App\Model\TalkList;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Model\Group\GroupNotice;
@@ -28,7 +29,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class GroupController
- * @Controller(path="/api/v1/group")
+ * @Controller(prefix="/api/v1/group")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1
@@ -76,10 +77,10 @@ class GroupController extends CController
 
         // ... 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender'    => $user_id,                   // 发送者ID
-            'receive'   => (int)$data['group_id'],     // 接收者ID
-            'source'    => 2,                          // 接收者类型[1:好友;2:群组;]
-            'record_id' => (int)$data['record_id']
+            'sender_id'   => $user_id,
+            'receiver_id' => (int)$data['group_id'],
+            'talk_type'   => TalkType::GROUP_CHAT,
+            'record_id'   => (int)$data['record_id']
         ]));
 
         return $this->response->success([
@@ -141,10 +142,10 @@ class GroupController extends CController
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender'    => $user_id,                     // 发送者ID
-            'receive'   => (int)$params['group_id'],     // 接收者ID
-            'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
-            'record_id' => $record_id
+            'sender_id'   => $user_id,
+            'receiver_id' => (int)$params['group_id'],
+            'talk_type'   => TalkType::GROUP_CHAT,
+            'record_id'   => $record_id
         ]));
 
         return $this->response->success([], '好友已成功加入群聊...');
@@ -174,10 +175,10 @@ class GroupController extends CController
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender'    => $user_id,                     // 发送者ID
-            'receive'   => (int)$params['group_id'],     // 接收者ID
-            'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
-            'record_id' => $record_id
+            'sender_id'   => $user_id,
+            'receiver_id' => (int)$params['group_id'],
+            'talk_type'   => TalkType::GROUP_CHAT,
+            'record_id'   => $record_id
         ]));
 
         return $this->response->success([], '已成功退出群组...');
@@ -245,10 +246,10 @@ class GroupController extends CController
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender'    => $user_id,                     // 发送者ID
-            'receive'   => (int)$params['group_id'],     // 接收者ID
-            'source'    => 2,                            // 接收者类型[1:好友;2:群组;]
-            'record_id' => $record_id
+            'sender_id'   => $user_id,
+            'receiver_id' => (int)$params['group_id'],
+            'talk_type'   => TalkType::GROUP_CHAT,
+            'record_id'   => $record_id
         ]));
 
         return $this->response->success([], '已成功退出群组...');
@@ -288,13 +289,13 @@ class GroupController extends CController
         return $this->response->success([
             'group_id'         => $groupInfo->id,
             'group_name'       => $groupInfo->group_name,
-            'group_profile'    => $groupInfo->profile,
+            'profile'          => $groupInfo->profile,
             'avatar'           => $groupInfo->avatar,
             'created_at'       => $groupInfo->created_at,
             'is_manager'       => $groupInfo->creator_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
             'visit_card'       => GroupMember::visitCard($user_id, $group_id),
-            'not_disturb'      => UsersChatList::where('uid', $user_id)->where('group_id', $group_id)->where('type', 2)->value('not_disturb') ?? 0,
+            'is_disturb'       => (int)TalkList::where('user_id', $user_id)->where('receiver_id', $group_id)->where('talk_type', TalkType::GROUP_CHAT)->value('is_disturb'),
             'notice'           => $notice ? $notice->toArray() : []
         ]);
     }

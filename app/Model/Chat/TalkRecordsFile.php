@@ -23,9 +23,9 @@ use App\Model\BaseModel;
  * @property string $created_at    上传时间
  * @package App\Model\Chat
  */
-class ChatRecordsFile extends BaseModel
+class TalkRecordsFile extends BaseModel
 {
-    protected $table = 'chat_records_file';
+    protected $table = 'talk_records_file';
 
     protected $fillable = [
         'record_id',

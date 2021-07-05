@@ -15,9 +15,9 @@ use App\Model\BaseModel;
  * @property string $created_at 删除时间
  * @package App\Model\Chat
  */
-class ChatRecordsDelete extends BaseModel
+class TalkRecordsDelete extends BaseModel
 {
-    protected $table = 'chat_records_delete';
+    protected $table = 'talk_records_delete';
 
     protected $fillable = [];
 

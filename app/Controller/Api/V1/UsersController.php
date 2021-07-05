@@ -24,7 +24,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class UsersController
- * @Controller(path="/api/v1/users")
+ * @Controller(prefix="/api/v1/users")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1

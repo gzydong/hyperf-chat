@@ -22,9 +22,11 @@ use App\Cache\UnreadTalk;
 use App\Constants\FileMediaType;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
+use App\Model\TalkList;
 use App\Service\TalkService;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
+use Hyperf\DbConnection\Db;
 use League\Flysystem\Filesystem;
 use Psr\Container\ContainerInterface;
 
@@ -175,7 +177,5 @@ class TestCommand extends HyperfCommand
         //var_dump(FriendRemark::getInstance());
 
         //var_dump(Group::isManager(2054,116));
-
-        echo FileMediaType::getMediaType('png');
     }
 }

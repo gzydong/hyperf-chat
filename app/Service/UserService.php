@@ -55,6 +55,7 @@ class UserService extends BaseService
         try {
             $data['password']   = Hash::make($data['password']);
             $data['created_at'] = date('Y-m-d H:i:s');
+            $data['updated_at'] = date('Y-m-d H:i:s');
 
             $result = User::create($data);
 

@@ -2,12 +2,15 @@
 
 namespace App\Service;
 
+use App\Constants\SocketConstants;
+use App\Constants\TalkMsgType;
+use App\Constants\TalkType;
 use Hyperf\Di\Annotation\Inject;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 use App\Amqp\Producer\ChatMessageProducer;
-use App\Model\Chat\ChatRecord;
+use App\Model\Chat\TalkRecords;
 use App\Model\Group\Group;
 use App\Model\UsersFriend;
 use App\Cache\LastMessage;
@@ -32,57 +35,57 @@ class MessageHandleService
     public function onTalk($server, Frame $frame, $data)
     {
         $user_id = $this->socketClientService->findFdUserId($frame->fd);
-        if ($user_id != $data['send_user']) {
+        if ($user_id != $data['sender_id']) {
             return;
         }
 
         // 验证消息类型 私聊|群聊
-        if (!in_array($data['source_type'], [1, 2])) {
+        if (!in_array($data['talk_type'], TalkType::getTypes())) {
             return;
         }
 
         // 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
-        if ($data['source_type'] == 1) {// 私信
+        if ($data['talk_type'] == TalkType::PRIVATE_CHAT) {
             // 判断发送者和接受者是否是好友关系
-            if (!UsersFriend::isFriend((int)$data['send_user'], (int)$data['receive_user'], true)) {
+            if (!UsersFriend::isFriend((int)$data['sender_id'], (int)$data['receiver_id'], true)) {
                 return;
             }
-        } else if ($data['source_type'] == 2) {// 群聊
+        } else if ($data['talk_type'] == TalkType::GROUP_CHAT) {
             // 判断是否属于群成员
-            if (!Group::isMember((int)$data['receive_user'], (int)$data['send_user'])) {
+            if (!Group::isMember((int)$data['receiver_id'], (int)$data['sender_id'])) {
                 return;
             }
         }
 
-        $result = ChatRecord::create([
-            'source'     => $data['source_type'],
-            'msg_type'   => 1,
-            'user_id'    => $data['send_user'],
-            'receive_id' => $data['receive_user'],
-            'content'    => htmlspecialchars($data['text_message']),
-            'created_at' => date('Y-m-d H:i:s'),
+        $result = TalkRecords::create([
+            'talk_type'   => $data['talk_type'],
+            'user_id'     => $data['sender_id'],
+            'receiver_id' => $data['receiver_id'],
+            'msg_type'    => TalkMsgType::TEXT_MESSAGE,
+            'content'     => htmlspecialchars($data['text_message']),
+            'created_at'  => date('Y-m-d H:i:s'),
+            'updated_at'  => date('Y-m-d H:i:s'),
         ]);
 
         if (!$result) return;
 
         // 判断是否私聊
-        if ($result->source == 1) {
+        if ($result->talk_type == TalkType::PRIVATE_CHAT) {
             // 设置好友消息未读数
-            UnreadTalk::getInstance()->increment($result->user_id, $result->receive_id);
+            UnreadTalk::getInstance()->increment($result->user_id, $result->receiver_id);
         }
 
         // 缓存最后一条聊天消息
-        LastMessage::getInstance()->save($result->source, $result->user_id, $result->receive_id, [
+        LastMessage::getInstance()->save($result->talk_type, $result->user_id, $result->receiver_id, [
             'text'       => mb_substr($result->content, 0, 30),
             'created_at' => $result->created_at
         ]);
 
-        // 推送消息
-        push_amqp(new ChatMessageProducer('event_talk', [
-            'sender'    => intval($data['send_user']),     // 发送者ID
-            'receive'   => intval($data['receive_user']),  // 接收者ID
-            'source'    => intval($data['source_type']),   // 接收者类型[1:好友;2:群组;]
-            'record_id' => $result->id
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
+            'sender_id'   => $result->user_id,
+            'receiver_id' => $result->receiver_id,
+            'talk_type'   => $result->talk_type,
+            'record_id'   => $result->id
         ]));
     }
 
@@ -92,12 +95,13 @@ class MessageHandleService
      * @param Response|Server $server
      * @param Frame           $frame
      * @param array|string    $data 解析后数据
+     * @return false
      */
     public function onKeyboard($server, Frame $frame, $data)
     {
-        push_amqp(new ChatMessageProducer('event_keyboard', [
-            'send_user'    => intval($data['send_user']),     // 发送者ID
-            'receive_user' => intval($data['receive_user']),  // 接收者ID
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_KEYBOARD, [
+            'sender_id'   => intval($data['sender_id']),
+            'receiver_id' => intval($data['receiver_id']),
         ]));
     }
 }

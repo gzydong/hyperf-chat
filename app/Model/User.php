@@ -18,7 +18,9 @@ use Qbhy\HyperfAuth\Authenticatable;
  * @property string  $avatar     头像
  * @property integer $gender     性别
  * @property string  $motto      座右铭
- * @property integer $created_at 注册时间
+ * @property string  $is_robot   是否机器人
+ * @property string  $created_at 注册时间
+ * @property string  $updated_at 更新时间
  * @package App\Model
  */
 class User extends BaseModel implements Authenticatable
@@ -35,7 +37,9 @@ class User extends BaseModel implements Authenticatable
         'password',
         'motto',
         'email',
-        'created_at'
+        'is_robot',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [];

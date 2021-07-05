@@ -7,10 +7,12 @@ namespace App\Model;
 /**
  * 表情包分组数据表模型
  *
- * @property int    $id         分组ID
- * @property string $name       分组名称
- * @property string $url        默认表情
- * @property string $created_at 创建时间
+ * @property integer $id            分组ID
+ * @property string  $name          分组名称
+ * @property string  $icon          分组图标
+ * @property integer $status        分组状态
+ * @property string  $created_at    创建时间
+ * @property string  $updated_at    更新时间
  * @package App\Model
  */
 class Emoticon extends BaseModel
@@ -21,6 +23,8 @@ class Emoticon extends BaseModel
 
     protected $casts = [
         'id'         => 'integer',
-        'created_at' => 'datetime'
+        'status'     => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }

@@ -17,14 +17,14 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Constants\ResponseCode;
 use App\Model\Emoticon;
-use App\Model\EmoticonDetail;
+use App\Model\EmoticonItem;
 use App\Service\EmoticonService;
 use League\Flysystem\Filesystem;
 use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class EmoticonController
- * @Controller(path="/api/v1/emoticon")
+ * @Controller(prefix="/api/v1/emoticon")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1
@@ -49,11 +49,11 @@ class EmoticonController extends CController
         $user_id      = $this->uid();
 
         if ($ids = $this->emoticonService->getInstallIds($user_id)) {
-            $items = Emoticon::whereIn('id', $ids)->get(['id', 'name', 'url']);
+            $items = Emoticon::whereIn('id', $ids)->get(['id', 'name', 'icon']);
             foreach ($items as $item) {
                 $emoticonList[] = [
                     'emoticon_id' => $item->id,
-                    'url'         => get_media_url($item->url),
+                    'url'         => get_media_url($item->icon),
                     'name'        => $item->name,
                     'list'        => $this->emoticonService->getDetailsAll([
                         ['emoticon_id', '=', $item->id],
@@ -80,12 +80,12 @@ class EmoticonController extends CController
      */
     public function getSystemEmoticon()
     {
-        $items = Emoticon::get(['id', 'name', 'url'])->toArray();
+        $items = Emoticon::get(['id', 'name', 'icon'])->toArray();
         if ($items) {
             $ids = $this->emoticonService->getInstallIds($this->uid());
             array_walk($items, function (&$item) use ($ids) {
                 $item['status'] = in_array($item['id'], $ids) ? 1 : 0;
-                $item['url']    = get_media_url($item['url']);
+                $item['icon']   = get_media_url($item['icon']);
             });
         }
 
@@ -107,36 +107,37 @@ class EmoticonController extends CController
         ]);
 
         $user_id = $this->uid();
+
+        // 移除表情包
         if ($params['type'] == 2) {
-            // 移除表情包
             $isTrue = $this->emoticonService->removeSysEmoticon($user_id, $params['emoticon_id']);
             if (!$isTrue) {
                 return $this->response->fail('移除表情包失败！');
             }
 
             return $this->response->success([], '移除表情包成功...');
-        } else {
-            // 添加表情包
-            $emoticonInfo = Emoticon::where('id', $params['emoticon_id'])->first(['id', 'name', 'url']);
-            if (!$emoticonInfo) {
-                return $this->response->fail('添加表情包失败！');
-            }
-
-            if (!$this->emoticonService->installSysEmoticon($user_id, $params['emoticon_id'])) {
-                return $this->response->fail('添加表情包失败！');
-            }
-
-            $data = [
-                'emoticon_id' => $emoticonInfo->id,
-                'url'         => get_media_url($emoticonInfo->url),
-                'name'        => $emoticonInfo->name,
-                'list'        => $this->emoticonService->getDetailsAll([
-                    ['emoticon_id', '=', $emoticonInfo->id]
-                ])
-            ];
-
-            return $this->response->success($data, '添加表情包成功...');
         }
+
+        // 添加表情包
+        $emoticonInfo = Emoticon::where('id', $params['emoticon_id'])->first(['id', 'name', 'icon']);
+        if (!$emoticonInfo) {
+            return $this->response->fail('添加表情包失败！');
+        }
+
+        if (!$this->emoticonService->installSysEmoticon($user_id, $params['emoticon_id'])) {
+            return $this->response->fail('添加表情包失败！');
+        }
+
+        $data = [
+            'emoticon_id' => $emoticonInfo->id,
+            'url'         => get_media_url($emoticonInfo->icon),
+            'name'        => $emoticonInfo->name,
+            'list'        => $this->emoticonService->getDetailsAll([
+                ['emoticon_id', '=', $emoticonInfo->id]
+            ])
+        ];
+
+        return $this->response->success($data, '添加表情包成功...');
     }
 
     /**
@@ -171,12 +172,12 @@ class EmoticonController extends CController
             return $this->response->fail('图片上传失败！');
         }
 
-        $result = EmoticonDetail::create([
+        $result = EmoticonItem::create([
             'user_id'     => $this->uid(),
             'url'         => $path,
             'file_suffix' => $ext,
             'file_size'   => $file->getSize(),
-            'created_at'  => time()
+            'created_at'  => date('Y-m-d H:i:s')
         ]);
 
         if (!$result) {
@@ -186,30 +187,6 @@ class EmoticonController extends CController
         return $this->response->success([
             'media_id' => $result->id,
             'src'      => get_media_url($result->url)
-        ]);
-    }
-
-    /**
-     * 收藏聊天图片的我的表情包
-     * @RequestMapping(path="collect-emoticon", methods="post")
-     *
-     * @return ResponseInterface
-     */
-    public function collectEmoticon()
-    {
-        $params = $this->request->inputs(['record_id']);
-        $this->validate($params, [
-            'record_id' => 'required|integer'
-        ]);
-
-        [$isTrue, $data] = $this->emoticonService->collect($this->uid(), $params['record_id']);
-
-        if (!$isTrue) {
-            return $this->response->fail('添加表情失败！');
-        }
-
-        return $this->response->success([
-            'emoticon' => $data
         ]);
     }
 

@@ -22,7 +22,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * 上传文件控制器
- * @Controller(path="/api/v1/upload")
+ * @Controller(prefix="/api/v1/upload")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1

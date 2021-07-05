@@ -22,7 +22,7 @@ use App\Cache\Repository\LockRedis;
 
 /**
  * Class ArticleController
- * @Controller(path="/api/v1/article")
+ * @Controller(prefix="/api/v1/article")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1

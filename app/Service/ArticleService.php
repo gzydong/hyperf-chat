@@ -210,23 +210,25 @@ class ArticleService extends BaseService
     /**
      * 删除笔记分类
      *
-     * @param int $uid      用户ID
+     * @param int $user_id  用户ID
      * @param int $class_id 分类ID
      * @return bool
      * @throws Exception
      */
-    public function delArticleClass(int $uid, int $class_id)
+    public function delArticleClass(int $user_id, int $class_id)
     {
-        if (!ArticleClass::where('id', $class_id)->where('user_id', $uid)->exists()) {
-            return false;
-        }
+        $result = ArticleClass::where('id', $class_id)->where('user_id', $user_id)->first(['id', 'sort']);
+        if (!$result) return false;
 
-        $count = Article::where('user_id', $uid)->where('class_id', $class_id)->count();
-        if ($count > 0) {
-            return false;
-        }
+        $count = Article::where('user_id', $user_id)->where('class_id', $class_id)->count();
+        if ($count > 0) return false;
 
-        return (bool)ArticleClass::where('id', $class_id)->where('user_id', $uid)->where('is_default', 0)->delete();
+        Db::transaction(function () use ($user_id, $class_id, $result) {
+            ArticleClass::where('id', $class_id)->where('user_id', $user_id)->where('is_default', 0)->delete();
+            ArticleClass::where('user_id', $user_id)->where('sort', '>', $result->sort)->decrement('sort');
+        });
+
+        return true;
     }
 
     /**

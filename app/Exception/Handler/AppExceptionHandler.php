@@ -30,13 +30,15 @@ class AppExceptionHandler extends ExceptionHandler
         $this->logger->error(sprintf('%s[%s] in %s', $throwable->getMessage(), $throwable->getLine(), $throwable->getFile()));
         $this->logger->error($throwable->getTraceAsString());
 
+        $isDev = config('app_env') == 'dev';
+
         $data = json_encode([
-            'code'    => ResponseCode::SERVER_ERROR,
-            'message' => 'Internal Server Error.',
-            'errors'  => config('app_env') == 'dev' ? $throwable->getTrace() : [],
+            'code'   => ResponseCode::SERVER_ERROR,
+            'error'  => $isDev ? $throwable->getMessage() : 'Internal Server Error.',
+            'traces' => $isDev ? $throwable->getTrace() : [],
         ], JSON_UNESCAPED_UNICODE);
 
-        $this->sendAdminEmail($throwable);
+        !$isDev && $this->sendAdminEmail($throwable);
 
         return $response->withHeader('Server', 'Lumen IM')->withStatus(500)->withBody(new SwooleStream($data));
     }
@@ -57,10 +59,6 @@ class AppExceptionHandler extends ExceptionHandler
      */
     public function sendAdminEmail(Throwable $throwable)
     {
-        if (config('app_env') != 'dev') {
-            return;
-        }
-
         $error = implode(':', [
             'error',
             md5($throwable->getFile() . $throwable->getCode() . $throwable->getLine()),

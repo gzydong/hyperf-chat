@@ -17,9 +17,9 @@ use App\Model\BaseModel;
  * @property string $created_at 创建时间
  * @package App\Model\Chat
  */
-class ChatRecordsCode extends BaseModel
+class TalkRecordsCode extends BaseModel
 {
-    protected $table = 'chat_records_code';
+    protected $table = 'talk_records_code';
 
     protected $fillable = [
         'record_id',

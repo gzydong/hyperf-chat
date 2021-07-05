@@ -88,7 +88,6 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
             push_amqp(new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
                 'user_id' => $user_id,
                 'status'  => 1,
-                'notify'  => '好友上线通知...'
             ]));
         }
     }
@@ -137,7 +136,6 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
             push_amqp(new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
                 'user_id' => $user_id,
                 'status'  => 0,
-                'notify'  => '好友离线通知通知...'
             ]));
         }
     }

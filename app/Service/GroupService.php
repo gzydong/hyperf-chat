@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Cache\LastMessage;
-use App\Model\Chat\ChatRecord;
-use App\Model\Chat\ChatRecordsInvite;
+use App\Constants\TalkMsgType;
+use App\Constants\TalkType;
+use App\Model\Chat\TalkRecords;
+use App\Model\Chat\TalkRecordsInvite;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
-use App\Model\UsersChatList;
+use App\Model\TalkList;
 use Hyperf\DbConnection\Db;
 use Exception;
 
@@ -41,13 +43,16 @@ class GroupService extends BaseService
                 'group_member.leader',
             ])->toArray();
 
-        $arr = UsersChatList::where([
-            ['uid', '=', $user_id],
-            ['type', '=', 2],
-        ])->get(['group_id', 'not_disturb'])->keyBy('group_id')->toArray();
+        $list = [];
+        if ($items) {
+            $list = TalkList::query()->where('user_id', $user_id)
+                ->where('talk_type', TalkType::GROUP_CHAT)
+                ->whereIn('receiver_id', array_column($items, 'id'))
+                ->get(['receiver_id', 'is_disturb'])->keyBy('receiver_id')->toArray();
+        }
 
         foreach ($items as $key => $item) {
-            $items[$key]['not_disturb'] = isset($arr[$item['id']]) ? $arr[$item['id']]['not_disturb'] : 0;
+            $items[$key]['is_disturb'] = isset($list[$item['id']]) ? $list[$item['id']]['is_disturb'] : 0;
         }
 
         return $items;
@@ -82,25 +87,20 @@ class GroupService extends BaseService
                 'created_at' => date('Y-m-d H:i:s')
             ]);
 
-            foreach ($friend_ids as $k => $uid) {
+            foreach ($friend_ids as $friend_id) {
                 $groupMember[] = [
                     'group_id'   => $insRes->id,
-                    'user_id'    => $uid,
-                    'leader'     => $user_id == $uid ? 2 : 0,
-                    'is_mute'    => 0,
-                    'is_quit'    => 0,
-                    'user_card'  => '',
+                    'user_id'    => $friend_id,
+                    'leader'     => $user_id == $friend_id ? 2 : 0,
                     'created_at' => date('Y-m-d H:i:s'),
                 ];
 
                 $chatList[] = [
-                    'type'       => 2,
-                    'uid'        => $uid,
-                    'friend_id'  => 0,
-                    'group_id'   => $insRes->id,
-                    'status'     => 1,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
+                    'talk_type'   => TalkType::GROUP_CHAT,
+                    'user_id'     => $friend_id,
+                    'receiver_id' => $insRes->id,
+                    'created_at'  => date('Y-m-d H:i:s'),
+                    'updated_at'  => date('Y-m-d H:i:s')
                 ];
             }
 
@@ -108,19 +108,20 @@ class GroupService extends BaseService
                 throw new Exception('创建群成员信息失败');
             }
 
-            if (!Db::table('users_chat_list')->insert($chatList)) {
+            if (!Db::table('talk_list')->insert($chatList)) {
                 throw new Exception('创建群成员的聊天列表失败');
             }
 
-            $result = ChatRecord::create([
-                'msg_type'   => 3,
-                'source'     => 2,
-                'user_id'    => 0,
-                'receive_id' => $insRes->id,
-                'created_at' => date('Y-m-d H:i:s')
+            $result = TalkRecords::create([
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'user_id'     => 0,
+                'receiver_id' => $insRes->id,
+                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'created_at'  => date('Y-m-d H:i:s'),
+                'updated_at'  => date('Y-m-d H:i:s')
             ]);
 
-            ChatRecordsInvite::create([
+            TalkRecordsInvite::create([
                 'record_id'       => $result->id,
                 'type'            => 1,
                 'operate_user_id' => $user_id,
@@ -133,7 +134,7 @@ class GroupService extends BaseService
             return [false, 0];
         }
 
-        LastMessage::getInstance()->save(2, $user_id, $insRes->id, [
+        LastMessage::getInstance()->save(TalkType::GROUP_CHAT, $user_id, $insRes->id, [
             'text'       => '[入群通知]',
             'created_at' => date('Y-m-d H:i:s')
         ]);
@@ -165,7 +166,7 @@ class GroupService extends BaseService
                 'is_quit'    => 1,
                 'deleted_at' => date('Y-m-d H:i:s'),
             ]);
-        }, 2);
+        });
 
         return true;
     }
@@ -192,34 +193,32 @@ class GroupService extends BaseService
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
         $members = GroupMember::where('group_id', $group_id)->whereIn('user_id', $friend_ids)->get(['id', 'user_id', 'is_quit'])->keyBy('user_id')->toArray();
-        $chatArr = UsersChatList::where('group_id', $group_id)->whereIn('uid', $friend_ids)->get(['id', 'uid', 'status'])->keyBy('uid')->toArray();
+        $chatArr = TalkList::where('talk_type', TalkType::GROUP_CHAT)
+            ->where('receiver_id', $group_id)
+            ->whereIn('user_id', $friend_ids)
+            ->get(['id', 'user_id', 'is_delete'])
+            ->keyBy('user_id')->toArray();
 
         foreach ($friend_ids as $uid) {
             if (!isset($members[$uid])) {
                 $insertArr[] = [
                     'group_id'   => $group_id,
                     'user_id'    => $uid,
-                    'leader'     => 0,
-                    'is_mute'    => 0,
-                    'is_quit'    => 0,
-                    'user_card'  => '',
                     'created_at' => date('Y-m-d H:i:s')
                 ];
-            } else if ($members[$uid]['status'] == 1) {
+            } else if ($members[$uid]['is_quit'] == 1) {
                 $updateArr[] = $members[$uid]['id'];
             }
 
             if (!isset($chatArr[$uid])) {
                 $insertArr1[] = [
-                    'type'       => 2,
-                    'uid'        => $uid,
-                    'friend_id'  => 0,
-                    'group_id'   => $group_id,
-                    'status'     => 1,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
+                    'talk_type'   => TalkType::GROUP_CHAT,
+                    'user_id'     => $uid,
+                    'receiver_id' => $group_id,
+                    'created_at'  => date('Y-m-d H:i:s'),
+                    'updated_at'  => date('Y-m-d H:i:s')
                 ];
-            } else if ($chatArr[$uid]['status'] == 0) {
+            } else if ($chatArr[$uid]['is_delete'] == 1) {
                 $updateArr1[] = $chatArr[$uid]['id'];
             }
         }
@@ -240,25 +239,26 @@ class GroupService extends BaseService
             }
 
             if ($updateArr1) {
-                UsersChatList::whereIn('id', $updateArr1)->update([
-                    'status'     => 1,
+                TalkList::whereIn('id', $updateArr1)->update([
+                    'is_delete'  => 1,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
 
             if ($insertArr1) {
-                Db::table('users_chat_list')->insert($insertArr1);
+                Db::table('talk_list')->insert($insertArr1);
             }
 
-            $result = ChatRecord::create([
-                'msg_type'   => 3,
-                'source'     => 2,
-                'user_id'    => 0,
-                'receive_id' => $group_id,
-                'created_at' => date('Y-m-d H:i:s')
+            $result = TalkRecords::create([
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'user_id'     => 0,
+                'receiver_id' => $group_id,
+                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'created_at'  => date('Y-m-d H:i:s'),
+                'updated_at'  => date('Y-m-d H:i:s')
             ]);
 
-            ChatRecordsInvite::create([
+            TalkRecordsInvite::create([
                 'record_id'       => $result->id,
                 'type'            => 1,
                 'operate_user_id' => $user_id,
@@ -271,7 +271,7 @@ class GroupService extends BaseService
             return [false, 0];
         }
 
-        LastMessage::getInstance()->save(2, $user_id, $group_id, [
+        LastMessage::getInstance()->save(TalkType::GROUP_CHAT, $user_id, $group_id, [
             'text'       => '[入群通知]',
             'created_at' => date('Y-m-d H:i:s')
         ]);
@@ -304,25 +304,32 @@ class GroupService extends BaseService
                 throw new Exception('更新记录失败...');
             }
 
-            $result = ChatRecord::create([
-                'msg_type'   => 3,
-                'source'     => 2,
-                'user_id'    => 0,
-                'receive_id' => $group_id,
-                'content'    => $user_id,
-                'created_at' => date('Y-m-d H:i:s')
+            $result = TalkRecords::create([
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'user_id'     => 0,
+                'receiver_id' => $group_id,
+                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'content'     => $user_id,
+                'created_at'  => date('Y-m-d H:i:s'),
+                'updated_at'  => date('Y-m-d H:i:s')
             ]);
 
             $record_id = $result->id;
 
-            ChatRecordsInvite::create([
+            TalkRecordsInvite::create([
                 'record_id'       => $result->id,
                 'type'            => 2,
                 'operate_user_id' => $user_id,
                 'user_ids'        => $user_id
             ]);
 
-            UsersChatList::where('uid', $user_id)->where('type', 2)->where('group_id', $group_id)->update(['status' => 0]);
+            TalkList::where([
+                ['talk_type', '=', TalkType::GROUP_CHAT],
+                ['user_id', '=', $user_id],
+                ['receiver_id', '=', $group_id],
+            ])->update([
+                'is_delete' => 1
+            ]);
 
             Db::commit();
         } catch (Exception $e) {
@@ -358,23 +365,24 @@ class GroupService extends BaseService
                 throw new Exception('更新记录失败...');
             }
 
-            $result = ChatRecord::create([
-                'msg_type'   => 3,
-                'source'     => 2,
-                'user_id'    => 0,
-                'receive_id' => $group_id,
-                'created_at' => date('Y-m-d H:i:s')
+            $result = TalkRecords::create([
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'user_id'     => 0,
+                'receiver_id' => $group_id,
+                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'created_at'  => date('Y-m-d H:i:s'),
+                'updated_at'  => date('Y-m-d H:i:s'),
             ]);
 
-            ChatRecordsInvite::create([
+            TalkRecordsInvite::create([
                 'record_id'       => $result->id,
                 'type'            => 3,
                 'operate_user_id' => $user_id,
                 'user_ids'        => implode(',', $member_ids)
             ]);
 
-            UsersChatList::whereIn('uid', $member_ids)->where('group_id', $group_id)->update([
-                'status'     => 0,
+            TalkList::whereIn('user_id', $member_ids)->where('receiver_id', $group_id)->where('talk_type', TalkType::GROUP_CHAT)->update([
+                'is_delete'  => 1,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
 

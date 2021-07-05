@@ -19,7 +19,7 @@ use App\Service\SmsCodeService;
 
 /**
  * 授权相关控制器
- * @Controller(path="/api/v1/auth")
+ * @Controller(prefix="/api/v1/auth")
  */
 class AuthController extends CController
 {

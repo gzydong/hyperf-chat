@@ -22,14 +22,14 @@ use App\Service\SocketClientService;
 use App\Service\UserService;
 use App\Constants\SocketConstants;
 use App\Model\UsersFriendsApply;
-use App\Model\UsersChatList;
+use App\Model\TalkList;
 use App\Cache\FriendApply;
 use App\Cache\FriendRemark;
 use App\Cache\ServerRunID;
 
 /**
  * Class ContactsController
- * @Controller(path="/api/v1/contacts")
+ * @Controller(prefix="/api/v1/contacts")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1
@@ -59,9 +59,8 @@ class ContactsController extends CController
         $rows = $this->contactsService->getContacts($this->uid());
         if ($rows) {
             $runArr = ServerRunID::getInstance()->getServerRunIdAll();
-            foreach ($rows as $k => $row) {
-                // 查询用户当前是否在线
-                $rows[$k]['online'] = $this->socketClientService->isOnlineAll($row['id'], $runArr);
+            foreach ($rows as $row) {
+                $row->is_online = $this->socketClientService->isOnlineAll($row->id, $runArr);
             }
         }
 
@@ -129,8 +128,8 @@ class ContactsController extends CController
         }
 
         // 删除好友会话列表
-        UsersChatList::delItem($user_id, $params['friend_id'], 2);
-        UsersChatList::delItem($params['friend_id'], $user_id, 2);
+        TalkList::delItem($user_id, $params['friend_id'], 2);
+        TalkList::delItem($params['friend_id'], $user_id, 2);
 
         // ... TODO 推送消息（待完善）
 

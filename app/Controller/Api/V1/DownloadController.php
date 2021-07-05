@@ -16,15 +16,15 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Model\Article\ArticleAnnex;
-use App\Model\Chat\ChatRecord;
-use App\Model\Chat\ChatRecordsFile;
+use App\Model\Chat\TalkRecords;
+use App\Model\Chat\TalkRecordsFile;
 use App\Model\Group\Group;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use League\Flysystem\Filesystem;
 
 /**
  * Class DownloadController
- * @Controller(path="/api/v1/download")
+ * @Controller(prefix="/api/v1/download")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1
@@ -51,7 +51,7 @@ class DownloadController extends CController
             'cr_id' => 'required|integer'
         ]);
 
-        $recordsInfo = ChatRecord::select(['msg_type', 'source', 'user_id', 'receive_id'])->where('id', $params['cr_id'])->first();
+        $recordsInfo = TalkRecords::select(['msg_type', 'talk_type', 'user_id', 'receiver_id'])->where('id', $params['cr_id'])->first();
         if (!$recordsInfo) {
             return $this->response->fail('文件不存在！');
         }
@@ -60,18 +60,18 @@ class DownloadController extends CController
 
         // 判断消息是否是当前用户发送(如果是则跳过权限验证)
         if ($recordsInfo->user_id != $user_id) {
-            if ($recordsInfo->source == 1) {
-                if ($recordsInfo->receive_id != $user_id) {
+            if ($recordsInfo->talk_type == 1) {
+                if ($recordsInfo->receiver_id != $user_id) {
                     return $this->response->fail('非法请求！');
                 }
             } else {
-                if (!Group::isMember($recordsInfo->receive_id, $user_id)) {
+                if (!Group::isMember($recordsInfo->receiver_id, $user_id)) {
                     return $this->response->fail('非法请求！');
                 }
             }
         }
 
-        $info = ChatRecordsFile::select(['save_dir', 'original_name'])->where('record_id', $params['cr_id'])->first();
+        $info = TalkRecordsFile::select(['save_dir', 'original_name'])->where('record_id', $params['cr_id'])->first();
         if (!$info || !$filesystem->has($info->save_dir)) {
             return $this->response->fail('文件不存在或没有下载权限！');
         }

@@ -16,9 +16,9 @@ use App\Model\BaseModel;
  * @property string $user_ids        用户ID(多个用 , 分割)
  * @package App\Model\Chat
  */
-class ChatRecordsInvite extends BaseModel
+class TalkRecordsInvite extends BaseModel
 {
-    protected $table = 'chat_records_invite';
+    protected $table = 'talk_records_invite';
 
     protected $fillable = [
         'record_id',

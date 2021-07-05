@@ -40,19 +40,12 @@ class ContactsService extends BaseService
             SELECT users.id,users.nickname,users.avatar,users.motto,users.gender,tmp_table.friend_remark from {$prefix}users users
             INNER join
             (
-              SELECT id as rid,user2 as uid,user1_remark as friend_remark from {$prefix}users_friends where user1 = {$user_id} and `status` = 1
+              SELECT id as rid,user2 as uid,user1_remark as friend_remark from {$prefix}users_friends where user1 = {$user_id} and `status` in (0,2)
                 UNION all 
-              SELECT id as rid,user1 as uid,user2_remark as friend_remark from {$prefix}users_friends where user2 = {$user_id} and `status` = 1
+              SELECT id as rid,user1 as uid,user2_remark as friend_remark from {$prefix}users_friends where user2 = {$user_id} and `status` in (0,1)
             ) tmp_table on tmp_table.uid = users.id
 SQL;
-
-        $rows = Db::select($sql);
-
-        array_walk($rows, function (&$item) {
-            $item = (array)$item;
-        });
-
-        return $rows;
+        return Db::select($sql);
     }
 
     /**

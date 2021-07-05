@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace App\Amqp\Consumer;
 
+use App\Constants\TalkMsgType;
+use App\Constants\TalkType;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Result;
 use Hyperf\Amqp\Message\ConsumerMessage;
@@ -19,11 +21,11 @@ use Hyperf\Amqp\Builder\QueueBuilder;
 use PhpAmqpLib\Message\AMQPMessage;
 use App\Model\User;
 use App\Model\UsersFriend;
-use App\Model\Chat\ChatRecord;
-use App\Model\Chat\ChatRecordsCode;
-use App\Model\Chat\ChatRecordsFile;
-use App\Model\Chat\ChatRecordsInvite;
-use App\Model\Chat\ChatRecordsForward;
+use App\Model\Chat\TalkRecords;
+use App\Model\Chat\TalkRecordsCode;
+use App\Model\Chat\TalkRecordsFile;
+use App\Model\Chat\TalkRecordsInvite;
+use App\Model\Chat\TalkRecordsForward;
 use App\Model\Group\Group;
 use App\Service\SocketClientService;
 use App\Constants\SocketConstants;
@@ -140,39 +142,43 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeTalk(array $data, AMQPMessage $message): string
     {
-        $source    = $data['data']['source'];
+        $talk_type   = $data['data']['talk_type'];
+        $sender_id   = $data['data']['sender_id'];
+        $receiver_id = $data['data']['receiver_id'];
+        $record_id   = $data['data']['record_id'];
+
         $fds       = [];
         $groupInfo = null;
 
-        if ($source == 1) {// 私聊
+        if ($talk_type == TalkType::PRIVATE_CHAT) {
             $fds = array_merge(
-                $this->socketClientService->findUserFds($data['data']['sender']),
-                $this->socketClientService->findUserFds($data['data']['receive'])
+                $this->socketClientService->findUserFds($sender_id),
+                $this->socketClientService->findUserFds($receiver_id)
             );
-        } else if ($source == 2) {// 群聊
-            $userIds = SocketRoom::getInstance()->getRoomMembers(strval($data['data']['receive']));
-            foreach ($userIds as $uid) {
-                $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$uid));
+        } else if ($talk_type == TalkType::GROUP_CHAT) {
+            foreach (SocketRoom::getInstance()->getRoomMembers(strval($receiver_id)) as $uid) {
+                $fds = array_merge($fds, $this->socketClientService->findUserFds(intval($uid)));
             }
 
-            $groupInfo = Group::where('id', $data['data']['receive'])->first(['group_name', 'avatar']);
+            $groupInfo = Group::where('id', $receiver_id)->first(['group_name', 'avatar']);
         }
 
         // 客户端ID去重
-        if (!$fds = array_unique($fds)) return Result::ACK;
+        if (!$fds = array_unique($fds)) {
+            return Result::ACK;
+        }
 
-        /** @var ChatRecord */
-        $result = ChatRecord::leftJoin('users', 'users.id', '=', 'chat_records.user_id')
-            ->where('chat_records.id', $data['data']['record_id'])
+        $result = TalkRecords::leftJoin('users', 'users.id', '=', 'talk_records.user_id')
+            ->where('talk_records.id', $record_id)
             ->first([
-                'chat_records.id',
-                'chat_records.source',
-                'chat_records.msg_type',
-                'chat_records.user_id',
-                'chat_records.receive_id',
-                'chat_records.content',
-                'chat_records.is_revoke',
-                'chat_records.created_at',
+                'talk_records.id',
+                'talk_records.talk_type',
+                'talk_records.msg_type',
+                'talk_records.user_id',
+                'talk_records.receiver_id',
+                'talk_records.content',
+                'talk_records.is_revoke',
+                'talk_records.created_at',
                 'users.nickname',
                 'users.avatar',
             ]);
@@ -182,14 +188,34 @@ class ChatMessageConsumer extends ConsumerMessage
         $file = $code_block = $forward = $invite = [];
 
         switch ($result->msg_type) {
-            case 2:// 文件消息
-                $file = ChatRecordsFile::where('record_id', $result->id)->first(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir']);
+            case TalkMsgType::FILE_MESSAGE:
+                $file = TalkRecordsFile::where('record_id', $result->id)->first([
+                    'id', 'record_id', 'user_id', 'file_source', 'file_type',
+                    'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir'
+                ]);
+
                 $file = $file ? $file->toArray() : [];
                 $file && $file['file_url'] = get_media_url($file['save_dir']);
-
                 break;
-            case 3:// 入群消息/退群消息
-                $notifyInfo = ChatRecordsInvite::where('record_id', $result->id)->first([
+
+            case TalkMsgType::FORWARD_MESSAGE:
+                $forward     = ['num' => 0, 'list' => []];
+                $forwardInfo = TalkRecordsForward::where('record_id', $result->id)->first(['records_id', 'text']);
+                if ($forwardInfo) {
+                    $forward = [
+                        'num'  => count(parse_ids($forwardInfo->records_id)),
+                        'list' => json_decode($forwardInfo->text, true) ?? []
+                    ];
+                }
+                break;
+
+            case TalkMsgType::CODE_MESSAGE:
+                $code_block = TalkRecordsCode::where('record_id', $result->id)->first(['record_id', 'code_lang', 'code']);
+                $code_block = $code_block ? $code_block->toArray() : [];
+                break;
+
+            case TalkMsgType::GROUP_INVITE_MESSAGE:
+                $notifyInfo = TalkRecordsInvite::where('record_id', $result->id)->first([
                     'record_id', 'type', 'operate_user_id', 'user_ids'
                 ]);
 
@@ -202,37 +228,22 @@ class ChatMessageConsumer extends ConsumerMessage
 
                 unset($notifyInfo, $userInfo);
                 break;
-            case 4:// 会话记录消息
-                $forward     = ['num' => 0, 'list' => []];
-                $forwardInfo = ChatRecordsForward::where('record_id', $result->id)->first(['records_id', 'text']);
-                if ($forwardInfo) {
-                    $forward = [
-                        'num'  => count(parse_ids($forwardInfo->records_id)),
-                        'list' => json_decode($forwardInfo->text, true) ?? []
-                    ];
-                }
-
-                break;
-            case 5:// 代码块消息
-                $code_block = ChatRecordsCode::where('record_id', $result->id)->first(['record_id', 'code_lang', 'code']);
-                $code_block = $code_block ? $code_block->toArray() : [];
-                break;
         }
 
         $notify = [
-            'send_user'    => $data['data']['sender'],
-            'receive_user' => $data['data']['receive'],
-            'source_type'  => $data['data']['source'],
-            'data'         => $this->formatTalkMessage([
+            'sender_id'   => $sender_id,
+            'receiver_id' => $receiver_id,
+            'talk_type'   => $talk_type,
+            'data'        => $this->formatTalkMessage([
                 'id'           => $result->id,
+                'talk_type'    => $result->talk_type,
                 'msg_type'     => $result->msg_type,
-                'source'       => $result->source,
+                "user_id"      => $result->user_id,
+                "receiver_id"  => $result->receiver_id,
                 'avatar'       => $result->avatar,
                 'nickname'     => $result->nickname,
                 'group_name'   => $groupInfo ? $groupInfo->group_name : '',
                 'group_avatar' => $groupInfo ? $groupInfo->avatar : '',
-                "user_id"      => $result->user_id,
-                "receive_id"   => $result->receive_id,
                 "created_at"   => $result->created_at,
                 "content"      => $result->content,
                 "file"         => $file,
@@ -256,7 +267,7 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeKeyboard(array $data, AMQPMessage $message): string
     {
-        $fds = $this->socketClientService->findUserFds($data['data']['receive_user']);
+        $fds = $this->socketClientService->findUserFds($data['data']['receiver_id']);
 
         $this->socketPushNotify($fds, json_encode([SocketConstants::EVENT_KEYBOARD, $data['data']]));
 
@@ -272,14 +283,20 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeOnlineStatus(array $data, AMQPMessage $message): string
     {
-        $friends = UsersFriend::getFriendIds((int)$data['data']['user_id']);
+        $user_id = (int)$data['data']['user_id'];
+        $status  = (int)$data['data']['status'];
 
         $fds = [];
-        foreach ($friends as $friend_id) {
-            $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$friend_id));
+        foreach (UsersFriend::getFriendIds($user_id) as $friend_id) {
+            $fds = array_merge($fds, $this->socketClientService->findUserFds(intval($friend_id)));
         }
 
-        $this->socketPushNotify(array_unique($fds), json_encode([SocketConstants::EVENT_ONLINE_STATUS, $data['data']]));
+        $this->socketPushNotify(array_unique($fds), json_encode([
+            SocketConstants::EVENT_ONLINE_STATUS, [
+                'user_id' => $user_id,
+                'status'  => $status
+            ]
+        ]));
 
         return Result::ACK;
     }
@@ -293,29 +310,26 @@ class ChatMessageConsumer extends ConsumerMessage
      */
     public function onConsumeRevokeTalk(array $data, AMQPMessage $message): string
     {
-        /** @var ChatRecord */
-        $record = ChatRecord::where('id', $data['data']['record_id'])->first(['id', 'source', 'user_id', 'receive_id']);
+        $record = TalkRecords::where('id', $data['data']['record_id'])->first(['id', 'talk_type', 'user_id', 'receiver_id']);
 
         $fds = [];
-        if ($record->source == 1) {
-            $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$record->user_id));
-            $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$record->receive_id));
-        } else if ($record->source == 2) {
-            $userIds = SocketRoom::getInstance()->getRoomMembers(strval($record->receive_id));
+        if ($record->talk_type == TalkType::PRIVATE_CHAT) {
+            $fds = array_merge($fds, $this->socketClientService->findUserFds($record->user_id));
+            $fds = array_merge($fds, $this->socketClientService->findUserFds($record->receiver_id));
+        } else if ($record->talk_type == TalkType::GROUP_CHAT) {
+            $userIds = SocketRoom::getInstance()->getRoomMembers(strval($record->receiver_id));
             foreach ($userIds as $uid) {
                 $fds = array_merge($fds, $this->socketClientService->findUserFds((int)$uid));
             }
         }
 
-        $this->socketPushNotify(
-            array_unique($fds),
-            json_encode([SocketConstants::EVENT_REVOKE_TALK, [
-                'record_id'  => $record->id,
-                'source'     => $record->source,
-                'user_id'    => $record->user_id,
-                'receive_id' => $record->receive_id,
-            ]])
-        );
+        $fds = array_unique($fds);
+        $this->socketPushNotify($fds, json_encode([SocketConstants::EVENT_REVOKE_TALK, [
+            'talk_type'   => $record->talk_type,
+            'sender_id'   => $record->user_id,
+            'receiver_id' => $record->receiver_id,
+            'record_id'   => $record->id,
+        ]]));
 
         return Result::ACK;
     }
@@ -331,7 +345,10 @@ class ChatMessageConsumer extends ConsumerMessage
     {
         $fds = $this->socketClientService->findUserFds($data['data']['receive']);
 
-        $this->socketPushNotify(array_unique($fds), json_encode([SocketConstants::EVENT_FRIEND_APPLY, $data['data']]));
+        $this->socketPushNotify(array_unique($fds), json_encode([
+            SocketConstants::EVENT_FRIEND_APPLY,
+            $data['data']
+        ]));
 
         return Result::ACK;
     }
@@ -360,12 +377,10 @@ class ChatMessageConsumer extends ConsumerMessage
     {
         $message = [
             "id"           => 0, // 消息记录ID
-            "source"       => 1, // 消息来源[1:好友私信;2:群聊]
+            "talk_type"    => 1, // 消息来源[1:好友私信;2:群聊]
             "msg_type"     => 1, // 消息类型
             "user_id"      => 0, // 发送者用户ID
-            "receive_id"   => 0, // 接收者ID[好友ID或群ID]
-            "content"      => '',// 文本消息
-            "is_revoke"    => 0, // 消息是否撤销
+            "receiver_id"  => 0, // 接收者ID[好友ID或群ID]
 
             // 发送消息人的信息
             "nickname"     => "",// 用户昵称
@@ -380,7 +395,11 @@ class ChatMessageConsumer extends ConsumerMessage
             "invite"       => [],
 
             // 消息创建时间
+            "content"      => '',// 文本消息
             "created_at"   => "",
+
+            // 消息属性
+            "is_revoke"    => 0, // 消息是否撤销
         ];
 
         return array_merge($message, array_intersect_key($data, $message));
