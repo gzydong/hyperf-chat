@@ -27,6 +27,24 @@ class TalkService extends BaseService
     use PagingTrait;
 
     /**
+     * 获取好友备注
+     *
+     * @param int $user_id   用户ID
+     * @param int $friend_id 好友ID
+     * @return string
+     */
+    public function getFriendRemark(int $user_id, int $friend_id)
+    {
+        $remark = FriendRemark::getInstance()->read($user_id, $friend_id);
+        if ($remark) return $remark;
+
+        $remark = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->value('remark');
+        if ($remark) FriendRemark::getInstance()->save($user_id, $friend_id, $remark);
+
+        return (string)$remark;
+    }
+
+    /**
      * 获取用户的聊天列表
      *
      * @param int $user_id 用户ID
@@ -70,27 +88,14 @@ class TalkService extends BaseService
             $data['is_top']      = $item['is_top'];
             $data['is_disturb']  = $item['is_disturb'];
             $data['msg_text']    = '......';
-            $data['updated_at']  = $item['updated_at'];
+            $data['updated_at']  = $item['updated_at'] ?: '2020-01-01 00:00:00';
 
             if ($item['talk_type'] == TalkType::PRIVATE_CHAT) {
-                $data['name']       = $item['nickname'];
-                $data['avatar']     = $item['user_avatar'];
-                $data['unread_num'] = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
-                $data['is_online']  = $socketFDService->isOnlineAll($item['receiver_id'], $runIdAll);
-
-                $remark = FriendRemark::getInstance()->read($user_id, $item['receiver_id']);
-                if ($remark) {
-                    $data['remark_name'] = $remark;
-                } else {
-                    $info = UsersFriend::select('user1', 'user2', 'user1_remark', 'user2_remark')
-                        ->where('user1', ($user_id < $item['receiver_id']) ? $user_id : $item['receiver_id'])
-                        ->where('user2', ($user_id < $item['receiver_id']) ? $item['receiver_id'] : $user_id)->first();
-                    if ($info) {
-                        $data['remark_name'] = $info->user1 == $item['receiver_id'] ? $info->user2_remark : $info->user1_remark;
-
-                        FriendRemark::getInstance()->save($user_id, (int)$item['receiver_id'], $data['remark_name']);
-                    }
-                }
+                $data['name']        = $item['nickname'];
+                $data['avatar']      = $item['user_avatar'];
+                $data['unread_num']  = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
+                $data['is_online']   = $socketFDService->isOnlineAll($item['receiver_id'], $runIdAll);
+                $data['remark_name'] = $this->getFriendRemark($user_id, (int)$item['receiver_id']);
             } else {
                 $data['name']   = strval($item['group_name']);
                 $data['avatar'] = $item['group_avatar'];
@@ -100,8 +105,6 @@ class TalkService extends BaseService
             if ($records) {
                 $data['msg_text']   = $records['text'];
                 $data['updated_at'] = $records['created_at'];
-            } else {
-                $data['updated_at'] = '2020-01-01 00:00:00';
             }
 
             return $data;

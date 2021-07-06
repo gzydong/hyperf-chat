@@ -14,6 +14,7 @@ use App\Cache\LastMessage;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMsgType;
 use App\Constants\TalkType;
+use App\Support\UserRelation;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -22,7 +23,6 @@ use App\Middleware\JWTAuthMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use App\Model\User;
 use App\Model\TalkList;
-use App\Model\UsersFriend;
 use App\Model\Group\Group;
 use App\Service\TalkService;
 
@@ -40,25 +40,6 @@ class TalkController extends CController
      * @var TalkService
      */
     public $talkService;
-
-    /**
-     * 判断是否是好友或者群成员关系
-     *
-     * @param int $user_id     用户ID
-     * @param int $receiver_id 接收者ID
-     * @param int $talk_type   对话类型
-     * @return bool
-     */
-    private function isFriendOrGroupMember(int $user_id, int $receiver_id, int $talk_type)
-    {
-        if ($talk_type == TalkType::PRIVATE_CHAT) {
-            return UsersFriend::isFriend($user_id, $receiver_id, true);
-        } else if ($talk_type == TalkType::GROUP_CHAT) {
-            return Group::isMember($receiver_id, $user_id);
-        }
-
-        return false;
-    }
 
     /**
      * 获取用户对话列表
@@ -93,14 +74,12 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!$this->isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法进行聊天！');
         }
 
         $result = TalkList::addItem($user_id, $params['receiver_id'], $params['talk_type']);
-        if (!$result) {
-            return $this->response->fail('创建失败！');
-        }
+        if (!$result) return $this->response->fail('创建失败！');
 
         $data = [
             'id'          => $result['id'],
@@ -234,7 +213,7 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!$this->isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
         }
 
@@ -289,7 +268,7 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!$this->isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
         }
 

@@ -23,6 +23,8 @@ class TalkList extends BaseModel
 {
     protected $table = 'talk_list';
 
+    public $timestamps = true;
+
     protected $fillable = [
         'talk_type',
         'user_id',

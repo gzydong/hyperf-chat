@@ -39,11 +39,11 @@ class EmoticonController extends CController
 
     /**
      * 获取用户表情包列表
-     * @RequestMapping(path="user-emoticon", methods="get")
+     * @RequestMapping(path="list", methods="get")
      *
      * @return ResponseInterface
      */
-    public function getUserEmoticon()
+    public function list()
     {
         $emoticonList = [];
         $user_id      = $this->uid();
@@ -74,11 +74,11 @@ class EmoticonController extends CController
 
     /**
      * 获取系统表情包
-     * @RequestMapping(path="system-emoticon", methods="get")
+     * @RequestMapping(path="system", methods="get")
      *
      * @return ResponseInterface
      */
-    public function getSystemEmoticon()
+    public function system()
     {
         $items = Emoticon::get(['id', 'name', 'icon'])->toArray();
         if ($items) {
@@ -142,12 +142,12 @@ class EmoticonController extends CController
 
     /**
      * 自定义上传表情包
-     * @RequestMapping(path="upload-emoticon", methods="post")
+     * @RequestMapping(path="upload", methods="post")
      *
      * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function uploadEmoticon(Filesystem $filesystem)
+    public function upload(Filesystem $filesystem)
     {
         $file = $this->request->file('emoticon');
         if (!$file->isValid()) {

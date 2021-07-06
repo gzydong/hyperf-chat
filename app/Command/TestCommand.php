@@ -23,6 +23,7 @@ use App\Constants\FileMediaType;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Model\TalkList;
+use App\Model\UsersFriend;
 use App\Service\TalkService;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
@@ -177,5 +178,19 @@ class TestCommand extends HyperfCommand
         //var_dump(FriendRemark::getInstance());
 
         //var_dump(Group::isManager(2054,116));
+
+        UsersFriend::where('id', '<=', UsersFriend::max('id'))->chunk(100, function ($rows) {
+            foreach ($rows as $row) {
+                UsersFriend::create([
+                    'user_id'    => $row->friend_id,
+                    'friend_id'  => $row->user_id,
+                    'remark'     => $row->user2_remark,
+                    'status'     => 1,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+        });
+
     }
 }

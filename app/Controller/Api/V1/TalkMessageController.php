@@ -10,8 +10,7 @@ use App\Constants\TalkMsgType;
 use App\Constants\TalkType;
 use App\Model\EmoticonItem;
 use App\Model\FileSplitUpload;
-use App\Model\Group\Group;
-use App\Model\UsersFriend;
+use App\Support\UserRelation;
 use App\Service\EmoticonService;
 use App\Service\TalkService;
 use Hyperf\Di\Annotation\Inject;
@@ -37,25 +36,6 @@ class TalkMessageController extends CController
     public $talkService;
 
     /**
-     * 判断是否是好友或者群成员关系
-     *
-     * @param int $user_id     用户ID
-     * @param int $receiver_id 接收者ID
-     * @param int $talk_type   对话类型
-     * @return bool
-     */
-    private function isFriendOrGroupMember(int $user_id, int $receiver_id, int $talk_type)
-    {
-        if ($talk_type == TalkType::PRIVATE_CHAT) {
-            return UsersFriend::isFriend($user_id, $receiver_id, true);
-        } else if ($talk_type == TalkType::GROUP_CHAT) {
-            return Group::isMember($receiver_id, $user_id);
-        }
-
-        return false;
-    }
-
-    /**
      * 发送代码块消息
      * @RequestMapping(path="code", methods="post")
      */
@@ -70,7 +50,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!$this->isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -85,9 +65,7 @@ class TalkMessageController extends CController
             'code'      => $params['code']
         ]);
 
-        if (!$record_id) {
-            return $this->response->fail('消息发送失败！');
-        }
+        if (!$record_id) return $this->response->fail('消息发送失败！');
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
@@ -118,7 +96,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!$this->isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -153,9 +131,7 @@ class TalkMessageController extends CController
             'original_name' => $file->getClientFilename(),
         ]);
 
-        if (!$record_id) {
-            return $this->response->fail('图片上传失败！');
-        }
+        if (!$record_id) return $this->response->fail('图片上传失败！');
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
@@ -187,7 +163,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!$this->isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -217,9 +193,7 @@ class TalkMessageController extends CController
             'save_dir'      => $save_dir,
         ]);
 
-        if (!$record_id) {
-            return $this->response->fail('表情发送失败！');
-        }
+        if (!$record_id) return $this->response->fail('表情发送失败！');
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
@@ -260,7 +234,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!$this->isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -268,9 +242,7 @@ class TalkMessageController extends CController
             'url', 'file_suffix', 'file_size'
         ]);
 
-        if (!$emoticon) {
-            return $this->response->fail('表情不存在！');
-        }
+        if (!$emoticon) return $this->response->fail('表情不存在！');
 
         $record_id = $this->talkService->createEmoticonMessage([
             'talk_type'   => $params['talk_type'],
@@ -285,9 +257,7 @@ class TalkMessageController extends CController
             'original_name' => '图片表情',
         ]);
 
-        if (!$record_id) {
-            return $this->response->fail('表情发送失败！');
-        }
+        if (!$record_id) return $this->response->fail('表情发送失败！');
 
         // 消息推送队列
         push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
@@ -341,9 +311,7 @@ class TalkMessageController extends CController
             $ids = $this->talkService->mergeForwardRecords($user_id, $params['receiver_id'], $params['talk_type'], $params['records_ids'], $items);
         }
 
-        if (!$ids) {
-            return $this->response->fail('转发失败！');
-        }
+        if (!$ids) return $this->response->fail('转发失败！');
 
         if ($receive_user_ids) {
             foreach ($receive_user_ids as $v) {
@@ -396,15 +364,13 @@ class TalkMessageController extends CController
         ]);
 
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
-        if ($isTrue) {
-            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_REVOKE_TALK, [
-                'record_id' => $params['record_id']
-            ]));
-        }
+        if (!$isTrue) return $this->response->fail($message);
 
-        return $isTrue
-            ? $this->response->success([], $message)
-            : $this->response->fail($message);
+        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_REVOKE_TALK, [
+            'record_id' => $params['record_id']
+        ]));
+
+        return $this->response->success([], $message);
     }
 
     /**

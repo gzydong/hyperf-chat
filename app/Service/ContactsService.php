@@ -35,6 +35,8 @@ class ContactsService extends BaseService
      */
     public function getContacts(int $user_id): array
     {
+
+
         $prefix = config('databases.default.prefix');
         $sql    = <<<SQL
             SELECT users.id,users.nickname,users.avatar,users.motto,users.gender,tmp_table.friend_remark from {$prefix}users users

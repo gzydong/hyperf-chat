@@ -57,10 +57,15 @@ ALTER TABLE `lar_chat_records_invite` RENAME `lar_talk_records_invite`;
 ALTER TABLE `lar_chat_records_file` RENAME `lar_talk_records_file`;
 
 # lar_users_friends 数据表同步SQL
-ALTER TABLE `lar_users_friends` MODIFY `active` tinyint(3) unsigned DEFAULT '1' COMMENT '主动好友申请方[1:user1;2:user2;]';
-ALTER TABLE `lar_users_friends` MODIFY `status` tinyint(3) DEFAULT '0' COMMENT '好友状态 [-1:双方均解除好友关系;0:正常;1:user1 已删除对方;2:user2 已删除对方;]';
-ALTER TABLE `lar_users_friends` CHANGE `agree_time` `updated_at` datetime DEFAULT NULL COMMENT '更新时间';
-UPDATE `lar_users_friends` SET `status` = CASE WHEN `status` = 0 THEN -1 WHEN `status` = 1 THEN 0  ELSE `status` END;
+DELETE from `lar_users_friends` where `status` = 0;
+ALTER TABLE `lar_users_friends` CHANGE `user1` `user_id` int(11) unsigned DEFAULT '0' COMMENT '用户id';
+ALTER TABLE `lar_users_friends` CHANGE `user2` `friend_id` int(11) unsigned DEFAULT '0' COMMENT '好友id';
+ALTER TABLE `lar_users_friends` CHANGE `user1_remark` `remark` varchar(20) DEFAULT '' COMMENT '好友的备注';
+ALTER TABLE `lar_users_friends` MODIFY `status` tinyint(3) unsigned DEFAULT '0' COMMENT '好友状态 [0:否;1:是]';
+ALTER TABLE `lar_users_friends` MODIFY `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间';
+ALTER TABLE `lar_users_friends` CHANGE `agree_time` `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间';
+ALTER TABLE `lar_users_friends` DROP COLUMN `active`;
+ALTER TABLE `lar_users_friends` DROP COLUMN `user2_remark`;
 
 # lar_users_friends_apply 数据表同步SQL
 ALTER TABLE `lar_users_friends_apply` MODIFY `status` tinyint(4) unsigned DEFAULT '0' COMMENT '申请状态[0:等待处理;1:已同意;2:已拒绝;]';

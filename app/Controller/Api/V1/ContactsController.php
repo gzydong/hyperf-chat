@@ -10,6 +10,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Model\UsersFriend;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -56,11 +57,11 @@ class ContactsController extends CController
      */
     public function getContacts()
     {
-        $rows = $this->contactsService->getContacts($this->uid());
+        $rows = UsersFriend::getUserFriends($this->uid());
         if ($rows) {
             $runArr = ServerRunID::getInstance()->getServerRunIdAll();
-            foreach ($rows as $row) {
-                $row->is_online = $this->socketClientService->isOnlineAll($row->id, $runArr);
+            foreach ($rows as $k => $row) {
+                $rows[$k]['is_online'] = $this->socketClientService->isOnlineAll($row['id'], $runArr);
             }
         }
 
