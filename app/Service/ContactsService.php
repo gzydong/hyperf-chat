@@ -28,29 +28,6 @@ class ContactsService extends BaseService
     use PagingTrait;
 
     /**
-     * 获取联系人列表
-     *
-     * @param int $user_id 用户ID
-     * @return array
-     */
-    public function getContacts(int $user_id): array
-    {
-
-
-        $prefix = config('databases.default.prefix');
-        $sql    = <<<SQL
-            SELECT users.id,users.nickname,users.avatar,users.motto,users.gender,tmp_table.friend_remark from {$prefix}users users
-            INNER join
-            (
-              SELECT id as rid,user2 as uid,user1_remark as friend_remark from {$prefix}users_friends where user1 = {$user_id} and `status` in (0,2)
-                UNION all 
-              SELECT id as rid,user1 as uid,user2_remark as friend_remark from {$prefix}users_friends where user2 = {$user_id} and `status` in (0,1)
-            ) tmp_table on tmp_table.uid = users.id
-SQL;
-        return Db::select($sql);
-    }
-
-    /**
      * 添加联系人/申请
      *
      * @param int    $user_id   用户ID
@@ -196,21 +173,13 @@ SQL;
      * 编辑联系人备注
      *
      * @param int    $user_id   用户ID
-     * @param int    $friend_id 朋友ID
-     * @param string $remarks   好友备注名称
+     * @param int    $friend_id 好友ID
+     * @param string $remark    好友备注名称
      * @return bool
      */
-    public function editContactRemark(int $user_id, int $friend_id, string $remarks): bool
+    public function editContactRemark(int $user_id, int $friend_id, string $remark): bool
     {
-        $data = [];
-        if ($user_id > $friend_id) {
-            [$user_id, $friend_id] = [$friend_id, $user_id];
-            $data['user2_remark'] = $remarks;
-        } else {
-            $data['user1_remark'] = $remarks;
-        }
-
-        return (bool)UsersFriend::where('user1', $user_id)->where('user2', $friend_id)->update($data);
+        return (bool)UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->update(['remark' => $remark]);
     }
 
     /**
