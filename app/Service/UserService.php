@@ -118,21 +118,17 @@ class UserService extends BaseService
         if (!$info) return [];
 
         $info                    = $info->toArray();
-        $info['friend_status']   = 0;//朋友关系状态  0:本人  1:陌生人 2:朋友
+        $info['friend_status']   = 0;//朋友关系状态[0:本人;1:陌生人;2:朋友;]
         $info['nickname_remark'] = '';
         $info['friend_apply']    = 0;
 
         // 判断查询信息是否是自己
         if ($friend_id != $me_user_id) {
-            $friendInfo = UsersFriend::
-            where('user1', '=', $friend_id > $me_user_id ? $me_user_id : $friend_id)
-                ->where('user2', '=', $friend_id < $me_user_id ? $me_user_id : $friend_id)
-                ->where('status', 1)
-                ->first(['id', 'user1', 'user2', 'active', 'user1_remark', 'user2_remark']);
+            $is_friend = UsersFriend::isFriend($me_user_id, $friend_id, true, true);
 
-            $info['friend_status'] = $friendInfo ? 2 : 1;
-            if ($friendInfo) {
-                $info['nickname_remark'] = $friendInfo->user1 == $friend_id ? $friendInfo->user2_remark : $friendInfo->user1_remark;
+            $info['friend_status'] = $is_friend ? 2 : 1;
+            if ($is_friend) {
+                $info['nickname_remark'] = UsersFriend::getFriendRemark($me_user_id, $friend_id);
             } else {
                 $res = UsersFriendsApply::where('user_id', $me_user_id)
                     ->where('friend_id', $friend_id)
@@ -145,5 +141,36 @@ class UserService extends BaseService
         }
 
         return $info;
+    }
+
+    /**
+     * 获取用户好友列表
+     *
+     * @param int $user_id 用户ID
+     * @return array
+     */
+    public function getUserFriends(int $user_id)
+    {
+        return UsersFriend::leftJoin('users', 'users.id', '=', 'users_friends.friend_id')
+            ->where('user_id', $user_id)->where('users_friends.status', 1)
+            ->get([
+                'users.id',
+                'users.nickname',
+                'users.avatar',
+                'users.motto',
+                'users.gender',
+                'users_friends.remark as friend_remark',
+            ])->toArray();
+    }
+
+    /**
+     * 获取指定用户的所有朋友的用户ID
+     *
+     * @param int $user_id 指定用户ID
+     * @return array
+     */
+    public function getFriendIds(int $user_id)
+    {
+        return UsersFriend::where('user_id', $user_id)->where('status', 1)->pluck('friend_id')->toArray();
     }
 }

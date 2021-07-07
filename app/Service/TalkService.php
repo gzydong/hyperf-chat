@@ -27,24 +27,6 @@ class TalkService extends BaseService
     use PagingTrait;
 
     /**
-     * 获取好友备注
-     *
-     * @param int $user_id   用户ID
-     * @param int $friend_id 好友ID
-     * @return string
-     */
-    public function getFriendRemark(int $user_id, int $friend_id)
-    {
-        $remark = FriendRemark::getInstance()->read($user_id, $friend_id);
-        if ($remark) return $remark;
-
-        $remark = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->value('remark');
-        if ($remark) FriendRemark::getInstance()->save($user_id, $friend_id, $remark);
-
-        return (string)$remark;
-    }
-
-    /**
      * 获取用户的聊天列表
      *
      * @param int $user_id 用户ID
@@ -95,7 +77,7 @@ class TalkService extends BaseService
                 $data['avatar']      = $item['user_avatar'];
                 $data['unread_num']  = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
                 $data['is_online']   = $socketFDService->isOnlineAll($item['receiver_id'], $runIdAll);
-                $data['remark_name'] = $this->getFriendRemark($user_id, (int)$item['receiver_id']);
+                $data['remark_name'] = UsersFriend::getFriendRemark($user_id, (int)$item['receiver_id']);
             } else {
                 $data['name']   = strval($item['group_name']);
                 $data['avatar'] = $item['group_avatar'];

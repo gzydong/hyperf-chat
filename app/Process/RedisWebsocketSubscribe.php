@@ -1,69 +1,38 @@
 <?php
+
 declare(strict_types=1);
-/**
- * This is my open source code, please do not use it for commercial applications.
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
 
-namespace App\Amqp\Consumer;
+namespace App\Process;
 
+use App\Cache\SocketRoom;
+use App\Constants\SocketConstants;
 use App\Constants\TalkMsgType;
 use App\Constants\TalkType;
-use App\Model\UsersFriendsApply;
-use App\Service\UserService;
-use Hyperf\Amqp\Annotation\Consumer;
-use Hyperf\Amqp\Result;
-use Hyperf\Amqp\Message\ConsumerMessage;
-use Hyperf\Amqp\Message\Type;
-use Hyperf\Amqp\Builder\QueueBuilder;
-use PhpAmqpLib\Message\AMQPMessage;
-use App\Model\User;
 use App\Model\Chat\TalkRecords;
 use App\Model\Chat\TalkRecordsCode;
 use App\Model\Chat\TalkRecordsFile;
-use App\Model\Chat\TalkRecordsInvite;
 use App\Model\Chat\TalkRecordsForward;
+use App\Model\Chat\TalkRecordsInvite;
 use App\Model\Group\Group;
+use App\Model\User;
+use App\Model\UsersFriendsApply;
 use App\Service\SocketClientService;
-use App\Constants\SocketConstants;
-use App\Cache\Repository\LockRedis;
-use App\Cache\SocketRoom;
+use App\Service\UserService;
+use Hyperf\Amqp\Result;
+use Hyperf\Process\AbstractProcess;
+use Hyperf\Process\Annotation\Process;
 
 /**
- * 消息推送消费者队列
- * @Consumer(name="ConsumerChat",enable=false)
+ * @Process(name="RedisWebsocketSubscribe")
  */
-class ChatMessageConsumer extends ConsumerMessage
+class RedisWebsocketSubscribe extends AbstractProcess
 {
     /**
-     * 交换机名称
+     * 订阅的通道
      *
-     * @var string
+     * @var string[]
      */
-    public $exchange = SocketConstants::CONSUMER_MESSAGE_EXCHANGE;
-
-    /**
-     * 交换机类型
-     *
-     * @var string
-     */
-    public $type = Type::FANOUT;
-
-    /**
-     * 路由key
-     *
-     * @var string
-     */
-    public $routingKey = 'consumer:im:message';
-
-    /**
-     * @var SocketClientService
-     */
-    private $socketClientService;
+    private $chans = ['websocket'];
 
     /**
      * 消息事件与回调事件绑定
@@ -88,60 +57,44 @@ class ChatMessageConsumer extends ConsumerMessage
     ];
 
     /**
-     * ChatMessageConsumer constructor.
-     *
-     * @param SocketClientService $socketClientService
+     * @var SocketClientService
      */
-    public function __construct(SocketClientService $socketClientService)
-    {
-        $this->socketClientService = $socketClientService;
+    private $socketClientService;
 
-        // 动态设置 Rabbit MQ 消费队列名称
-        $this->setQueue('queue:im_message:' . SERVER_RUN_ID);
+    public function handle(): void
+    {
+        $this->socketClientService = container()->get(SocketClientService::class);
+
+        redis()->subscribe($this->chans, [$this, 'subscribe']);
     }
 
     /**
-     * 重写创建队列生成类
-     * 注释：设置自动删除队列
+     * 订阅处理逻辑
      *
-     * @return QueueBuilder
+     * @param        $redis
+     * @param string $chan
+     * @param string $message
      */
-    public function getQueueBuilder(): QueueBuilder
+    public function subscribe($redis, string $chan, string $message)
     {
-        return parent::getQueueBuilder()->setAutoDelete(true);
+        //echo PHP_EOL . "chan : $chan , msg : $message";
+        $data = json_decode($message, true);
+
+        $this->{self::EVENTS[$data['event']]}($data);
     }
 
-    /**
-     * 消费队列消息
-     *
-     * @param             $data
-     * @param AMQPMessage $message
-     * @return string
-     */
-    public function consumeMessage($data, AMQPMessage $message): string
+    public function isEnable($server): bool
     {
-        if (isset($data['event'])) {
-            // [加锁]防止消息重复消费
-            $lockName = sprintf('ws-message:%s-%s', SERVER_RUN_ID, $data['uuid']);
-            if (!LockRedis::getInstance()->lock($lockName, 60)) {
-                return Result::ACK;
-            }
-
-            // 调用对应事件绑定的回调方法
-            return $this->{self::EVENTS[$data['event']]}($data, $message);
-        }
-
-        return Result::ACK;
+        return true;
     }
 
     /**
      * 对话聊天消息
      *
-     * @param array       $data 队列消息
-     * @param AMQPMessage $message
+     * @param array $data 队列消息
      * @return string
      */
-    public function onConsumeTalk(array $data, AMQPMessage $message): string
+    public function onConsumeTalk(array $data): string
     {
         $talk_type   = $data['data']['talk_type'];
         $sender_id   = $data['data']['sender_id'];
@@ -262,11 +215,10 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 键盘输入事件消息
      *
-     * @param array       $data 队列消息
-     * @param AMQPMessage $message
+     * @param array $data 队列消息
      * @return string
      */
-    public function onConsumeKeyboard(array $data, AMQPMessage $message): string
+    public function onConsumeKeyboard(array $data): string
     {
         $fds = $this->socketClientService->findUserFds($data['data']['receiver_id']);
 
@@ -278,11 +230,10 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 用户上线或下线消息
      *
-     * @param array       $data 队列消息
-     * @param AMQPMessage $message
+     * @param array $data 队列消息
      * @return string
      */
-    public function onConsumeOnlineStatus(array $data, AMQPMessage $message): string
+    public function onConsumeOnlineStatus(array $data): string
     {
         $user_id = (int)$data['data']['user_id'];
         $status  = (int)$data['data']['status'];
@@ -307,11 +258,10 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 撤销聊天消息
      *
-     * @param array       $data 队列消息
-     * @param AMQPMessage $message
+     * @param array $data 队列消息
      * @return string
      */
-    public function onConsumeRevokeTalk(array $data, AMQPMessage $message): string
+    public function onConsumeRevokeTalk(array $data): string
     {
         $record = TalkRecords::where('id', $data['data']['record_id'])->first(['id', 'talk_type', 'user_id', 'receiver_id']);
 
@@ -340,11 +290,10 @@ class ChatMessageConsumer extends ConsumerMessage
     /**
      * 好友申请消息
      *
-     * @param array       $data 队列消息
-     * @param AMQPMessage $message
+     * @param array $data 队列消息
      * @return string
      */
-    public function onConsumeFriendApply(array $data, AMQPMessage $message): string
+    public function onConsumeFriendApply(array $data): string
     {
         $data = $data['data'];
 

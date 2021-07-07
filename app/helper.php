@@ -251,7 +251,19 @@ function parse_ids($ids)
  */
 function push_amqp(ProducerMessage $message, bool $confirm = false, int $timeout = 5)
 {
+    push_redis_subscribe('websocket', $message->getPayload());
     return container()->get(Producer::class)->produce($message, $confirm, $timeout);
+}
+
+/**
+ * 推送消息到 Redis 订阅中
+ *
+ * @param string       $chan
+ * @param string|array $message
+ */
+function push_redis_subscribe(string $chan, $message)
+{
+    redis()->publish($chan, is_string($message) ? $message : json_encode($message));
 }
 
 /**

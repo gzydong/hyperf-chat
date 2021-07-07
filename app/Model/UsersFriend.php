@@ -4,6 +4,8 @@ declare (strict_types=1);
 
 namespace App\Model;
 
+use App\Cache\FriendRemark;
+
 /**
  * 表情包收藏数据表模型
  *
@@ -24,6 +26,7 @@ class UsersFriend extends BaseModel
         'user_id',
         'friend_id',
         'status',
+        'remark',
         'created_at',
         'updated_at',
     ];
@@ -38,34 +41,15 @@ class UsersFriend extends BaseModel
     ];
 
     /**
-     * 获取用户所有好友
-     *
-     * @param int $user_id 用户ID
-     * @return array
-     */
-    public static function getUserFriends(int $user_id)
-    {
-        return UsersFriend::leftJoin('users', 'users.id', '=', 'users_friends.friend_id')
-            ->where('user_id', $user_id)->where('users_friends.status', 1)
-            ->get([
-                'users.id',
-                'users.nickname',
-                'users.avatar',
-                'users.motto',
-                'users.gender',
-                'users_friends.remark as friend_remark',
-            ])->toArray();
-    }
-
-    /**
      * 判断用户之间是否存在好友关系
      *
      * @param int  $user_id   用户ID
      * @param int  $friend_id 好友ID
      * @param bool $is_cache  是否允许读取缓存
+     * @param bool $is_mutual 相互互为好友
      * @return bool
      */
-    public static function isFriend(int $user_id, int $friend_id, bool $is_cache = false)
+    public static function isFriend(int $user_id, int $friend_id, bool $is_cache = false, $is_mutual = false)
     {
         $cacheKey = "good_friends:{$user_id}_{$friend_id}";
         if ($is_cache && redis()->get($cacheKey)) {
@@ -81,13 +65,20 @@ class UsersFriend extends BaseModel
     }
 
     /**
-     * 获取指定用户的所有朋友的用户ID
+     * 获取好友备注
      *
-     * @param int $user_id 指定用户ID
-     * @return array
+     * @param int $user_id   用户ID
+     * @param int $friend_id 好友ID
+     * @return string
      */
-    public static function getFriendIds(int $user_id)
+    public static function getFriendRemark(int $user_id, int $friend_id)
     {
-        return UsersFriend::where('user_id', $user_id)->where('status', 1)->pluck('friend_id')->toArray();
+        $remark = FriendRemark::getInstance()->read($user_id, $friend_id);
+        if ($remark) return $remark;
+
+        $remark = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->value('remark');
+        if ($remark) FriendRemark::getInstance()->save($user_id, $friend_id, $remark);
+
+        return (string)$remark;
     }
 }

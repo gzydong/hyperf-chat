@@ -12,6 +12,7 @@ namespace App\Controller\Api\V1;
 
 use App\Cache\SocketRoom;
 use App\Constants\TalkType;
+use App\Service\UserService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -329,10 +330,10 @@ class GroupController extends CController
      *
      * @return ResponseInterface
      */
-    public function getInviteFriends()
+    public function getInviteFriends(UserService $service)
     {
         $group_id = $this->request->input('group_id', 0);
-        $friends  = UsersFriend::getUserFriends($this->uid());
+        $friends  = $service->getUserFriends($this->uid());
         if ($group_id > 0 && $friends) {
             if ($ids = GroupMember::getGroupMemberIds($group_id)) {
                 foreach ($friends as $k => $item) {

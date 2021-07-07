@@ -11,7 +11,7 @@ namespace App\Model;
  * @property int    $user_id    用户ID
  * @property int    $friend_id  朋友ID
  * @property int    $status     申请状态
- * @property string $remarks    备注说明
+ * @property string $remark     备注说明
  * @property string $created_at 创建时间
  * @property string $updated_at 更新时间
  * @package App\Model

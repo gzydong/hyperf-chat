@@ -54,4 +54,9 @@ class ChatMessageProducer extends ProducerMessage
 
         $this->payload = $message;
     }
+
+    public function getPayload()
+    {
+        return $this->payload;
+    }
 }
