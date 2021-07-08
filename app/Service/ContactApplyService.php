@@ -2,9 +2,12 @@
 
 namespace App\Service;
 
+use App\Cache\FriendApply;
+use App\Constants\TalkMessageEvent;
 use App\Model\User;
 use App\Model\UsersFriend;
 use App\Model\UsersFriendsApply;
+use App\Support\MessageProducer;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
 
@@ -18,24 +21,41 @@ class ContactApplyService
      * @param int    $user_id   用户ID
      * @param int    $friend_id 朋友ID
      * @param string $remark    申请备注
-     * @return array
+     * @return bool
      */
     public function create(int $user_id, int $friend_id, string $remark)
     {
-        $result = UsersFriendsApply::create([
-            'user_id'    => $user_id,
-            'friend_id'  => $friend_id,
-            'status'     => 0,
-            'remark'     => $remark,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        $result = UsersFriendsApply::where([
+            ['user_id', '=', $user_id],
+            ['friend_id', '=', $friend_id],
+        ])->orderByDesc('id')->first();
 
         if (!$result) {
-            return [false, $result];
+            $result = UsersFriendsApply::create([
+                'user_id'    => $user_id,
+                'friend_id'  => $friend_id,
+                'remark'     => $remark,
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+        } else {
+            $result->remark     = $remark;
+            $result->created_at = date('Y-m-d H:i:s');
+            $result->save();
         }
 
-        return [true, $result];
+        // 好友申请未读消息数自增
+        FriendApply::getInstance()->incr($friend_id, 1);
+
+        // 判断对方是否在线。如果在线发送消息通知
+        $isOnline = container()->get(SocketClientService::class)->isOnlineAll($friend_id);
+        if ($isOnline) {
+            MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
+                'apply_id' => $result->id,
+                'type'     => 1,
+            ]));
+        }
+
+        return true;
     }
 
     /**
@@ -53,9 +73,6 @@ class ContactApplyService
 
         Db::beginTransaction();
         try {
-            $info->status = 1;
-            $info->save();
-
             UsersFriend::updateOrCreate([
                 'user_id'   => $info->user_id,
                 'friend_id' => $info->friend_id,
@@ -72,11 +89,21 @@ class ContactApplyService
                 'remark' => User::where('id', $info->user_id)->value('nickname'),
             ]);
 
+            $info->delete();
+
             Db::commit();
         } catch (\Exception $e) {
             Db::rollBack();
-            echo $e->getMessage();
             return false;
+        }
+
+        // 判断对方是否在线。如果在线发送消息通知
+        $isOnline = container()->get(SocketClientService::class)->isOnlineAll($info->user_id);
+        if ($isOnline) {
+            MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
+                'apply_id' => $apply_id,
+                'type'     => 2,
+            ]));
         }
 
         return true;
@@ -90,23 +117,13 @@ class ContactApplyService
      */
     public function decline(int $user_id, int $apply_id, string $reason = '')
     {
-        return (bool)UsersFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->update([
-            'status'     => 2,
-            'reason'     => $reason,
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
-    }
+        $result = UsersFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
 
-    /**
-     * 删除好友申请
-     *
-     * @param int $user_id
-     * @param int $apply_id
-     * @return bool
-     */
-    public function delete(int $user_id, int $apply_id)
-    {
-        return (bool)UsersFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
+        if (!$result) return false;
+
+        // 做聊天记录的推送
+
+        return true;
     }
 
     /**
@@ -121,7 +138,6 @@ class ContactApplyService
     {
         $rowsSqlObj = UsersFriendsApply::select([
             'users_friends_apply.id',
-            'users_friends_apply.status',
             'users_friends_apply.remark',
             'users.nickname',
             'users.avatar',

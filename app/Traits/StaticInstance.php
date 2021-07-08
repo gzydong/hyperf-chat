@@ -25,11 +25,11 @@ trait StaticInstance
         return static::$instance;
     }
 
-    public function __construct()
+    private function __construct()
     {
     }
 
-    public function __clone()
+    private function __clone()
     {
 
     }

@@ -132,7 +132,6 @@ class UserService extends BaseService
             } else {
                 $res = UsersFriendsApply::where('user_id', $me_user_id)
                     ->where('friend_id', $friend_id)
-                    ->where('status', 0)
                     ->orderBy('id', 'desc')
                     ->exists();
 

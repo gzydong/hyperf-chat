@@ -1,15 +1,10 @@
 <?php
 
-
 namespace App\Controller\Api\V1;
 
-use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\FriendApply;
-use App\Constants\TalkMessageEvent;
-use App\Model\UsersFriendsApply;
-use App\Service\SocketClientService;
+use App\Cache\Repository\LockRedis;
 use App\Service\UserService;
-use App\Support\MessageProducer;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
@@ -34,22 +29,16 @@ class ContactsApplyController extends CController
     private $service;
 
     /**
-     * @inject
-     * @var SocketClientService
-     */
-    private $socketClientService;
-
-    /**
      * @RequestMapping(path="create", methods="post")
      * @param UserService $userService
      * @return ResponseInterface
      */
     public function create(UserService $userService)
     {
-        $params = $this->request->inputs(['friend_id', 'remarks']);
+        $params = $this->request->inputs(['friend_id', 'remark']);
         $this->validate($params, [
             'friend_id' => 'required|integer',
-            'remarks'   => 'present|max:50'
+            'remark'    => 'present|max:50'
         ]);
 
         $params['friend_id'] = (int)$params['friend_id'];
@@ -60,26 +49,17 @@ class ContactsApplyController extends CController
         }
 
         $user_id = $this->uid();
-
-        [$isTrue, $result] = $this->service->create($user_id, $params['friend_id'], $params['remarks']);
-        if (!$isTrue) {
-            return $this->response->fail('添加好友申请失败！');
+        $key     = "{$user_id}_{$params['friend_id']}";
+        if (LockRedis::getInstance()->lock($key, 10)) {
+            $isTrue = $this->service->create($user_id, $params['friend_id'], $params['remark']);
+            if ($isTrue) {
+                return $this->response->success([], '发送好友申请成功...');
+            } else {
+                LockRedis::getInstance()->delete($key);
+            }
         }
 
-        // 好友申请未读消息数自增
-        FriendApply::getInstance()->incr($params['friend_id'], 1);
-
-        // 判断对方是否在线。如果在线发送消息通知
-        if ($this->socketClientService->isOnlineAll($params['friend_id'])) {
-            MessageProducer::publish(
-                MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
-                    'apply_id' => $result->id,
-                    'type'     => 1,
-                ])
-            );
-        }
-
-        return $this->response->success([], '发送好友申请成功...');
+        return $this->response->fail('添加好友申请失败！');
     }
 
     /**
@@ -88,28 +68,16 @@ class ContactsApplyController extends CController
      */
     public function accept()
     {
-        $params = $this->request->inputs(['apply_id', 'remarks']);
+        $params = $this->request->inputs(['apply_id', 'remark']);
         $this->validate($params, [
             'apply_id' => 'required|integer',
-            'remarks'  => 'present|max:20'
+            'remark'   => 'present|max:20'
         ]);
 
         $user_id = $this->uid();
-        $isTrue  = $this->service->accept($user_id, intval($params['apply_id']), $params['remarks']);
+        $isTrue  = $this->service->accept($user_id, intval($params['apply_id']), $params['remark']);
         if (!$isTrue) {
             return $this->response->fail('处理失败！');
-        }
-
-        $friend_id = UsersFriendsApply::where('id', $params['apply_id'])->where('friend_id', $user_id)->value('user_id');
-
-        // 判断对方是否在线。如果在线发送消息通知
-        if ($this->socketClientService->isOnlineAll($friend_id)) {
-            MessageProducer::publish(
-                MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
-                    'apply_id' => (int)$params['apply_id'],
-                    'type'     => 2,
-                ])
-            );
         }
 
         return $this->response->success([], '处理成功...');
@@ -121,33 +89,20 @@ class ContactsApplyController extends CController
      */
     public function decline()
     {
-        $params = $this->request->inputs(['apply_id', 'remarks']);
+        $params = $this->request->inputs(['apply_id', 'remark']);
         $this->validate($params, [
             'apply_id' => 'required|integer',
-            'remarks'  => 'present|max:20'
+            'remark'   => 'present|max:20'
         ]);
 
-        $isTrue = $this->service->decline($this->uid(), intval($params['apply_id']), $params['remarks']);
-        return $isTrue
-            ? $this->response->success()
-            : $this->response->fail();
+        $isTrue = $this->service->decline($this->uid(), intval($params['apply_id']), $params['remark']);
+        if (!$isTrue) {
+            return $this->response->fail('处理失败！');
+        }
+
+        return $this->response->success([], '处理成功...');
     }
 
-    /**
-     * @RequestMapping(path="delete", methods="post")
-     * @return ResponseInterface
-     */
-    public function delete()
-    {
-        $params = $this->request->inputs(['apply_id']);
-        $this->validate($params, [
-            'apply_id' => 'required|integer'
-        ]);
-
-        return $this->service->delete($this->uid(), intval($params['apply_id']))
-            ? $this->response->success()
-            : $this->response->fail();
-    }
 
     /**
      * 获取联系人申请未读数
@@ -167,10 +122,10 @@ class ContactsApplyController extends CController
         $page_size = $this->request->input('page_size', 10);
         $user_id   = $this->uid();
 
-        $data = $this->service->getApplyRecords($user_id, $page, $page_size);
-
         FriendApply::getInstance()->rem(strval($user_id));
 
-        return $this->response->success($data);
+        return $this->response->success(
+            $this->service->getApplyRecords($user_id, $page, $page_size)
+        );
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Cache\Repository;
 
 use App\Cache\Contracts\LockRedisInterface;
+use App\Traits\StaticInstance;
 use Swoole\Coroutine;
 use Exception;
 
@@ -11,11 +12,13 @@ use Exception;
  *
  * @package App\Cache\Repository
  */
-class LockRedis extends AbstractRedis implements LockRedisInterface
+final class LockRedis extends AbstractRedis implements LockRedisInterface
 {
     protected $prefix = 'rds-lock';
 
     protected $value = 1;
+
+    use StaticInstance;
 
     /**
      * 获取 Redis 锁
