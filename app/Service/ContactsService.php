@@ -40,6 +40,8 @@ class ContactsService extends BaseService
 
         if ($res) redis()->del("good_friends:{$user_id}_{$friend_id}");
 
+
+
         return $res;
     }
 

@@ -2,14 +2,13 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\LastMessage;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMessageEvent;
-use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
 use App\Model\EmoticonItem;
 use App\Model\FileSplitUpload;
+use App\Service\TalkMessageService;
 use App\Support\MessageProducer;
 use App\Support\UserRelation;
 use App\Service\EmoticonService;
@@ -37,6 +36,12 @@ class TalkMessageController extends CController
     public $talkService;
 
     /**
+     * @Inject
+     * @var TalkMessageService
+     */
+    public $talkMessageService;
+
+    /**
      * 发送代码块消息
      * @RequestMapping(path="code", methods="post")
      */
@@ -55,9 +60,8 @@ class TalkMessageController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
-        $record_id = $this->talkService->createCodeMessage([
+        $record_id = $this->talkMessageService->insertCodeMessage([
             'talk_type'   => $params['talk_type'],
-            'msg_type'    => TalkMessageType::CODE_MESSAGE,
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
         ], [
@@ -120,9 +124,8 @@ class TalkMessageController extends CController
         }
 
         // 创建图片消息记录
-        $record_id = $this->talkService->createImgMessage([
+        $record_id = $this->talkMessageService->insertFileMessage([
             'talk_type'   => $params['talk_type'],
-            'msg_type'    => TalkMessageType::FILE_MESSAGE,
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
         ], [
@@ -182,9 +185,8 @@ class TalkMessageController extends CController
             return $this->response->fail('文件不存在...');
         }
 
-        $record_id = $this->talkService->createFileMessage([
+        $record_id = $this->talkMessageService->insertFileMessage([
             'talk_type'   => $params['talk_type'],
-            'msg_type'    => TalkMessageType::FILE_MESSAGE,
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id']
         ], [
@@ -248,9 +250,8 @@ class TalkMessageController extends CController
 
         if (!$emoticon) return $this->response->fail('表情不存在！');
 
-        $record_id = $this->talkService->createEmoticonMessage([
+        $record_id = $this->talkMessageService->insertFileMessage([
             'talk_type'   => $params['talk_type'],
-            'msg_type'    => TalkMessageType::FILE_MESSAGE,
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
         ], [

@@ -2,13 +2,10 @@
 
 namespace App\Service;
 
-use App\Cache\ServerRunID;
-use App\Constants\MediaFileType;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
 use Exception;
 use App\Model\User;
-use App\Model\TalkList;
 use App\Model\UsersFriend;
 use App\Model\Group\Group;
 use App\Model\Chat\TalkRecords;
@@ -18,101 +15,10 @@ use App\Model\Chat\TalkRecordsForward;
 use App\Model\Chat\TalkRecordsInvite;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
-use App\Cache\FriendRemark;
-use App\Cache\LastMessage;
-use App\Cache\UnreadTalk;
 
 class TalkService extends BaseService
 {
     use PagingTrait;
-
-    /**
-     * 获取用户的聊天列表
-     *
-     * @param int $user_id 用户ID
-     * @return array
-     */
-    public function talks(int $user_id)
-    {
-        $filed = [
-            'list.id', 'list.talk_type', 'list.receiver_id', 'list.updated_at', 'list.is_disturb', 'list.is_top',
-            'users.avatar as user_avatar', 'users.nickname',
-            'group.group_name', 'group.avatar as group_avatar'
-        ];
-
-        $rows = TalkList::from('talk_list as list')
-            ->leftJoin('users', function ($join) {
-                $join->on('users.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkMode::PRIVATE_CHAT);
-            })
-            ->leftJoin('group', function ($join) {
-                $join->on('group.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkMode::GROUP_CHAT);
-            })
-            ->where('list.user_id', $user_id)
-            ->where('list.is_delete', 0)
-            ->orderBy('list.updated_at', 'desc')
-            ->get($filed)
-            ->toArray();
-
-        if (!$rows) return [];
-
-        $socketFDService = make(SocketClientService::class);
-        $runIdAll        = ServerRunID::getInstance()->getServerRunIdAll();
-
-        return array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {
-            $data['id']          = $item['id'];
-            $data['talk_type']   = $item['talk_type'];
-            $data['receiver_id'] = $item['receiver_id'];
-            $data['avatar']      = '';     // 默认头像
-            $data['name']        = '';     // 对方昵称/群名称
-            $data['remark_name'] = '';     // 好友备注
-            $data['unread_num']  = 0;      // 未读消息
-            $data['is_online']   = false;  // 是否在线
-            $data['is_top']      = $item['is_top'];
-            $data['is_disturb']  = $item['is_disturb'];
-            $data['msg_text']    = '......';
-            $data['updated_at']  = $item['updated_at'] ?: '2020-01-01 00:00:00';
-
-            if ($item['talk_type'] == TalkMode::PRIVATE_CHAT) {
-                $data['name']        = $item['nickname'];
-                $data['avatar']      = $item['user_avatar'];
-                $data['unread_num']  = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
-                $data['is_online']   = $socketFDService->isOnlineAll($item['receiver_id'], $runIdAll);
-                $data['remark_name'] = UsersFriend::getFriendRemark($user_id, (int)$item['receiver_id']);
-            } else {
-                $data['name']   = strval($item['group_name']);
-                $data['avatar'] = $item['group_avatar'];
-            }
-
-            $records = LastMessage::getInstance()->read($data['talk_type'], $user_id, $data['receiver_id']);
-            if ($records) {
-                $data['msg_text']   = $records['text'];
-                $data['updated_at'] = $records['created_at'];
-            }
-
-            return $data;
-        }, $rows);
-    }
-
-    /**
-     * 同步未读的消息到数据库中
-     *
-     * @param int $user_id 用户ID
-     * @param     $data
-     */
-    public function updateUnreadTalkList(int $user_id, $data)
-    {
-        foreach ($data as $friend_id => $num) {
-            TalkList::updateOrCreate([
-                'talk_type'   => TalkMode::PRIVATE_CHAT,
-                'user_id'     => $user_id,
-                'receiver_id' => $friend_id,
-            ], [
-                'is_delete'  => 0,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-        }
-    }
 
     /**
      * 处理聊天记录信息
@@ -671,137 +577,5 @@ class TalkService extends BaseService
 
         $rows = $rowsSqlObj->orderBy('talk_records.id', 'desc')->forPage($page, $page_size)->get()->toArray();
         return $this->getPagingRows($this->handleChatRecords($rows), $count, $page, $page_size);
-    }
-
-    /**
-     * 创建图片消息
-     *
-     * @param array $message
-     * @param array $fileInfo
-     * @return bool|int
-     */
-    public function createImgMessage(array $message, array $fileInfo)
-    {
-        Db::beginTransaction();
-        try {
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $insert                = TalkRecords::create($message);
-
-            if (!$insert) {
-                throw new Exception('插入聊天记录失败...');
-            }
-
-            $fileInfo['record_id']  = $insert->id;
-            $fileInfo['file_type']  = MediaFileType::getMediaType($fileInfo['file_suffix']);
-            $fileInfo['created_at'] = date('Y-m-d H:i:s');
-
-            if (!TalkRecordsFile::create($fileInfo)) {
-                throw new Exception('插入聊天记录(文件消息)失败...');
-            }
-
-            Db::commit();
-        } catch (Exception $e) {
-            Db::rollBack();
-            return false;
-        }
-
-        return $insert->id;
-    }
-
-    /**
-     * 创建代码块消息
-     *
-     * @param array $message
-     * @param array $codeBlock
-     * @return bool|int
-     */
-    public function createCodeMessage(array $message, array $codeBlock)
-    {
-        Db::beginTransaction();
-        try {
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $insert                = TalkRecords::create($message);
-            if (!$insert) {
-                throw new Exception('插入聊天记录失败...');
-            }
-
-            $codeBlock['record_id']  = $insert->id;
-            $codeBlock['created_at'] = date('Y-m-d H:i:s');
-            if (!TalkRecordsCode::create($codeBlock)) {
-                throw new Exception('插入聊天记录(代码消息)失败...');
-            }
-
-            Db::commit();
-        } catch (Exception $e) {
-            Db::rollBack();
-            return false;
-        }
-
-        return $insert->id;
-    }
-
-    /**
-     * 创建代码块消息
-     *
-     * @param array $message
-     * @param array $emoticon
-     * @return bool|int
-     */
-    public function createEmoticonMessage(array $message, array $emoticon)
-    {
-        Db::beginTransaction();
-        try {
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $insert                = TalkRecords::create($message);
-            if (!$insert) {
-                throw new Exception('插入聊天记录失败...');
-            }
-
-            $emoticon['record_id']  = $insert->id;
-            $emoticon['created_at'] = date('Y-m-d H:i:s');
-            if (!TalkRecordsFile::create($emoticon)) {
-                throw new Exception('插入聊天记录(代码消息)失败...');
-            }
-
-            Db::commit();
-        } catch (Exception $e) {
-            Db::rollBack();
-            return false;
-        }
-
-        return $insert->id;
-    }
-
-    /**
-     * 创建文件消息
-     *
-     * @param array $message
-     * @param array $emoticon
-     * @return bool|int
-     */
-    public function createFileMessage(array $message, array $emoticon)
-    {
-        Db::beginTransaction();
-        try {
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $insert                = TalkRecords::create($message);
-            if (!$insert) {
-                throw new Exception('插入聊天记录失败...');
-            }
-
-            $emoticon['record_id']  = $insert->id;
-            $emoticon['file_type']  = MediaFileType::getMediaType($emoticon['file_suffix']);
-            $emoticon['created_at'] = date('Y-m-d H:i:s');
-            if (!TalkRecordsFile::create($emoticon)) {
-                throw new Exception('插入聊天记录(代码消息)失败...');
-            }
-
-            Db::commit();
-        } catch (Exception $e) {
-            Db::rollBack();
-            return false;
-        }
-
-        return $insert->id;
     }
 }

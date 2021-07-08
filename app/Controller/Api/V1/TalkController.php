@@ -22,9 +22,9 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use App\Model\User;
-use App\Model\TalkList;
 use App\Model\Group\Group;
 use App\Service\TalkService;
+use App\Service\TalkListService;
 
 /**
  * Class TalkController
@@ -42,6 +42,12 @@ class TalkController extends CController
     public $talkService;
 
     /**
+     * @Inject
+     * @var TalkListService
+     */
+    public $talkListService;
+
+    /**
      * 获取用户对话列表
      * @RequestMapping(path="list", methods="get")
      *
@@ -53,10 +59,12 @@ class TalkController extends CController
 
         // 读取用户的未读消息列表
         if ($list = UnreadTalk::getInstance()->reads($user_id)) {
-            $this->talkService->updateUnreadTalkList($user_id, $list);
+            foreach ($list as $friend_id => $num) {
+                $this->talkListService->create($user_id, $friend_id, TalkMode::PRIVATE_CHAT);
+            }
         }
 
-        return $this->response->success($this->talkService->talks($user_id));
+        return $this->response->success($this->talkListService->getTalkList($user_id));
     }
 
     /**
@@ -78,7 +86,7 @@ class TalkController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法进行聊天！');
         }
 
-        $result = TalkList::addItem($user_id, $params['receiver_id'], $params['talk_type']);
+        $result = $this->talkListService->create($user_id, $params['receiver_id'], $params['talk_type']);
         if (!$result) return $this->response->fail('创建失败！');
 
         $data = [
@@ -129,7 +137,7 @@ class TalkController extends CController
             'list_id' => 'required|integer|min:0'
         ]);
 
-        return TalkList::delItem($this->uid(), $params['list_id'])
+        return $this->talkListService->delete($this->uid(), $params['list_id'])
             ? $this->response->success([], '对话列表删除成功...')
             : $this->response->fail('对话列表删除失败！');
     }
@@ -148,7 +156,7 @@ class TalkController extends CController
             'type'    => 'required|in:1,2',
         ]);
 
-        return TalkList::topItem($this->uid(), $params['list_id'], $params['type'] == 1)
+        return $this->talkListService->top($this->uid(), $params['list_id'], $params['type'] == 1)
             ? $this->response->success([], '对话列表置顶(或取消置顶)成功...')
             : $this->response->fail('对话列表置顶(或取消置顶)失败！');
     }
@@ -168,9 +176,7 @@ class TalkController extends CController
             'is_disturb'  => 'required|in:0,1',
         ]);
 
-        $isTrue = TalkList::setNotDisturb($this->uid(), $params['receiver_id'], $params['talk_type'], $params['is_disturb']);
-
-        return $isTrue
+        return $this->talkListService->disturb($this->uid(), $params['receiver_id'], $params['talk_type'], $params['is_disturb'])
             ? $this->response->success([], '免打扰设置成功...')
             : $this->response->fail('免打扰设置失败！');
     }

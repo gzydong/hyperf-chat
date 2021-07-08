@@ -10,7 +10,8 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Model\UsersFriend;
+use App\Constants\TalkMode;
+use App\Service\TalkListService;
 use App\Service\UserService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -20,7 +21,6 @@ use App\Middleware\JWTAuthMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use App\Service\ContactsService;
 use App\Service\SocketClientService;
-use App\Model\TalkList;
 use App\Cache\FriendApply;
 use App\Cache\FriendRemark;
 use App\Cache\ServerRunID;
@@ -77,9 +77,7 @@ class ContactsController extends CController
             return $this->response->fail('好友关系解除失败！');
         }
 
-        // 删除好友会话列表
-        TalkList::delItem($user_id, $params['friend_id'], 2);
-        TalkList::delItem($params['friend_id'], $user_id, 2);
+        container()->get(TalkListService::class)->deleteByType($user_id, $params['friend_id'], TalkMode::PRIVATE_CHAT);
 
         // TODO 推送消息（待完善）
 
