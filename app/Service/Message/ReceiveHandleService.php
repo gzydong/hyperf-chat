@@ -4,9 +4,9 @@ namespace App\Service\Message;
 
 use App\Cache\LastMessage;
 use App\Cache\UnreadTalk;
-use App\Constants\SocketConstants;
-use App\Constants\TalkMsgType;
-use App\Constants\TalkType;
+use App\Constants\TalkMessageEvent;
+use App\Constants\TalkMessageType;
+use App\Constants\TalkMode;
 use App\Model\Chat\TalkRecords;
 use App\Model\Group\Group;
 use App\Model\UsersFriend;
@@ -44,17 +44,17 @@ class ReceiveHandleService
         }
 
         // 验证消息类型 私聊|群聊
-        if (!in_array($data['talk_type'], TalkType::getTypes())) {
+        if (!in_array($data['talk_type'], TalkMode::getTypes())) {
             return;
         }
 
         // 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
-        if ($data['talk_type'] == TalkType::PRIVATE_CHAT) {
+        if ($data['talk_type'] == TalkMode::PRIVATE_CHAT) {
             // 判断发送者和接受者是否是好友关系
             if (!UsersFriend::isFriend((int)$data['sender_id'], (int)$data['receiver_id'], true)) {
                 return;
             }
-        } else if ($data['talk_type'] == TalkType::GROUP_CHAT) {
+        } else if ($data['talk_type'] == TalkMode::GROUP_CHAT) {
             // 判断是否属于群成员
             if (!Group::isMember((int)$data['receiver_id'], (int)$data['sender_id'])) {
                 return;
@@ -65,7 +65,7 @@ class ReceiveHandleService
             'talk_type'   => $data['talk_type'],
             'user_id'     => $data['sender_id'],
             'receiver_id' => $data['receiver_id'],
-            'msg_type'    => TalkMsgType::TEXT_MESSAGE,
+            'msg_type'    => TalkMessageType::TEXT_MESSAGE,
             'content'     => htmlspecialchars($data['text_message']),
             'created_at'  => date('Y-m-d H:i:s'),
             'updated_at'  => date('Y-m-d H:i:s'),
@@ -74,7 +74,7 @@ class ReceiveHandleService
         if (!$result) return;
 
         // 判断是否私聊
-        if ($result->talk_type == TalkType::PRIVATE_CHAT) {
+        if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
             // 设置好友消息未读数
             UnreadTalk::getInstance()->increment($result->user_id, $result->receiver_id);
         }
@@ -86,7 +86,7 @@ class ReceiveHandleService
         ]);
 
         MessageProducer::publish(
-            MessageProducer::create(SocketConstants::EVENT_TALK, [
+            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
                 'sender_id'   => $result->user_id,
                 'receiver_id' => $result->receiver_id,
                 'talk_type'   => $result->talk_type,
@@ -106,7 +106,7 @@ class ReceiveHandleService
     public function onKeyboard($server, Frame $frame, $data)
     {
         MessageProducer::publish(
-            MessageProducer::create(SocketConstants::EVENT_KEYBOARD, [
+            MessageProducer::create(TalkMessageEvent::EVENT_KEYBOARD, [
                 'sender_id'   => intval($data['sender_id']),
                 'receiver_id' => intval($data['receiver_id']),
             ])

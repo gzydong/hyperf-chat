@@ -19,7 +19,7 @@ use App\Cache\SocketFdBindUser;
 use App\Cache\SocketRoom;
 use App\Cache\SocketUserBindFds;
 use App\Cache\UnreadTalk;
-use App\Constants\FileMediaType;
+use App\Constants\MediaFileType;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Model\TalkList;

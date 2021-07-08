@@ -15,7 +15,7 @@ use App\Cache\SocketRoom;
 use App\Service\Message\ReceiveHandleService;
 use App\Support\MessageProducer;
 use Hyperf\Di\Annotation\Inject;
-use App\Constants\SocketConstants;
+use App\Constants\TalkMessageEvent;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
@@ -49,8 +49,8 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * 消息事件绑定
      */
     const EVENTS = [
-        SocketConstants::EVENT_TALK     => 'onTalk',
-        SocketConstants::EVENT_KEYBOARD => 'onKeyboard',
+        TalkMessageEvent::EVENT_TALK     => 'onTalk',
+        TalkMessageEvent::EVENT_KEYBOARD => 'onKeyboard',
     ];
 
     /**
@@ -85,7 +85,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         if (!$isOnline) {
             MessageProducer::publish(
-                MessageProducer::create(SocketConstants::EVENT_ONLINE_STATUS, [
+                MessageProducer::create(TalkMessageEvent::EVENT_ONLINE_STATUS, [
                     'user_id' => $user_id,
                     'status'  => 1,
                 ])
@@ -134,7 +134,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $isOnline = $this->socketClientService->isOnlineAll($user_id);
         if (!$isOnline) {
             MessageProducer::publish(
-                MessageProducer::create(SocketConstants::EVENT_ONLINE_STATUS, [
+                MessageProducer::create(TalkMessageEvent::EVENT_ONLINE_STATUS, [
                     'user_id' => $user_id,
                     'status'  => 0,
                 ])

@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Cache\LastMessage;
-use App\Constants\TalkMsgType;
-use App\Constants\TalkType;
+use App\Constants\TalkMessageType;
+use App\Constants\TalkMode;
 use App\Model\Chat\TalkRecords;
 use App\Model\Chat\TalkRecordsInvite;
 use App\Model\Group\Group;
@@ -46,7 +46,7 @@ class GroupService extends BaseService
         $list = [];
         if ($items) {
             $list = TalkList::query()->where('user_id', $user_id)
-                ->where('talk_type', TalkType::GROUP_CHAT)
+                ->where('talk_type', TalkMode::GROUP_CHAT)
                 ->whereIn('receiver_id', array_column($items, 'id'))
                 ->get(['receiver_id', 'is_disturb'])->keyBy('receiver_id')->toArray();
         }
@@ -96,7 +96,7 @@ class GroupService extends BaseService
                 ];
 
                 $chatList[] = [
-                    'talk_type'   => TalkType::GROUP_CHAT,
+                    'talk_type'   => TalkMode::GROUP_CHAT,
                     'user_id'     => $friend_id,
                     'receiver_id' => $insRes->id,
                     'created_at'  => date('Y-m-d H:i:s'),
@@ -113,10 +113,10 @@ class GroupService extends BaseService
             }
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $insRes->id,
-                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s')
             ]);
@@ -134,7 +134,7 @@ class GroupService extends BaseService
             return [false, 0];
         }
 
-        LastMessage::getInstance()->save(TalkType::GROUP_CHAT, $user_id, $insRes->id, [
+        LastMessage::getInstance()->save(TalkMode::GROUP_CHAT, $user_id, $insRes->id, [
             'text'       => '[入群通知]',
             'created_at' => date('Y-m-d H:i:s')
         ]);
@@ -193,7 +193,7 @@ class GroupService extends BaseService
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
         $members = GroupMember::where('group_id', $group_id)->whereIn('user_id', $friend_ids)->get(['id', 'user_id', 'is_quit'])->keyBy('user_id')->toArray();
-        $chatArr = TalkList::where('talk_type', TalkType::GROUP_CHAT)
+        $chatArr = TalkList::where('talk_type', TalkMode::GROUP_CHAT)
             ->where('receiver_id', $group_id)
             ->whereIn('user_id', $friend_ids)
             ->get(['id', 'user_id', 'is_delete'])
@@ -212,7 +212,7 @@ class GroupService extends BaseService
 
             if (!isset($chatArr[$uid])) {
                 $insertArr1[] = [
-                    'talk_type'   => TalkType::GROUP_CHAT,
+                    'talk_type'   => TalkMode::GROUP_CHAT,
                     'user_id'     => $uid,
                     'receiver_id' => $group_id,
                     'created_at'  => date('Y-m-d H:i:s'),
@@ -251,10 +251,10 @@ class GroupService extends BaseService
             }
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $group_id,
-                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s')
             ]);
@@ -272,7 +272,7 @@ class GroupService extends BaseService
             return [false, 0];
         }
 
-        LastMessage::getInstance()->save(TalkType::GROUP_CHAT, $user_id, $group_id, [
+        LastMessage::getInstance()->save(TalkMode::GROUP_CHAT, $user_id, $group_id, [
             'text'       => '[入群通知]',
             'created_at' => date('Y-m-d H:i:s')
         ]);
@@ -306,10 +306,10 @@ class GroupService extends BaseService
             }
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $group_id,
-                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
                 'content'     => $user_id,
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s')
@@ -325,7 +325,7 @@ class GroupService extends BaseService
             ]);
 
             TalkList::where([
-                ['talk_type', '=', TalkType::GROUP_CHAT],
+                ['talk_type', '=', TalkMode::GROUP_CHAT],
                 ['user_id', '=', $user_id],
                 ['receiver_id', '=', $group_id],
             ])->update([
@@ -367,10 +367,10 @@ class GroupService extends BaseService
             }
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $group_id,
-                'msg_type'    => TalkMsgType::GROUP_INVITE_MESSAGE,
+                'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
@@ -382,7 +382,7 @@ class GroupService extends BaseService
                 'user_ids'        => implode(',', $member_ids)
             ]);
 
-            TalkList::whereIn('user_id', $member_ids)->where('receiver_id', $group_id)->where('talk_type', TalkType::GROUP_CHAT)->update([
+            TalkList::whereIn('user_id', $member_ids)->where('receiver_id', $group_id)->where('talk_type', TalkMode::GROUP_CHAT)->update([
                 'is_delete'  => 1,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);

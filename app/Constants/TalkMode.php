@@ -2,7 +2,12 @@
 
 namespace App\Constants;
 
-class TalkType
+/**
+ * 聊天对话模式
+ *
+ * @package App\Constants
+ */
+class TalkMode
 {
     /**
      * 私聊
@@ -13,7 +18,6 @@ class TalkType
      * 群聊
      */
     const GROUP_CHAT = 2;
-
 
     public static function getTypes()
     {

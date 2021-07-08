@@ -5,7 +5,7 @@ namespace App\Controller\Api\V1;
 
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Cache\FriendApply;
-use App\Constants\SocketConstants;
+use App\Constants\TalkMessageEvent;
 use App\Model\UsersFriendsApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
@@ -72,7 +72,7 @@ class ContactsApplyController extends CController
         // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll($params['friend_id'])) {
             MessageProducer::publish(
-                MessageProducer::create(SocketConstants::EVENT_FRIEND_APPLY, [
+                MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
                     'apply_id' => $result->id,
                     'type'     => 1,
                 ])
@@ -105,7 +105,7 @@ class ContactsApplyController extends CController
         // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll($friend_id)) {
             MessageProducer::publish(
-                MessageProducer::create(SocketConstants::EVENT_FRIEND_APPLY, [
+                MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
                     'apply_id' => (int)$params['apply_id'],
                     'type'     => 2,
                 ])

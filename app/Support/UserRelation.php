@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Constants\TalkType;
+use App\Constants\TalkMode;
 use App\Model\Group\Group;
 use App\Model\UsersFriend;
 
@@ -18,9 +18,9 @@ class UserRelation
      */
     public static function isFriendOrGroupMember(int $user_id, int $receiver_id, int $talk_type)
     {
-        if ($talk_type == TalkType::PRIVATE_CHAT) {
+        if ($talk_type == TalkMode::PRIVATE_CHAT) {
             return UsersFriend::isFriend($user_id, $receiver_id, true);
-        } else if ($talk_type == TalkType::GROUP_CHAT) {
+        } else if ($talk_type == TalkMode::GROUP_CHAT) {
             return Group::isMember($receiver_id, $user_id);
         }
 

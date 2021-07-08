@@ -3,9 +3,9 @@
 namespace App\Service;
 
 use App\Cache\ServerRunID;
-use App\Constants\FileMediaType;
-use App\Constants\TalkMsgType;
-use App\Constants\TalkType;
+use App\Constants\MediaFileType;
+use App\Constants\TalkMessageType;
+use App\Constants\TalkMode;
 use Exception;
 use App\Model\User;
 use App\Model\TalkList;
@@ -42,10 +42,10 @@ class TalkService extends BaseService
 
         $rows = TalkList::from('talk_list as list')
             ->leftJoin('users', function ($join) {
-                $join->on('users.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkType::PRIVATE_CHAT);
+                $join->on('users.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkMode::PRIVATE_CHAT);
             })
             ->leftJoin('group', function ($join) {
-                $join->on('group.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkType::GROUP_CHAT);
+                $join->on('group.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkMode::GROUP_CHAT);
             })
             ->where('list.user_id', $user_id)
             ->where('list.is_delete', 0)
@@ -72,7 +72,7 @@ class TalkService extends BaseService
             $data['msg_text']    = '......';
             $data['updated_at']  = $item['updated_at'] ?: '2020-01-01 00:00:00';
 
-            if ($item['talk_type'] == TalkType::PRIVATE_CHAT) {
+            if ($item['talk_type'] == TalkMode::PRIVATE_CHAT) {
                 $data['name']        = $item['nickname'];
                 $data['avatar']      = $item['user_avatar'];
                 $data['unread_num']  = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
@@ -103,7 +103,7 @@ class TalkService extends BaseService
     {
         foreach ($data as $friend_id => $num) {
             TalkList::updateOrCreate([
-                'talk_type'   => TalkType::PRIVATE_CHAT,
+                'talk_type'   => TalkMode::PRIVATE_CHAT,
                 'user_id'     => $user_id,
                 'receiver_id' => $friend_id,
             ], [
@@ -127,16 +127,16 @@ class TalkService extends BaseService
         $files = $codes = $forwards = $invites = [];
         foreach ($rows as $value) {
             switch ($value['msg_type']) {
-                case TalkMsgType::FILE_MESSAGE:
+                case TalkMessageType::FILE_MESSAGE:
                     $files[] = $value['id'];
                     break;
-                case TalkMsgType::GROUP_INVITE_MESSAGE:
+                case TalkMessageType::GROUP_INVITE_MESSAGE:
                     $invites[] = $value['id'];
                     break;
-                case TalkMsgType::FORWARD_MESSAGE:
+                case TalkMessageType::FORWARD_MESSAGE:
                     $forwards[] = $value['id'];
                     break;
-                case TalkMsgType::CODE_MESSAGE:
+                case TalkMessageType::CODE_MESSAGE:
                     $codes[] = $value['id'];
                     break;
             }
@@ -169,14 +169,14 @@ class TalkService extends BaseService
             $rows[$k]['invite']     = [];
 
             switch ($row['msg_type']) {
-                case TalkMsgType::FILE_MESSAGE:// 文件消息
+                case TalkMessageType::FILE_MESSAGE:// 文件消息
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
                     if ($rows[$k]['file']) {
                         $rows[$k]['file']['file_url'] = get_media_url($rows[$k]['file']['save_dir']);
                     }
                     break;
 
-                case TalkMsgType::FORWARD_MESSAGE:// 会话记录消息
+                case TalkMessageType::FORWARD_MESSAGE:// 会话记录消息
                     if (isset($forwards[$row['id']])) {
                         $rows[$k]['forward'] = [
                             'num'  => substr_count($forwards[$row['id']]['records_id'], ',') + 1,
@@ -185,7 +185,7 @@ class TalkService extends BaseService
                     }
                     break;
 
-                case TalkMsgType::CODE_MESSAGE:// 代码块消息
+                case TalkMessageType::CODE_MESSAGE:// 代码块消息
                     $rows[$k]['code_block'] = $codes[$row['id']] ?? [];
                     if ($rows[$k]['code_block']) {
                         $rows[$k]['code_block']['code'] = htmlspecialchars_decode($rows[$k]['code_block']['code']);
@@ -193,7 +193,7 @@ class TalkService extends BaseService
                     }
                     break;
 
-                case TalkMsgType::GROUP_INVITE_MESSAGE:// 入群消息/退群消息
+                case TalkMessageType::GROUP_INVITE_MESSAGE:// 入群消息/退群消息
                     if (isset($invites[$row['id']])) {
                         $rows[$k]['invite'] = [
                             'type'         => $invites[$row['id']]['type'],
@@ -251,7 +251,7 @@ class TalkService extends BaseService
             $rowsSqlObj->where('talk_records.id', '<', $record_id);
         }
 
-        if ($talk_type == TalkType::PRIVATE_CHAT) {
+        if ($talk_type == TalkMode::PRIVATE_CHAT) {
             $rowsSqlObj->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([
                     ['talk_records.user_id', '=', $user_id],
@@ -297,9 +297,9 @@ class TalkService extends BaseService
         ]);
 
         // 判断是否有权限查看
-        if ($result->talk_type == TalkType::PRIVATE_CHAT && ($result->user_id != $user_id && $result->receiver_id != $user_id)) {
+        if ($result->talk_type == TalkMode::PRIVATE_CHAT && ($result->user_id != $user_id && $result->receiver_id != $user_id)) {
             return [];
-        } else if ($result->talk_type == TalkType::GROUP_CHAT && !Group::isMember($result->receiver_id, $user_id)) {
+        } else if ($result->talk_type == TalkMode::GROUP_CHAT && !Group::isMember($result->receiver_id, $user_id)) {
             return [];
         }
 
@@ -336,13 +336,13 @@ class TalkService extends BaseService
      */
     public function removeRecords(int $user_id, int $talk_type, int $receiver_id, array $record_ids)
     {
-        if ($talk_type == TalkType::PRIVATE_CHAT) {// 私聊信息
+        if ($talk_type == TalkMode::PRIVATE_CHAT) {// 私聊信息
             $ids = TalkRecords::whereIn('id', $record_ids)->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([['user_id', '=', $user_id], ['receiver_id', '=', $receiver_id]])
                     ->orWhere([['user_id', '=', $receiver_id], ['receiver_id', '=', $user_id]]);
             })->where('talk_type', $talk_type)->pluck('id');
         } else {// 群聊信息
-            $ids = TalkRecords::whereIn('id', $record_ids)->where('talk_type', TalkType::GROUP_CHAT)->pluck('id');
+            $ids = TalkRecords::whereIn('id', $record_ids)->where('talk_type', TalkMode::GROUP_CHAT)->pluck('id');
         }
 
         // 判断要删除的消息在数据库中是否存在
@@ -351,7 +351,7 @@ class TalkService extends BaseService
         }
 
         // 判读是否属于群消息并且判断是否是群成员
-        if ($talk_type == TalkType::GROUP_CHAT && !Group::isMember($receiver_id, $user_id)) {
+        if ($talk_type == TalkMode::GROUP_CHAT && !Group::isMember($receiver_id, $user_id)) {
             return false;
         }
 
@@ -383,11 +383,11 @@ class TalkService extends BaseService
             return [false, '已超过有效的撤回时间', []];
         }
 
-        if ($result->talk_type == TalkType::PRIVATE_CHAT) {
+        if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
             if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
                 return [false, '非法操作', []];
             }
-        } else if ($result->talk_type == TalkType::GROUP_CHAT) {
+        } else if ($result->talk_type == TalkMode::GROUP_CHAT) {
             if (!Group::isMember($result->receiver_id, $user_id)) {
                 return [false, '非法操作', []];
             }
@@ -410,29 +410,29 @@ class TalkService extends BaseService
     public function forwardRecords(int $user_id, int $record_id, array $receiver_ids)
     {
         $msgTypeArray = [
-            TalkMsgType::TEXT_MESSAGE,
-            TalkMsgType::FILE_MESSAGE,
-            TalkMsgType::CODE_MESSAGE
+            TalkMessageType::TEXT_MESSAGE,
+            TalkMessageType::FILE_MESSAGE,
+            TalkMessageType::CODE_MESSAGE
         ];
 
         $result = TalkRecords::where('id', $record_id)->whereIn('msg_type', $msgTypeArray)->first();
         if (!$result) return [];
 
         // 根据消息类型判断用户是否有转发权限
-        if ($result->talk_type == TalkType::PRIVATE_CHAT) {
+        if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
             if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
                 return [];
             }
-        } else if ($result->talk_type == TalkType::GROUP_CHAT) {
+        } else if ($result->talk_type == TalkMode::GROUP_CHAT) {
             if (!Group::isMember($result->receiver_id, $user_id)) {
                 return [];
             }
         }
 
         $fileInfo = $codeBlock = null;
-        if ($result->msg_type == TalkMsgType::FILE_MESSAGE) {
+        if ($result->msg_type == TalkMessageType::FILE_MESSAGE) {
             $fileInfo = TalkRecordsFile::where('record_id', $record_id)->first();
-        } else if ($result->msg_type == TalkMsgType::CODE_MESSAGE) {
+        } else if ($result->msg_type == TalkMessageType::CODE_MESSAGE) {
             $codeBlock = TalkRecordsCode::where('record_id', $record_id)->first();
         }
 
@@ -460,7 +460,7 @@ class TalkService extends BaseService
                     'talk_type'   => $res->talk_type
                 ];
 
-                if ($result->msg_type == TalkMsgType::FILE_MESSAGE) {
+                if ($result->msg_type == TalkMessageType::FILE_MESSAGE) {
                     if (!TalkRecordsFile::create([
                         'record_id'     => $res->id,
                         'user_id'       => $fileInfo->user_id,
@@ -475,7 +475,7 @@ class TalkService extends BaseService
                     ])) {
                         throw new Exception('插入文件消息记录失败');
                     }
-                } else if ($result->msg_type == TalkMsgType::CODE_MESSAGE) {
+                } else if ($result->msg_type == TalkMessageType::CODE_MESSAGE) {
                     if (!TalkRecordsCode::create([
                         'record_id'  => $res->id,
                         'user_id'    => $user_id,
@@ -511,14 +511,14 @@ class TalkService extends BaseService
     {
         // 支持转发的消息类型
         $msg_type = [
-            TalkMsgType::TEXT_MESSAGE,
-            TalkMsgType::FILE_MESSAGE,
-            TalkMsgType::CODE_MESSAGE
+            TalkMessageType::TEXT_MESSAGE,
+            TalkMessageType::FILE_MESSAGE,
+            TalkMessageType::CODE_MESSAGE
         ];
 
         $sqlObj = TalkRecords::whereIn('id', $records_ids);
 
-        if ($talk_type == TalkType::PRIVATE_CHAT) {
+        if ($talk_type == TalkMode::PRIVATE_CHAT) {
             if (!UsersFriend::isFriend($user_id, $receiver_id)) return [];
 
             $sqlObj = $sqlObj->where(function ($query) use ($user_id, $receiver_id) {
@@ -533,7 +533,7 @@ class TalkService extends BaseService
         } else {
             if (!Group::isMember($receiver_id, $user_id)) return [];
 
-            $sqlObj = $sqlObj->where('receiver_id', $receiver_id)->whereIn('msg_type', $msg_type)->where('talk_type', TalkType::GROUP_CHAT)->where('is_revoke', 0);
+            $sqlObj = $sqlObj->where('receiver_id', $receiver_id)->whereIn('msg_type', $msg_type)->where('talk_type', TalkMode::GROUP_CHAT)->where('is_revoke', 0);
         }
 
         $result = $sqlObj->get();
@@ -550,19 +550,19 @@ class TalkService extends BaseService
         $jsonText = [];
         foreach ($rows as $row) {
             switch ($row->msg_type) {
-                case TalkMsgType::TEXT_MESSAGE:
+                case TalkMessageType::TEXT_MESSAGE:
                     $jsonText[] = [
                         'nickname' => $row->nickname,
                         'text'     => mb_substr(str_replace(PHP_EOL, "", $row->content), 0, 30)
                     ];
                     break;
-                case TalkMsgType::FILE_MESSAGE:
+                case TalkMessageType::FILE_MESSAGE:
                     $jsonText[] = [
                         'nickname' => $row->nickname,
                         'text'     => '【文件消息】'
                     ];
                     break;
-                case TalkMsgType::CODE_MESSAGE:
+                case TalkMessageType::CODE_MESSAGE:
                     $jsonText[] = [
                         'nickname' => $row->nickname,
                         'text'     => '【代码消息】'
@@ -579,7 +579,7 @@ class TalkService extends BaseService
                     'talk_type'   => $item['talk_type'],
                     'user_id'     => $user_id,
                     'receiver_id' => $item['id'],
-                    'msg_type'    => TalkMsgType::FORWARD_MESSAGE,
+                    'msg_type'    => TalkMessageType::FORWARD_MESSAGE,
                     'created_at'  => date('Y-m-d H:i:s'),
                     'updated_at'  => date('Y-m-d H:i:s'),
                 ]);
@@ -692,7 +692,7 @@ class TalkService extends BaseService
             }
 
             $fileInfo['record_id']  = $insert->id;
-            $fileInfo['file_type']  = FileMediaType::getMediaType($fileInfo['file_suffix']);
+            $fileInfo['file_type']  = MediaFileType::getMediaType($fileInfo['file_suffix']);
             $fileInfo['created_at'] = date('Y-m-d H:i:s');
 
             if (!TalkRecordsFile::create($fileInfo)) {
@@ -790,7 +790,7 @@ class TalkService extends BaseService
             }
 
             $emoticon['record_id']  = $insert->id;
-            $emoticon['file_type']  = FileMediaType::getMediaType($emoticon['file_suffix']);
+            $emoticon['file_type']  = MediaFileType::getMediaType($emoticon['file_suffix']);
             $emoticon['created_at'] = date('Y-m-d H:i:s');
             if (!TalkRecordsFile::create($emoticon)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');

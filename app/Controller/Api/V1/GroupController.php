@@ -11,7 +11,7 @@
 namespace App\Controller\Api\V1;
 
 use App\Cache\SocketRoom;
-use App\Constants\TalkType;
+use App\Constants\TalkMode;
 use App\Service\UserService;
 use App\Support\MessageProducer;
 use Hyperf\Di\Annotation\Inject;
@@ -26,7 +26,7 @@ use App\Model\Group\GroupMember;
 use App\Model\Group\GroupNotice;
 use App\Amqp\Producer\ChatMessageProducer;
 use App\Service\GroupService;
-use App\Constants\SocketConstants;
+use App\Constants\TalkMessageEvent;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -78,10 +78,10 @@ class GroupController extends CController
         }
 
         MessageProducer::publish(
-            MessageProducer::create(SocketConstants::EVENT_TALK, [
+            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
                 'sender_id'   => $user_id,
                 'receiver_id' => (int)$data['group_id'],
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'record_id'   => (int)$data['record_id']
             ])
         );
@@ -144,10 +144,10 @@ class GroupController extends CController
         }
 
         MessageProducer::publish(
-            MessageProducer::create(SocketConstants::EVENT_TALK, [
+            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
                 'sender_id'   => $user_id,
                 'receiver_id' => (int)$params['group_id'],
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'record_id'   => $record_id
             ])
         );
@@ -178,10 +178,10 @@ class GroupController extends CController
         SocketRoom::getInstance()->delRoomMember($params['group_id'], $user_id);
 
         MessageProducer::publish(
-            MessageProducer::create(SocketConstants::EVENT_TALK, [
+            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
                 'sender_id'   => $user_id,
                 'receiver_id' => (int)$params['group_id'],
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'record_id'   => $record_id
             ])
         );
@@ -250,10 +250,10 @@ class GroupController extends CController
         }
 
         MessageProducer::publish(
-            MessageProducer::create(SocketConstants::EVENT_TALK, [
+            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
                 'sender_id'   => $user_id,
                 'receiver_id' => (int)$params['group_id'],
-                'talk_type'   => TalkType::GROUP_CHAT,
+                'talk_type'   => TalkMode::GROUP_CHAT,
                 'record_id'   => $record_id
             ])
         );
@@ -301,7 +301,7 @@ class GroupController extends CController
             'is_manager'       => $groupInfo->creator_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
             'visit_card'       => GroupMember::visitCard($user_id, $group_id),
-            'is_disturb'       => (int)TalkList::where('user_id', $user_id)->where('receiver_id', $group_id)->where('talk_type', TalkType::GROUP_CHAT)->value('is_disturb'),
+            'is_disturb'       => (int)TalkList::where('user_id', $user_id)->where('receiver_id', $group_id)->where('talk_type', TalkMode::GROUP_CHAT)->value('is_disturb'),
             'notice'           => $notice ? $notice->toArray() : []
         ]);
     }

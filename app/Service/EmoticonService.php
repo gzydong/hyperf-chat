@@ -2,8 +2,8 @@
 
 namespace App\Service;
 
-use App\Constants\TalkMsgType;
-use App\Constants\TalkType;
+use App\Constants\TalkMessageType;
+use App\Constants\TalkMode;
 use App\Model\Chat\TalkRecords;
 use App\Model\Chat\TalkRecordsFile;
 use App\Model\EmoticonItem;
@@ -95,13 +95,13 @@ class EmoticonService extends BaseService
     {
         $result = TalkRecords::where([
             ['id', '=', $record_id],
-            ['msg_type', '=', TalkMsgType::FILE_MESSAGE],
+            ['msg_type', '=', TalkMessageType::FILE_MESSAGE],
             ['is_revoke', '=', 0],
         ])->first(['id', 'talk_type', 'receiver_id', 'msg_type', 'user_id', 'is_revoke']);
 
         if (!$result) return [false, []];
 
-        if ($result->talk_type == TalkType::PRIVATE_CHAT) {
+        if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
             if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
                 return [false, []];
             }

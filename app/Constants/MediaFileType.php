@@ -7,7 +7,7 @@ namespace App\Constants;
  *
  * @package App\Constants
  */
-class FileMediaType
+class MediaFileType
 {
     const FILE_IMAGE = 1; //图片文件
     const FILE_VIDEO = 2; //视频文件

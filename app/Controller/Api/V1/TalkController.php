@@ -12,8 +12,8 @@ namespace App\Controller\Api\V1;
 
 use App\Cache\LastMessage;
 use App\Cache\UnreadTalk;
-use App\Constants\TalkMsgType;
-use App\Constants\TalkType;
+use App\Constants\TalkMessageType;
+use App\Constants\TalkMode;
 use App\Support\UserRelation;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -96,12 +96,12 @@ class TalkController extends CController
             'updated_at'  => date('Y-m-d H:i:s')
         ];
 
-        if ($result['talk_type'] == TalkType::PRIVATE_CHAT) {
+        if ($result['talk_type'] == TalkMode::PRIVATE_CHAT) {
             $userInfo           = User::where('id', $user_id)->first(['nickname', 'avatar']);
             $data['avatar']     = $userInfo->avatar;
             $data['name']       = $userInfo->nickname;
             $data['unread_num'] = UnreadTalk::getInstance()->read($data['receiver_id'], $user_id);
-        } else if ($result['talk_type'] == TalkType::GROUP_CHAT) {
+        } else if ($result['talk_type'] == TalkMode::GROUP_CHAT) {
             $groupInfo      = Group::where('id', $data['receiver_id'])->first(['group_name', 'avatar']);
             $data['name']   = $groupInfo->group_name;
             $data['avatar'] = $groupInfo->avatar;
@@ -190,7 +190,7 @@ class TalkController extends CController
         ]);
 
         // 设置好友消息未读数
-        if ($params['talk_type'] == TalkType::PRIVATE_CHAT) {
+        if ($params['talk_type'] == TalkMode::PRIVATE_CHAT) {
             UnreadTalk::getInstance()->reset((int)$params['receiver_id'], $this->uid());
         }
 
@@ -273,10 +273,10 @@ class TalkController extends CController
         }
 
         $types = [
-            TalkMsgType::TEXT_MESSAGE,
-            TalkMsgType::FILE_MESSAGE,
-            TalkMsgType::FORWARD_MESSAGE,
-            TalkMsgType::CODE_MESSAGE
+            TalkMessageType::TEXT_MESSAGE,
+            TalkMessageType::FILE_MESSAGE,
+            TalkMessageType::FORWARD_MESSAGE,
+            TalkMessageType::CODE_MESSAGE
         ];
 
         if (in_array($params['msg_type'], $types)) {
