@@ -4,14 +4,15 @@ use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\DbConnection\Db;
-class CreateChatRecordsFileTable extends Migration
+
+class CreateTalkRecordsFileTable extends Migration
 {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('chat_records_file', function (Blueprint $table) {
+        Schema::create('talk_records_file', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('文件ID');
             $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
             $table->unsignedInteger('user_id')->default(0)->comment('上传文件的用户ID');
@@ -25,15 +26,15 @@ class CreateChatRecordsFileTable extends Migration
             $table->tinyInteger('is_delete')->default(0)->unsigned()->comment('文件是否已删除[0:否;1:已删除]');
             $table->dateTime('created_at')->nullable(true)->comment('创建时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
 
             $table->unique(['record_id'], 'idx_record_id');
         });
 
         $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}chat_records_file` comment '用户聊天记录_文件消息表'");
+        DB::statement("ALTER TABLE `{$prefix}talk_records_file` comment '用户聊天记录_文件消息表'");
     }
 
     /**
@@ -41,6 +42,6 @@ class CreateChatRecordsFileTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('chat_records_file');
+        Schema::dropIfExists('talk_records_file');
     }
 }

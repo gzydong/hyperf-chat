@@ -25,9 +25,9 @@ class CreateGroupTable extends Migration
             $table->dateTime('created_at')->nullable()->comment('创建时间');
             $table->dateTime('dismissed_at')->nullable()->comment('解散时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
         });
 
         $prefix = config('databases.default.prefix');

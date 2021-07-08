@@ -27,7 +27,6 @@
         "hyperf/redis": "~2.0.0",
         "hyperf/database": "~2.0.0",
         "hyperf/async-queue": "~2.0.0",
-        "hyperf/amqp": "~2.0.0",
         "hyperf/websocket-server": "^2.0",
         "hyperf/constants": "^2.0",
         "hyperf/validation": "^2.0",

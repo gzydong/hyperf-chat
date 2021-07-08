@@ -251,7 +251,6 @@ function parse_ids($ids)
  */
 function push_amqp(ProducerMessage $message, bool $confirm = false, int $timeout = 5)
 {
-    push_redis_subscribe('websocket', $message->getPayload());
     return container()->get(Producer::class)->produce($message, $confirm, $timeout);
 }
 

@@ -24,7 +24,6 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
  - JSON
  - PDO
  - Redis >= 5.0.0
- - AMQP
 
 ## 4、相关文档
 [Hyperf 框架](https://hyperf.wiki/2.0/#/README)
@@ -32,11 +31,11 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
 ## 5、项目安装 
 1. 下载源码包
 2. 安装框架依赖包执行 `compsoer install` 命令 [项目根目录下执行]
-2. 拷贝项目根目录下 .env.example 文件为 .env 并正确配置相关参数（mysql、redis、rabbitmq）
+2. 拷贝项目根目录下 .env.example 文件为 .env 并正确配置相关参数（mysql、redis）
 3. 执行数据库迁移文件命令生成相关数据表  `php bin/hyperf.php migrate`
 4. 启动运行项目 `php bin/hyperf.php start`
 
-注 ：[项目运行之前请确保 Mysql、Redis、RabbitMQ 及 Nginx 服务]
+注 ：[项目运行之前请确保 Mysql、Redis 及 Nginx 服务]
 ## Nginx 相关配置(代理 swoole 服务)
 
 ##### 配置 Http 服务
@@ -129,7 +128,7 @@ server {
 ```
 
 ### 注意事项
-1. 请确保 PHP 安装 openssl、redis、amqp 扩展
+1. 请确保 PHP 安装 openssl、redis 扩展
 2. 请确保 Swoole 扩展开启 openssl 扩展
 ```
 [root@iZuf6cs69fbc86cwpu9iv3Z vhost]# php --ri swoole

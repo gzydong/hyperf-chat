@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Cache\SocketRoom;
+use App\Service\Message\ReceiveHandleService;
+use App\Support\MessageProducer;
 use Hyperf\Di\Annotation\Inject;
 use App\Constants\SocketConstants;
 use Hyperf\Contract\OnCloseInterface;
@@ -22,9 +24,7 @@ use Swoole\Websocket\Frame;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Server;
 use App\Service\SocketClientService;
-use App\Service\MessageHandleService;
 use App\Model\Group\GroupMember;
-use App\Amqp\Producer\ChatMessageProducer;
 
 /**
  * Class WebSocketController
@@ -41,9 +41,9 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
     /**
      * @inject
-     * @var MessageHandleService
+     * @var ReceiveHandleService
      */
-    private $messageHandleService;
+    private $receiveHandleService;
 
     /**
      * 消息事件绑定
@@ -84,11 +84,12 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         }
 
         if (!$isOnline) {
-            // 推送消息至队列
-            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
-                'user_id' => $user_id,
-                'status'  => 1,
-            ]));
+            MessageProducer::publish(
+                MessageProducer::create(SocketConstants::EVENT_ONLINE_STATUS, [
+                    'user_id' => $user_id,
+                    'status'  => 1,
+                ])
+            );
         }
     }
 
@@ -108,7 +109,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         // 回调事件处理函数
         call_user_func_array([
-            $this->messageHandleService,
+            $this->receiveHandleService,
             self::EVENTS[$result['event']]
         ], [$server, $frame, $result['data']]);
     }
@@ -132,11 +133,12 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         // 判断是否存在异地登录
         $isOnline = $this->socketClientService->isOnlineAll($user_id);
         if (!$isOnline) {
-            // 推送消息至队列
-            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_ONLINE_STATUS, [
-                'user_id' => $user_id,
-                'status'  => 0,
-            ]));
+            MessageProducer::publish(
+                MessageProducer::create(SocketConstants::EVENT_ONLINE_STATUS, [
+                    'user_id' => $user_id,
+                    'status'  => 0,
+                ])
+            );
         }
     }
 }

@@ -1,28 +1,32 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Message;
 
+use App\Cache\LastMessage;
+use App\Cache\UnreadTalk;
 use App\Constants\SocketConstants;
 use App\Constants\TalkMsgType;
 use App\Constants\TalkType;
-use Hyperf\Di\Annotation\Inject;
-use Swoole\Http\Response;
-use Swoole\WebSocket\Frame;
-use Swoole\WebSocket\Server;
-use App\Amqp\Producer\ChatMessageProducer;
 use App\Model\Chat\TalkRecords;
 use App\Model\Group\Group;
 use App\Model\UsersFriend;
-use App\Cache\LastMessage;
-use App\Cache\UnreadTalk;
+use App\Service\SocketClientService;
+use App\Support\MessageProducer;
+use Swoole\Http\Response;
+use Swoole\WebSocket\Frame;
+use Swoole\WebSocket\Server;
 
-class MessageHandleService
+class ReceiveHandleService
 {
     /**
-     * @inject
      * @var SocketClientService
      */
     private $socketClientService;
+
+    public function __construct(SocketClientService $clientService)
+    {
+        $this->socketClientService = $clientService;
+    }
 
     /**
      * 对话消息
@@ -81,12 +85,14 @@ class MessageHandleService
             'created_at' => $result->created_at
         ]);
 
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $result->user_id,
-            'receiver_id' => $result->receiver_id,
-            'talk_type'   => $result->talk_type,
-            'record_id'   => $result->id
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $result->user_id,
+                'receiver_id' => $result->receiver_id,
+                'talk_type'   => $result->talk_type,
+                'record_id'   => $result->id
+            ])
+        );
     }
 
     /**
@@ -99,9 +105,11 @@ class MessageHandleService
      */
     public function onKeyboard($server, Frame $frame, $data)
     {
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_KEYBOARD, [
-            'sender_id'   => intval($data['sender_id']),
-            'receiver_id' => intval($data['receiver_id']),
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_KEYBOARD, [
+                'sender_id'   => intval($data['sender_id']),
+                'receiver_id' => intval($data['receiver_id']),
+            ])
+        );
     }
 }

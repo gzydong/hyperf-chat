@@ -17,10 +17,11 @@ class CreateUsersTable extends Migration
             $table->string('mobile', 11)->default('')->unique()->comment('手机号');
             $table->string('nickname', 20)->default('')->comment('用户昵称');
             $table->string('avatar', 255)->default('')->comment('用户头像地址');
-            $table->unsignedTinyInteger('gender')->default(0)->comment('用户性别[0:未知;1:男;2:女]');
+            $table->unsignedTinyInteger('gender')->default(0)->comment('用户性别[0:未知;1:男;2:女;]');
             $table->string('password', 255)->default('')->comment('用户密码');
             $table->string('motto', 100)->default('')->comment('用户座右铭');
             $table->string('email', 30)->default('')->comment('用户邮箱');
+            $table->unsignedTinyInteger('is_robot')->default(0)->comment('是否机器人[0:否;1:是;]');
             $table->dateTime('created_at')->nullable()->comment('注册时间');
             $table->dateTime('updated_at')->nullable()->comment('更新时间');
 

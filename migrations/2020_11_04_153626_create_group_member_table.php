@@ -23,12 +23,12 @@ class CreateGroupMemberTable extends Migration
             $table->dateTime('created_at')->nullable()->comment('入群时间');
             $table->dateTime('deleted_at')->nullable()->comment('退群时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
 
             $table->unique(['group_id', 'user_id'], 'uk_group_id_user_id');
-            $table->index(['user_id', 'group_id'], 'idx_user_id_group_id');
+            $table->index(['user_id'], 'idx_user_id');
         });
 
         $prefix = config('databases.default.prefix');

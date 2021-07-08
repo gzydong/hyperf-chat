@@ -9,6 +9,7 @@ use App\Constants\SocketConstants;
 use App\Model\UsersFriendsApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
+use App\Support\MessageProducer;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
@@ -70,10 +71,12 @@ class ContactsApplyController extends CController
 
         // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll($params['friend_id'])) {
-            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                'apply_id' => $result->id,
-                'type'     => 1,
-            ]));
+            MessageProducer::publish(
+                MessageProducer::create(SocketConstants::EVENT_FRIEND_APPLY, [
+                    'apply_id' => $result->id,
+                    'type'     => 1,
+                ])
+            );
         }
 
         return $this->response->success([], '发送好友申请成功...');
@@ -101,10 +104,12 @@ class ContactsApplyController extends CController
 
         // 判断对方是否在线。如果在线发送消息通知
         if ($this->socketClientService->isOnlineAll($friend_id)) {
-            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_FRIEND_APPLY, [
-                'apply_id' => (int)$params['apply_id'],
-                'type'     => 2,
-            ]));
+            MessageProducer::publish(
+                MessageProducer::create(SocketConstants::EVENT_FRIEND_APPLY, [
+                    'apply_id' => (int)$params['apply_id'],
+                    'type'     => 2,
+                ])
+            );
         }
 
         return $this->response->success([], '处理成功...');

@@ -26,9 +26,9 @@ class CreateGroupNoticeTable extends Migration
             $table->dateTime('updated_at')->nullable()->comment('更新时间');
             $table->dateTime('deleted_at')->nullable()->comment('删除时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
 
             $table->index(['group_id', 'is_delete', 'is_top', 'updated_at'], 'idx_group_id_is_delete_is_top_updated_at');
         });

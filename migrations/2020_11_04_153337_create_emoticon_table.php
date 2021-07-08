@@ -22,6 +22,8 @@ class CreateEmoticonTable extends Migration
 
             $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
+
+            $table->unique(['name'], 'uk_name');
         });
 
         $prefix = config('databases.default.prefix');

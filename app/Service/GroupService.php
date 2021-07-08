@@ -223,6 +223,7 @@ class GroupService extends BaseService
             }
         }
 
+        Db::beginTransaction();
         try {
             if ($updateArr) {
                 GroupMember::whereIn('id', $updateArr)->update([

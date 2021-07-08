@@ -14,21 +14,18 @@ class CreateUsersFriendsTable extends Migration
     {
         Schema::create('users_friends', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('关系ID');
-            $table->unsignedInteger('user1')->default(0)->comment('用户1(user1 一定比 user2 小)');
-            $table->unsignedInteger('user2')->default(0)->comment('用户2(user1 一定比 user2 小)');
-            $table->string('user1_remark', 20)->default('')->comment('好友备注');
-            $table->string('user2_remark', 20)->default('')->comment('好友备注');
-            $table->unsignedTinyInteger('active')->default(1)->default(1)->comment('主动邀请方[1:user1;2:user2]');
-            $table->unsignedTinyInteger('status')->default(1)->comment('好友状态[0:已解除好友关系;1:好友状态]');
-            $table->dateTime('agree_time')->comment('成为好友时间');
+            $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
+            $table->unsignedInteger('friend_id')->default(0)->comment('好友ID');
+            $table->string('remark', 30)->default('')->comment('好友备注');
+            $table->unsignedTinyInteger('status')->default(0)->comment('好友状态[0:否;1:是;]');
             $table->dateTime('created_at')->nullable(true)->comment('创建时间');
+            $table->dateTime('updated_at')->nullable(true)->comment('更新时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
 
-            $table->index(['user1', 'user2'], 'idx_user1_user2');
-            $table->index(['user2', 'user1'], 'idx_user2_user1');
+            $table->index(['user_id', 'friend_id'], 'idx_user_id_friend_id');
         });
 
         $prefix = config('databases.default.prefix');

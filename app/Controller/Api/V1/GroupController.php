@@ -13,6 +13,7 @@ namespace App\Controller\Api\V1;
 use App\Cache\SocketRoom;
 use App\Constants\TalkType;
 use App\Service\UserService;
+use App\Support\MessageProducer;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -76,13 +77,14 @@ class GroupController extends CController
             SocketRoom::getInstance()->addRoomMember(strval($data['group_id']), $uid);
         }
 
-        // ... 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$data['group_id'],
-            'talk_type'   => TalkType::GROUP_CHAT,
-            'record_id'   => (int)$data['record_id']
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$data['group_id'],
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'record_id'   => (int)$data['record_id']
+            ])
+        );
 
         return $this->response->success([
             'group_id' => $data['group_id']
@@ -141,13 +143,14 @@ class GroupController extends CController
             SocketRoom::getInstance()->addRoomMember($params['group_id'], $uid);
         }
 
-        // 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['group_id'],
-            'talk_type'   => TalkType::GROUP_CHAT,
-            'record_id'   => $record_id
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$params['group_id'],
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'record_id'   => $record_id
+            ])
+        );
 
         return $this->response->success([], '好友已成功加入群聊...');
     }
@@ -174,13 +177,14 @@ class GroupController extends CController
         // 移出聊天室
         SocketRoom::getInstance()->delRoomMember($params['group_id'], $user_id);
 
-        // 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['group_id'],
-            'talk_type'   => TalkType::GROUP_CHAT,
-            'record_id'   => $record_id
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$params['group_id'],
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'record_id'   => $record_id
+            ])
+        );
 
         return $this->response->success([], '已成功退出群组...');
     }
@@ -245,13 +249,14 @@ class GroupController extends CController
             SocketRoom::getInstance()->delRoomMember($params['group_id'], strval($uid));
         }
 
-        // 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['group_id'],
-            'talk_type'   => TalkType::GROUP_CHAT,
-            'record_id'   => $record_id
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$params['group_id'],
+                'talk_type'   => TalkType::GROUP_CHAT,
+                'record_id'   => $record_id
+            ])
+        );
 
         return $this->response->success([], '已成功退出群组...');
     }

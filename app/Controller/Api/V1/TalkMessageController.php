@@ -10,6 +10,7 @@ use App\Constants\TalkMsgType;
 use App\Constants\TalkType;
 use App\Model\EmoticonItem;
 use App\Model\FileSplitUpload;
+use App\Support\MessageProducer;
 use App\Support\UserRelation;
 use App\Service\EmoticonService;
 use App\Service\TalkService;
@@ -67,13 +68,14 @@ class TalkMessageController extends CController
 
         if (!$record_id) return $this->response->fail('消息发送失败！');
 
-        // 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$params['receiver_id'],
+                'talk_type'   => (int)$params['talk_type'],
+                'record_id'   => $record_id
+            ])
+        );
 
         LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
             'text'       => '[代码消息]',
@@ -133,13 +135,14 @@ class TalkMessageController extends CController
 
         if (!$record_id) return $this->response->fail('图片上传失败！');
 
-        // 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id,
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$params['receiver_id'],
+                'talk_type'   => (int)$params['talk_type'],
+                'record_id'   => $record_id,
+            ])
+        );
 
         LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
             'text'       => '[图片消息]',
@@ -195,13 +198,14 @@ class TalkMessageController extends CController
 
         if (!$record_id) return $this->response->fail('表情发送失败！');
 
-        // 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$params['receiver_id'],
+                'talk_type'   => (int)$params['talk_type'],
+                'record_id'   => $record_id
+            ])
+        );
 
         LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
             'text'       => '[文件消息]',
@@ -259,13 +263,14 @@ class TalkMessageController extends CController
 
         if (!$record_id) return $this->response->fail('表情发送失败！');
 
-        // 消息推送队列
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_TALK, [
+                'sender_id'   => $user_id,
+                'receiver_id' => (int)$params['receiver_id'],
+                'talk_type'   => (int)$params['talk_type'],
+                'record_id'   => $record_id
+            ])
+        );
 
         LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
             'text'       => '[表情包消息]',
@@ -321,12 +326,14 @@ class TalkMessageController extends CController
 
         // 消息推送队列
         foreach ($ids as $value) {
-            push_amqp(new ChatMessageProducer(SocketConstants::EVENT_TALK, [
-                'sender_id'   => $user_id,
-                'receiver_id' => $value['receiver_id'],
-                'talk_type'   => $value['talk_type'],
-                'record_id'   => $value['record_id'],
-            ]));
+            MessageProducer::publish(
+                MessageProducer::create(SocketConstants::EVENT_TALK, [
+                    'sender_id'   => $user_id,
+                    'receiver_id' => $value['receiver_id'],
+                    'talk_type'   => $value['talk_type'],
+                    'record_id'   => $value['record_id'],
+                ])
+            );
         }
 
         return $this->response->success([], '转发成功...');
@@ -366,9 +373,11 @@ class TalkMessageController extends CController
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
         if (!$isTrue) return $this->response->fail($message);
 
-        push_amqp(new ChatMessageProducer(SocketConstants::EVENT_REVOKE_TALK, [
-            'record_id' => $params['record_id']
-        ]));
+        MessageProducer::publish(
+            MessageProducer::create(SocketConstants::EVENT_REVOKE_TALK, [
+                'record_id' => $params['record_id']
+            ])
+        );
 
         return $this->response->success([], $message);
     }

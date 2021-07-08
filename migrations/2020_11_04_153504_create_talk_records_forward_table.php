@@ -4,14 +4,14 @@ use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\DbConnection\Db;
-class CreateChatRecordsForwardTable extends Migration
+class CreateTalkRecordsForwardTable extends Migration
 {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('chat_records_forward', function (Blueprint $table) {
+        Schema::create('talk_records_forward', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('合并转发ID');
             $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
             $table->unsignedInteger('user_id')->default(0)->comment('转发用户ID');
@@ -27,7 +27,7 @@ class CreateChatRecordsForwardTable extends Migration
         });
 
         $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}chat_records_forward` comment '用户聊天记录_转发信息表'");
+        DB::statement("ALTER TABLE `{$prefix}talk_records_forward` comment '用户聊天记录_转发信息表'");
     }
 
     /**
@@ -35,6 +35,6 @@ class CreateChatRecordsForwardTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('chat_records_forward');
+        Schema::dropIfExists('talk_records_forward');
     }
 }
