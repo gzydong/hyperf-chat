@@ -69,11 +69,12 @@ class UserService extends BaseService
             ]);
 
             Db::commit();
-            return true;
         } catch (\Exception $e) {
             Db::rollBack();
             return false;
         }
+
+        return true;
     }
 
     /**
@@ -118,7 +119,7 @@ class UserService extends BaseService
         if (!$info) return [];
 
         $info                    = $info->toArray();
-        $info['friend_status']   = 0;//朋友关系状态[0:本人;1:陌生人;2:朋友;]
+        $info['friend_status']   = 0;//朋友关系[0:本人;1:陌生人;2:朋友;]
         $info['nickname_remark'] = '';
         $info['friend_apply']    = 0;
 

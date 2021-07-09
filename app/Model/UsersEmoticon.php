@@ -27,8 +27,8 @@ class UsersEmoticon extends BaseModel
     ];
 
     /**
-     * @param string $value
-     * @return string
+     * @param $value
+     * @return false|string[]
      */
     public function getEmoticonIdsAttribute($value)
     {

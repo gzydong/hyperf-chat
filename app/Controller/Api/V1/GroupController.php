@@ -10,21 +10,19 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Cache\SocketRoom;
 use App\Constants\TalkMode;
+use App\Service\GroupNoticeService;
+use App\Service\TalkListService;
 use App\Service\UserService;
-use App\Support\MessageProducer;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use App\Model\TalkList;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Model\Group\GroupNotice;
 use App\Service\GroupService;
-use App\Constants\TalkMessageEvent;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -56,36 +54,16 @@ class GroupController extends CController
             'uids'       => 'required|ids'
         ]);
 
-        $friend_ids = parse_ids($params['uids']);
-
-        $user_id = $this->uid();
-        [$isTrue, $data] = $this->groupService->create($user_id, [
+        [$isTrue, $group] = $this->groupService->create($this->uid(), [
             'name'    => $params['group_name'],
             'avatar'  => $params['avatar'] ?? '',
             'profile' => $params['group_profile'] ?? ''
-        ], $friend_ids);
+        ], parse_ids($params['uids']));
 
-        if (!$isTrue) {
-            return $this->response->fail('创建群聊失败，请稍后再试！');
-        }
-
-        // 加入聊天室
-        $friend_ids[] = $user_id;
-        foreach ($friend_ids as $uid) {
-            SocketRoom::getInstance()->addRoomMember(strval($data['group_id']), $uid);
-        }
-
-        MessageProducer::publish(
-            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-                'sender_id'   => $user_id,
-                'receiver_id' => (int)$data['group_id'],
-                'talk_type'   => TalkMode::GROUP_CHAT,
-                'record_id'   => (int)$data['record_id']
-            ])
-        );
+        if (!$isTrue) return $this->response->fail('创建群聊失败，请稍后再试！');
 
         return $this->response->success([
-            'group_id' => $data['group_id']
+            'group_id' => $group->id
         ]);
     }
 
@@ -107,10 +85,6 @@ class GroupController extends CController
             return $this->response->fail('群组解散失败！');
         }
 
-        SocketRoom::getInstance()->delRoom($params['group_id']);
-
-        // ... TODO 推送群消息(预留)
-
         return $this->response->success([], '群组解散成功...');
     }
 
@@ -128,27 +102,10 @@ class GroupController extends CController
             'uids'     => 'required|ids'
         ]);
 
-        $uids = parse_ids($params['uids']);
-
-        $user_id = $this->uid();
-        [$isTrue, $record_id] = $this->groupService->invite($user_id, $params['group_id'], $uids);
+        $isTrue = $this->groupService->invite($this->uid(), $params['group_id'], parse_ids($params['uids']));
         if (!$isTrue) {
             return $this->response->fail('邀请好友加入群聊失败！');
         }
-
-        // 加入聊天室
-        foreach ($uids as $uid) {
-            SocketRoom::getInstance()->addRoomMember($params['group_id'], $uid);
-        }
-
-        MessageProducer::publish(
-            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-                'sender_id'   => $user_id,
-                'receiver_id' => (int)$params['group_id'],
-                'talk_type'   => TalkMode::GROUP_CHAT,
-                'record_id'   => $record_id
-            ])
-        );
 
         return $this->response->success([], '好友已成功加入群聊...');
     }
@@ -166,23 +123,9 @@ class GroupController extends CController
             'group_id' => 'required|integer'
         ]);
 
-        $user_id = $this->uid();
-        [$isTrue, $record_id] = $this->groupService->quit($user_id, $params['group_id']);
-        if (!$isTrue) {
+        if (!$this->groupService->quit($this->uid(), $params['group_id'])) {
             return $this->response->fail('退出群组失败！');
         }
-
-        // 移出聊天室
-        SocketRoom::getInstance()->delRoomMember($params['group_id'], $user_id);
-
-        MessageProducer::publish(
-            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-                'sender_id'   => $user_id,
-                'receiver_id' => (int)$params['group_id'],
-                'talk_type'   => TalkMode::GROUP_CHAT,
-                'record_id'   => $record_id
-            ])
-        );
 
         return $this->response->success([], '已成功退出群组...');
     }
@@ -203,15 +146,7 @@ class GroupController extends CController
             'avatar'     => 'present|url'
         ]);
 
-        $result = Group::where('id', $params['group_id'])->where('creator_id', $this->uid())->update([
-            'group_name' => $params['group_name'],
-            'profile'    => $params['profile'],
-            'avatar'     => $params['avatar']
-        ]);
-
-        // ... TODO 推送消息通知（预留）
-
-        return $result
+        return $this->groupService->update($params['group_id'], $this->uid(), $params)
             ? $this->response->success([], '群组信息修改成功...')
             : $this->response->fail('群组信息修改失败！');
     }
@@ -237,24 +172,10 @@ class GroupController extends CController
             return $this->response->fail('群聊用户移除失败！');
         }
 
-        [$isTrue, $record_id] = $this->groupService->removeMember($params['group_id'], $user_id, $params['members_ids']);
+        $isTrue = $this->groupService->removeMember($params['group_id'], $user_id, $params['members_ids']);
         if (!$isTrue) {
             return $this->response->fail('群聊用户移除失败！');
         }
-
-        // 移出聊天室
-        foreach ($params['members_ids'] as $uid) {
-            SocketRoom::getInstance()->delRoomMember($params['group_id'], strval($uid));
-        }
-
-        MessageProducer::publish(
-            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-                'sender_id'   => $user_id,
-                'receiver_id' => (int)$params['group_id'],
-                'talk_type'   => TalkMode::GROUP_CHAT,
-                'record_id'   => $record_id
-            ])
-        );
 
         return $this->response->success([], '已成功退出群组...');
     }
@@ -265,7 +186,7 @@ class GroupController extends CController
      *
      * @return ResponseInterface
      */
-    public function detail()
+    public function detail(TalkListService $service)
     {
         $group_id = $this->request->input('group_id', 0);
         $user_id  = $this->uid();
@@ -281,14 +202,9 @@ class GroupController extends CController
                 'users.nickname'
             ]);
 
-        if (!$groupInfo) {
-            return $this->response->success();
-        }
+        if (!$groupInfo) return $this->response->success();
 
-        $notice = GroupNotice::where('group_id', $group_id)
-            ->where('is_delete', 0)
-            ->orderBy('id', 'desc')
-            ->first(['title', 'content']);
+        $notice = GroupNotice::where('group_id', $group_id)->where('is_delete', 0)->orderBy('id', 'desc')->first(['title', 'content']);
 
         return $this->response->success([
             'group_id'         => $groupInfo->id,
@@ -299,7 +215,7 @@ class GroupController extends CController
             'is_manager'       => $groupInfo->creator_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
             'visit_card'       => GroupMember::visitCard($user_id, $group_id),
-            'is_disturb'       => (int)TalkList::where('user_id', $user_id)->where('receiver_id', $group_id)->where('talk_type', TalkMode::GROUP_CHAT)->value('is_disturb'),
+            'is_disturb'       => (int)$service->isDisturb($user_id, $group_id, TalkMode::GROUP_CHAT),
             'notice'           => $notice ? $notice->toArray() : []
         ]);
     }
@@ -318,9 +234,7 @@ class GroupController extends CController
             'visit_card' => 'required|max:20'
         ]);
 
-        $isTrue = GroupMember::where('group_id', $params['group_id'])
-            ->where('user_id', $this->uid())
-            ->update(['user_card' => $params['visit_card']]);
+        $isTrue = $this->groupService->updateMemberCard($params['group_id'], $this->uid(), $params['visit_card']);
 
         return $isTrue
             ? $this->response->success([], '群名片修改成功...')
@@ -359,7 +273,7 @@ class GroupController extends CController
     public function getGroups()
     {
         return $this->response->success(
-            $this->groupService->getGroups($this->uid())
+            $this->groupService->getUserGroups($this->uid())
         );
     }
 
@@ -404,7 +318,7 @@ class GroupController extends CController
      *
      * @return ResponseInterface
      */
-    public function getGroupNotice()
+    public function getGroupNotice(GroupNoticeService $service)
     {
         $user_id  = $this->uid();
         $group_id = $this->request->input('group_id', 0);
@@ -414,28 +328,7 @@ class GroupController extends CController
             return $this->response->fail('非管理员禁止操作！');
         }
 
-        $rows = GroupNotice::leftJoin('users', 'users.id', '=', 'group_notice.creator_id')
-            ->where([
-                ['group_notice.group_id', '=', $group_id],
-                ['group_notice.is_delete', '=', 0]
-            ])
-            ->orderBy('group_notice.is_top', 'desc')
-            ->orderBy('group_notice.updated_at', 'desc')
-            ->get([
-                'group_notice.id',
-                'group_notice.creator_id',
-                'group_notice.title',
-                'group_notice.content',
-                'group_notice.is_top',
-                'group_notice.is_confirm',
-                'group_notice.confirm_users',
-                'group_notice.created_at',
-                'group_notice.updated_at',
-                'users.avatar',
-                'users.nickname',
-            ])->toArray();
-
-        return $this->response->success($rows);
+        return $this->response->success($service->lists($group_id));
     }
 
     /**
@@ -444,7 +337,7 @@ class GroupController extends CController
      *
      * @return ResponseInterface
      */
-    public function editNotice()
+    public function editNotice(GroupNoticeService $service)
     {
         $params = $this->request->inputs(['group_id', 'notice_id', 'title', 'content', 'is_top', 'is_confirm']);
         $this->validate($params, [
@@ -465,34 +358,14 @@ class GroupController extends CController
 
         // 判断是否是新增数据
         if (empty($params['notice_id'])) {
-            $result = GroupNotice::create([
-                'group_id'   => $params['group_id'],
-                'creator_id' => $user_id,
-                'title'      => $params['title'],
-                'content'    => $params['content'],
-                'is_top'     => $params['is_top'],
-                'is_confirm' => $params['is_confirm'],
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-
-            if (!$result) {
+            if (!$service->create($user_id, $params)) {
                 return $this->response->fail('添加群公告信息失败！');
             }
-
-            // ... TODO 推送群消息（预留）
 
             return $this->response->success([], '添加群公告信息成功...');
         }
 
-        $result = GroupNotice::where('id', $params['notice_id'])->update([
-            'title'      => $params['title'],
-            'content'    => $params['content'],
-            'is_top'     => $params['is_top'],
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
-
-        return $result
+        return $service->update($params)
             ? $this->response->success([], '修改群公告信息成功...')
             : $this->response->fail('修改群公告信息失败！');
     }
@@ -503,7 +376,7 @@ class GroupController extends CController
      *
      * @return ResponseInterface
      */
-    public function deleteNotice()
+    public function deleteNotice(GroupNoticeService $service)
     {
         $params = $this->request->inputs(['group_id', 'notice_id']);
         $this->validate($params, [
@@ -511,21 +384,13 @@ class GroupController extends CController
             'notice_id' => 'required|integer'
         ]);
 
-        $user_id = $this->uid();
-
-        // 判断用户是否是管理员
-        if (!Group::isManager($user_id, $params['group_id'])) {
-            return $this->response->fail('非法操作！');
+        try {
+            $isTrue = $service->delete($params['notice_id'], $this->uid());
+        } catch (\Exception $e) {
+            return $this->response->fail($e->getMessage());
         }
 
-        $result = GroupNotice::where('id', $params['notice_id'])
-            ->where('group_id', $params['group_id'])
-            ->update([
-                'is_delete'  => 1,
-                'deleted_at' => date('Y-m-d H:i:s')
-            ]);
-
-        return $result
+        return $isTrue
             ? $this->response->success([], '公告删除成功...')
             : $this->response->fail('公告删除失败！');
     }

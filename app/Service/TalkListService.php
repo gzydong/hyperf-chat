@@ -169,7 +169,7 @@ class TalkListService
      *
      * @param int $user_id     用户ID
      * @param int $receiver_id 接收者ID
-     * @param int $talk_type   接收者类型[1:好友;2:群组;]
+     * @param int $talk_type   对话类型[1:私信;2:群聊;]
      * @param int $is_disturb  是否免打扰[0:否;1:是;]
      * @return boolean
      */
@@ -189,5 +189,22 @@ class TalkListService
             'is_disturb' => $is_disturb,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
+    }
+
+    /**
+     * 判断是否消息免打扰
+     *
+     * @param int $user_id     用户ID
+     * @param int $receiver_id 接收者ID
+     * @param int $talk_type   对话类型[1:私信;2:群聊;]
+     * @return bool
+     */
+    public function isDisturb(int $user_id, int $receiver_id, int $talk_type)
+    {
+        return (bool)TalkList::query()->where([
+            ['user_id', '=', $user_id],
+            ['talk_type', '=', $talk_type],
+            ['receiver_id', '=', $receiver_id],
+        ])->value('is_disturb');
     }
 }
