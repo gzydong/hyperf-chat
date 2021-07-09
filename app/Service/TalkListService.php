@@ -6,7 +6,7 @@ use App\Cache\LastMessage;
 use App\Cache\ServerRunID;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMode;
-use App\Model\TalkList;
+use App\Model\Talk\TalkList;
 use App\Model\UsersFriend;
 
 class TalkListService

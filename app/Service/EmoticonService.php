@@ -4,8 +4,8 @@ namespace App\Service;
 
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
-use App\Model\Chat\TalkRecords;
-use App\Model\Chat\TalkRecordsFile;
+use App\Model\Talk\TalkRecords;
+use App\Model\Talk\TalkRecordsFile;
 use App\Model\EmoticonItem;
 use App\Model\Group\Group;
 use App\Model\UsersEmoticon;

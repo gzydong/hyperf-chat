@@ -6,11 +6,11 @@ namespace App\Service;
 use App\Cache\LastMessage;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
-use App\Model\Chat\TalkRecords;
-use App\Model\Chat\TalkRecordsInvite;
+use App\Model\Talk\TalkRecords;
+use App\Model\Talk\TalkRecordsInvite;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
-use App\Model\TalkList;
+use App\Model\Talk\TalkList;
 use Hyperf\DbConnection\Db;
 use Exception;
 

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Support;
-
 
 use App\Constants\RedisSubscribeChan;
 
@@ -25,6 +23,8 @@ class MessageProducer
     }
 
     /**
+     * 推送消息至 Redis 订阅通道中
+     *
      * @param array $message
      */
     public static function publish(array $message)

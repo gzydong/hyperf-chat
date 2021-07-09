@@ -11,6 +11,10 @@ trait StaticInstance
 {
     private static $instance;
 
+    private function __construct()
+    {
+    }
+
     /**
      * 获取单例
      *
@@ -25,12 +29,7 @@ trait StaticInstance
         return static::$instance;
     }
 
-    private function __construct()
-    {
-    }
-
     private function __clone()
     {
-
     }
 }

@@ -3,11 +3,11 @@
 namespace App\Service;
 
 use App\Constants\TalkMessageType;
-use App\Model\Chat\TalkRecordsCode;
+use App\Model\Talk\TalkRecordsCode;
 use Exception;
 use App\Constants\MediaFileType;
-use App\Model\Chat\TalkRecords;
-use App\Model\Chat\TalkRecordsFile;
+use App\Model\Talk\TalkRecords;
+use App\Model\Talk\TalkRecordsFile;
 use Hyperf\DbConnection\Db;
 
 class TalkMessageService

@@ -8,11 +8,11 @@ use Exception;
 use App\Model\User;
 use App\Model\UsersFriend;
 use App\Model\Group\Group;
-use App\Model\Chat\TalkRecords;
-use App\Model\Chat\TalkRecordsCode;
-use App\Model\Chat\TalkRecordsFile;
-use App\Model\Chat\TalkRecordsForward;
-use App\Model\Chat\TalkRecordsInvite;
+use App\Model\Talk\TalkRecords;
+use App\Model\Talk\TalkRecordsCode;
+use App\Model\Talk\TalkRecordsFile;
+use App\Model\Talk\TalkRecordsForward;
+use App\Model\Talk\TalkRecordsInvite;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
 

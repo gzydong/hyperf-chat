@@ -2,7 +2,9 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Talk;
+
+use App\Model\BaseModel;
 
 /**
  * 聊天列表组数据表模型

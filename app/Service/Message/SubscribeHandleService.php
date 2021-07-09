@@ -6,17 +6,16 @@ use App\Cache\SocketRoom;
 use App\Constants\TalkMessageEvent;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
-use App\Model\Chat\TalkRecords;
-use App\Model\Chat\TalkRecordsCode;
-use App\Model\Chat\TalkRecordsFile;
-use App\Model\Chat\TalkRecordsForward;
-use App\Model\Chat\TalkRecordsInvite;
+use App\Model\Talk\TalkRecords;
+use App\Model\Talk\TalkRecordsCode;
+use App\Model\Talk\TalkRecordsFile;
+use App\Model\Talk\TalkRecordsForward;
+use App\Model\Talk\TalkRecordsInvite;
 use App\Model\Group\Group;
 use App\Model\User;
 use App\Model\UsersFriendsApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
-use Hyperf\Amqp\Result;
 
 class SubscribeHandleService
 {
@@ -50,6 +49,24 @@ class SubscribeHandleService
     public function __construct(SocketClientService $clientService)
     {
         $this->clientService = $clientService;
+    }
+
+    /**
+     * @param array $data
+     * <pre>
+     * [
+     * 'uuid'    => '',
+     * 'event'   => '',
+     * 'data'    => '',
+     * 'options' => ''
+     * ];
+     * </pre>
+     */
+    public function handle(array $data)
+    {
+        if (isset(self::EVENTS[$data['event']])) {
+            call_user_func([$this, self::EVENTS[$data['event']]], $data);
+        }
     }
 
     /**

@@ -7,7 +7,7 @@ use App\Cache\UnreadTalk;
 use App\Constants\TalkMessageEvent;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
-use App\Model\Chat\TalkRecords;
+use App\Model\Talk\TalkRecords;
 use App\Model\Group\Group;
 use App\Model\UsersFriend;
 use App\Service\SocketClientService;

@@ -9,6 +9,7 @@ use Hyperf\Process\AbstractProcess;
 use Hyperf\Process\Annotation\Process;
 
 /**
+ * Websocket 消息订阅处理服务
  * @Process(name="RedisWebsocketSubscribe")
  */
 class RedisWebsocketSubscribe extends AbstractProcess
@@ -25,6 +26,9 @@ class RedisWebsocketSubscribe extends AbstractProcess
      */
     private $handleService;
 
+    /**
+     * 执行入口
+     */
     public function handle(): void
     {
         $this->handleService = container()->get(SubscribeHandleService::class);
@@ -44,13 +48,6 @@ class RedisWebsocketSubscribe extends AbstractProcess
         //echo PHP_EOL . "chan : $chan , msg : $message";
         $data = json_decode($message, true);
 
-        if (!isset(SubscribeHandleService::EVENTS[$data['event']])) return;
-
-        $this->handleService->{SubscribeHandleService::EVENTS[$data['event']]}($data);
-    }
-
-    public function isEnable($server): bool
-    {
-        return true;
+        $this->handleService->handle($data);
     }
 }
