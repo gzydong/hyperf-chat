@@ -19,7 +19,7 @@ class SocketClientService
      * @param int    $user_id 用户ID
      * @param string $run_id  服务运行ID（默认当前服务ID）
      */
-    public function bindRelation(int $fd, int $user_id, $run_id = SERVER_RUN_ID)
+    public function bind(int $fd, int $user_id, $run_id = SERVER_RUN_ID)
     {
         SocketFdBindUser::getInstance()->bind($fd, $user_id, $run_id);
         SocketUserBindFds::getInstance()->bind($fd, $user_id, $run_id);
@@ -31,7 +31,7 @@ class SocketClientService
      * @param int    $fd     客户端ID
      * @param string $run_id 服务运行ID（默认当前服务ID）
      */
-    public function removeRelation(int $fd, $run_id = SERVER_RUN_ID)
+    public function unbind(int $fd, $run_id = SERVER_RUN_ID)
     {
         $user_id = $this->findFdUserId($fd);
 

@@ -307,26 +307,4 @@ class TalkController extends CController
             'limit'     => $limit
         ]);
     }
-
-    /**
-     * 搜索聊天记录（待开发）
-     * @RequestMapping(path="records-search", methods="get")
-     *
-     * @return ResponseInterface
-     */
-    public function searchChatRecords()
-    {
-        return $this->response->success();
-    }
-
-    /**
-     * 获取聊天记录上下文数据（待开发）
-     * @RequestMapping(path="records-context", methods="get")
-     *
-     * @return ResponseInterface
-     */
-    public function getRecordsContext()
-    {
-        return $this->response->success();
-    }
 }

@@ -37,21 +37,13 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      * @inject
      * @var SocketClientService
      */
-    private $socketClientService;
+    private $client;
 
     /**
      * @inject
      * @var ReceiveHandleService
      */
-    private $receiveHandleService;
-
-    /**
-     * 消息事件绑定
-     */
-    const EVENTS = [
-        TalkMessageEvent::EVENT_TALK     => 'onTalk',
-        TalkMessageEvent::EVENT_KEYBOARD => 'onKeyboard',
-    ];
+    private $receiveHandle;
 
     /**
      * 连接创建成功回调事件
@@ -67,7 +59,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         stdout_log()->notice("用户连接信息 : user_id:{$user_id} | fd:{$request->fd} 时间：" . date('Y-m-d H:i:s'));
 
         // 判断是否存在异地登录
-        $isOnline = $this->socketClientService->isOnlineAll($user_id);
+        $isOnline = $this->client->isOnlineAll($user_id);
 
         // 若开启单点登录，则主动关闭之前登录的连接
         if ($isOnline) {
@@ -75,7 +67,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         }
 
         // 绑定fd与用户关系
-        $this->socketClientService->bindRelation($request->fd, $user_id);
+        $this->client->bind($request->fd, $user_id);
 
         // 加入群聊
         $groupIds = GroupMember::getUserGroupIds($user_id);
@@ -105,13 +97,12 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         if ($frame->data == 'PING') return;
 
         $result = json_decode($frame->data, true);
-        if (!isset(self::EVENTS[$result['event']])) return;
 
-        // 回调事件处理函数
-        call_user_func_array([
-            $this->receiveHandleService,
-            self::EVENTS[$result['event']]
-        ], [$server, $frame, $result['data']]);
+        if (isset(ReceiveHandleService::EVENTS[$result['event']])) {
+            call_user_func_array([$this->receiveHandle, ReceiveHandleService::EVENTS[$result['event']]], [
+                $server, $frame, $result['data']
+            ]);
+        }
     }
 
     /**
@@ -123,15 +114,15 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onClose($server, int $fd, int $reactorId): void
     {
-        $user_id = $this->socketClientService->findFdUserId($fd);
+        $user_id = $this->client->findFdUserId($fd);
 
         stdout_log()->notice("客户端FD:{$fd} 已关闭连接 ，用户ID为【{$user_id}】，关闭时间：" . date('Y-m-d H:i:s'));
 
         // 删除 fd 绑定关系
-        $this->socketClientService->removeRelation($fd);
+        $this->client->unbind($fd);
 
         // 判断是否存在异地登录
-        $isOnline = $this->socketClientService->isOnlineAll($user_id);
+        $isOnline = $this->client->isOnlineAll($user_id);
         if (!$isOnline) {
             MessageProducer::publish(
                 MessageProducer::create(TalkMessageEvent::EVENT_ONLINE_STATUS, [

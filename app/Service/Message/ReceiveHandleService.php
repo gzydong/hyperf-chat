@@ -21,15 +21,26 @@ class ReceiveHandleService
     /**
      * @var SocketClientService
      */
-    private $socketClientService;
+    private $client;
 
-    public function __construct(SocketClientService $clientService)
+    // 消息事件绑定
+    const EVENTS = [
+        TalkMessageEvent::EVENT_TALK     => 'onTalk',
+        TalkMessageEvent::EVENT_KEYBOARD => 'onKeyboard',
+    ];
+
+    /**
+     * ReceiveHandleService constructor.
+     *
+     * @param SocketClientService $client
+     */
+    public function __construct(SocketClientService $client)
     {
-        $this->socketClientService = $clientService;
+        $this->client = $client;
     }
 
     /**
-     * 对话消息
+     * 对话文本消息
      *
      * @param Response|Server $server
      * @param Frame           $frame
@@ -38,24 +49,18 @@ class ReceiveHandleService
      */
     public function onTalk($server, Frame $frame, $data)
     {
-        $user_id = $this->socketClientService->findFdUserId($frame->fd);
-        if ($user_id != $data['sender_id']) {
-            return;
-        }
+        $user_id = $this->client->findFdUserId($frame->fd);
+        if ($user_id != $data['sender_id']) return;
 
-        // 验证消息类型 私聊|群聊
-        if (!in_array($data['talk_type'], TalkMode::getTypes())) {
-            return;
-        }
+        // 验证消息类型
+        if (!in_array($data['talk_type'], TalkMode::getTypes())) return;
 
-        // 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系(后期走缓存)
+        // 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
         if ($data['talk_type'] == TalkMode::PRIVATE_CHAT) {
-            // 判断发送者和接受者是否是好友关系
             if (!UsersFriend::isFriend((int)$data['sender_id'], (int)$data['receiver_id'], true)) {
                 return;
             }
         } else if ($data['talk_type'] == TalkMode::GROUP_CHAT) {
-            // 判断是否属于群成员
             if (!Group::isMember((int)$data['receiver_id'], (int)$data['sender_id'])) {
                 return;
             }
@@ -71,11 +76,8 @@ class ReceiveHandleService
             'updated_at'  => date('Y-m-d H:i:s'),
         ]);
 
-        if (!$result) return;
-
-        // 判断是否私聊
+        // 判断是否私信
         if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
-            // 设置好友消息未读数
             UnreadTalk::getInstance()->increment($result->user_id, $result->receiver_id);
         }
 
@@ -85,14 +87,12 @@ class ReceiveHandleService
             'created_at' => $result->created_at
         ]);
 
-        MessageProducer::publish(
-            MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-                'sender_id'   => $result->user_id,
-                'receiver_id' => $result->receiver_id,
-                'talk_type'   => $result->talk_type,
-                'record_id'   => $result->id
-            ])
-        );
+        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+            'sender_id'   => $result->user_id,
+            'receiver_id' => $result->receiver_id,
+            'talk_type'   => $result->talk_type,
+            'record_id'   => $result->id
+        ]));
     }
 
     /**
@@ -105,11 +105,9 @@ class ReceiveHandleService
      */
     public function onKeyboard($server, Frame $frame, $data)
     {
-        MessageProducer::publish(
-            MessageProducer::create(TalkMessageEvent::EVENT_KEYBOARD, [
-                'sender_id'   => intval($data['sender_id']),
-                'receiver_id' => intval($data['receiver_id']),
-            ])
-        );
+        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_KEYBOARD, [
+            'sender_id'   => (int)$data['sender_id'],
+            'receiver_id' => (int)$data['receiver_id'],
+        ]));
     }
 }

@@ -244,9 +244,7 @@ class TalkMessageController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
-        $emoticon = EmoticonItem::where('id', $params['emoticon_id'])->where('user_id', $user_id)->first([
-            'url', 'file_suffix', 'file_size'
-        ]);
+        $emoticon = EmoticonItem::where('id', $params['emoticon_id'])->where('user_id', $user_id)->first();
 
         if (!$emoticon) return $this->response->fail('表情不存在！');
 
@@ -368,7 +366,7 @@ class TalkMessageController extends CController
     {
         $params = $this->request->inputs(['record_id']);
         $this->validate($params, [
-            'record_id' => 'required|integer|min:0'
+            'record_id' => 'required|integer|min:1'
         ]);
 
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
