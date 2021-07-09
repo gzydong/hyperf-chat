@@ -106,15 +106,15 @@ class GroupService extends BaseService
         ]);
 
         // 加入聊天室
-        foreach ($friend_ids as $uid) {
-            SocketRoom::getInstance()->addRoomMember(strval($data['group_id']), $uid);
+        foreach ($friend_ids as $value) {
+            SocketRoom::getInstance()->addRoomMember(strval($group->id), strval($value));
         }
 
         MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
             'sender_id'   => $user_id,
             'receiver_id' => $group->id,
             'talk_type'   => TalkMode::GROUP_CHAT,
-            'record_id'   => (int)$data['record_id']
+            'record_id'   => $result->id
         ]));
 
         return [true, $group];
