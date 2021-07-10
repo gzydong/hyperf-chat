@@ -28,15 +28,16 @@
         "hyperf/database": "~2.0.0",
         "hyperf/async-queue": "~2.0.0",
         "hyperf/websocket-server": "^2.0",
-        "hyperf/constants": "^2.0",
-        "hyperf/validation": "^2.0",
-        "hyperf/filesystem": "^2.0",
+        "hyperf/constants": "~2.0.0",
+        "hyperf/validation": "~2.0.0",
+        "hyperf/filesystem": "~2.0.0",
         "hashids/hashids": "^4.0",
         "ext-json": "*",
-        "hyperf/view": "^2.0",
-        "hyperf/view-engine": "^2.0",
+        "hyperf/view": "~2.0.0",
+        "hyperf/view-engine": "~2.0.0",
         "phpmailer/phpmailer": "^6.2",
-        "96qbhy/hyperf-auth": "^2.3"
+        "96qbhy/hyperf-auth": "^2.3",
+        "hyperf/event": "~2.0.0"
     },
     "require-dev": {
         "swoole/ide-helper": "^4.5",

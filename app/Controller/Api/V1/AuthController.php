@@ -10,6 +10,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Event\UserLogin;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -48,16 +49,18 @@ class AuthController extends CController
             'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
 
-        $userInfo = $this->userService->login($params['mobile'], $params['password']);
-        if (!$userInfo) {
+        $user = $this->userService->login($params['mobile'], $params['password']);
+        if (!$user) {
             return $this->response->fail('账号不存在或密码填写错误！');
         }
 
         try {
-            $token = $this->guard()->login($userInfo);
+            $token = $this->guard()->login($user);
         } catch (\Exception $exception) {
             return $this->response->error('登录异常，请稍后再试！');
         }
+
+        event()->dispatch(new UserLogin($this->request, $user));
 
         return $this->response->success([
             'authorize' => [
@@ -66,11 +69,11 @@ class AuthController extends CController
                 'expires_in'   => $this->guard()->getJwtManager()->getTtl(),
             ],
             'user_info' => [
-                'nickname' => $userInfo->nickname,
-                'avatar'   => $userInfo->avatar,
-                'gender'   => $userInfo->gender,
-                'motto'    => $userInfo->motto,
-                'email'    => $userInfo->email,
+                'nickname' => $user->nickname,
+                'avatar'   => $user->avatar,
+                'gender'   => $user->gender,
+                'motto'    => $user->motto,
+                'email'    => $user->email,
             ]
         ], '账号登录成功...');
     }

@@ -5,7 +5,6 @@
 |--------------------------------------------------------------------------
 */
 
-use Hyperf\Amqp\Message\ProducerMessage;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Logger\LoggerFactory;
@@ -16,7 +15,6 @@ use Swoole\Websocket\Frame;
 use Swoole\WebSocket\Server as WebSocketServer;
 use Hyperf\Utils\Str;
 use Hyperf\Redis\Redis;
-use Hyperf\Amqp\Producer;
 
 /**
  * 容器实例
@@ -76,6 +74,14 @@ function websocket()
 function cache()
 {
     return container()->get(Psr\SimpleCache\CacheInterface::class);
+}
+
+/**
+ * Dispatch an event and call the listeners.
+ */
+function event()
+{
+    return container()->get(\Psr\EventDispatcher\EventDispatcherInterface::class);
 }
 
 /**
@@ -244,14 +250,14 @@ function parse_ids($ids)
 /**
  * 推送消息至 RabbitMQ 队列
  *
- * @param ProducerMessage $message
- * @param bool            $confirm
- * @param int             $timeout
- * @return bool
+ * @param \Hyperf\Amqp\Message\ProducerMessage $message
+ * @param bool                                 $confirm
+ * @param int                                  $timeout
+ * @return mixed
  */
-function push_amqp(ProducerMessage $message, bool $confirm = false, int $timeout = 5)
+function push_amqp(\Hyperf\Amqp\Message\ProducerMessage $message, bool $confirm = false, int $timeout = 5)
 {
-    return container()->get(Producer::class)->produce($message, $confirm, $timeout);
+    return container()->get(\Hyperf\Amqp\Producer::class)->produce($message, $confirm, $timeout);
 }
 
 /**

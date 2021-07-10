@@ -64,6 +64,10 @@ class SubscribeHandleService
      */
     public function handle(array $data)
     {
+        if (!isset($data['uuid'], $data['event'], $data['data'], $data['options'])) {
+            return false;
+        }
+
         if (isset(self::EVENTS[$data['event']])) {
             call_user_func([$this, self::EVENTS[$data['event']]], $data);
         }
