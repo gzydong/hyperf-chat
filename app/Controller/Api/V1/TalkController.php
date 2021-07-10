@@ -11,9 +11,11 @@
 namespace App\Controller\Api\V1;
 
 use App\Cache\LastMessage;
+use App\Cache\Repository\LockRedis;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
+use App\Model\UsersFriend;
 use App\Support\UserRelation;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -82,12 +84,21 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
+        $lock    = 'talk:list:' . $user_id . '-' . $params['receiver_id'] . '-' . $params['talk_type'];
+        if (!LockRedis::getInstance()->lock($lock, 10)) {
+            return $this->response->fail('创建失败！');
+        }
+
         if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+            LockRedis::getInstance()->delete($lock);
             return $this->response->fail('暂不属于好友关系或群聊成员，无法进行聊天！');
         }
 
         $result = $this->talkListService->create($user_id, $params['receiver_id'], $params['talk_type']);
-        if (!$result) return $this->response->fail('创建失败！');
+        if (!$result) {
+            LockRedis::getInstance()->delete($lock);
+            return $this->response->fail('创建失败！');
+        }
 
         $data = [
             'id'          => $result['id'],
@@ -105,10 +116,11 @@ class TalkController extends CController
         ];
 
         if ($result['talk_type'] == TalkMode::PRIVATE_CHAT) {
-            $userInfo           = User::where('id', $user_id)->first(['nickname', 'avatar']);
-            $data['avatar']     = $userInfo->avatar;
-            $data['name']       = $userInfo->nickname;
-            $data['unread_num'] = UnreadTalk::getInstance()->read($data['receiver_id'], $user_id);
+            $userInfo            = User::where('id', $data['receiver_id'])->first(['nickname', 'avatar']);
+            $data['avatar']      = $userInfo->avatar;
+            $data['name']        = $userInfo->nickname;
+            $data['unread_num']  = UnreadTalk::getInstance()->read($data['receiver_id'], $user_id);
+            $data['remark_name'] = UsersFriend::getFriendRemark($user_id, (int)$data['receiver_id']);
         } else if ($result['talk_type'] == TalkMode::GROUP_CHAT) {
             $groupInfo      = Group::where('id', $data['receiver_id'])->first(['group_name', 'avatar']);
             $data['name']   = $groupInfo->group_name;
