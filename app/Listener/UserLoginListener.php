@@ -24,7 +24,7 @@ class UserLoginListener implements ListenerInterface
      */
     public function process(object $event)
     {
-        // echo $event->user->id . ':' . $event->platform . ':' . $event->ip;
         // 推送登录提示信息
+        stdout_log()->notice('登录事件回调 ' . $event->user->mobile . ':' . $event->platform . ':' . $event->ip);
     }
 }

@@ -38,6 +38,27 @@ class UserLogin
 
         $this->platform = $request->input('platform', '');
 
-        $this->ip = $request->getServerParams()['remote_addr'];
+        $this->ip = $this->getClientRealIp($request);
+    }
+
+    /**
+     * 获取用户真实 IP
+     *
+     * @param RequestInterface $request
+     * @return mixed
+     */
+    private function getClientRealIp(RequestInterface $request)
+    {
+        $params = $request->getServerParams();
+
+        $real_ip = $params["remote_addr"];
+
+        if (isset($params["http_x_forwarded_for"])) {
+            $real_ip = $params["http_x_forwarded_for"];
+        } else if (isset($params["HTTP_CLIENT_IP"])) {
+            $real_ip = $params["http_client_ip"];
+        }
+
+        return $real_ip;
     }
 }
