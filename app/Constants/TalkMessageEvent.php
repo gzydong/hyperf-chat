@@ -35,11 +35,6 @@ class TalkMessageEvent
     const EVENT_FRIEND_APPLY = 'event_friend_apply';
 
     /**
-     * WebSocket 消息消费队列交换机名称
-     */
-    const CONSUMER_MESSAGE_EXCHANGE = 'im.message.fanout';
-
-    /**
      * @return array
      */
     public static function getMap(): array
