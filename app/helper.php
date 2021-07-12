@@ -21,7 +21,7 @@ use Hyperf\Redis\Redis;
  *
  * @return \Psr\Container\ContainerInterface
  */
-function container(string $service = '')
+function container()
 {
     return ApplicationContext::getContainer();
 }
