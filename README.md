@@ -4,41 +4,48 @@
 
 这是一个使用Hyperf框架的开发的IM后端应用程序。此项目是 [LumenIM-Serve](https://github.com/gzydong/LumenIM-Serve) 的重构版本。
 
-Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + Vue ，后端使用 PHP+Swoole 进行开发。项目后端采用 Hyperf 框架。
+Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + Vue ，后端使用 PHP + Swoole 进行开发。项目后端采用 Hyperf 框架。
 
-- 基于Swoole WebSocket服务做消息即时推送
+- 基于 Swoole WebSocket 服务做消息即时推送
 - 支持私聊及群聊
 - 支持聊天消息类型有文本、代码块、图片及其它类型文件，并支持文件下载
 - 支持聊天消息撤回、删除或批量删除、转发消息（逐条转发、合并转发）
 - 支持编写个人笔记、支持笔记分享(好友或群)
 
-## 2、项目Demo
+## 2、项目DEMO
+
 - 地址： [http://im.gzydong.club](http://im.gzydong.club)
 - 账号： 18798272054 或 18798272055
 - 密码： admin123
 
 ## 3、环境要求
- - PHP >= 7.2
- - Swoole  >= 4.4
- - OpenSSL
- - JSON
- - PDO
- - Redis >= 5.0.0
+
+- PHP >= 7.2
+- MySQL >= 5.7
+- Redis >= 5.0
+- Swoole  >= 4.5
+- OpenSSL
+- JSON
+- PDO
 
 ## 4、相关文档
+
 [Hyperf 框架](https://hyperf.wiki/2.0/#/README)
 
-## 5、项目安装 
+## 5、项目安装
+
 1. 下载源码包
 2. 安装框架依赖包执行 `compsoer install` 命令 [项目根目录下执行]
 2. 拷贝项目根目录下 .env.example 文件为 .env 并正确配置相关参数（mysql、redis）
 3. 执行数据库迁移文件命令生成相关数据表  `php bin/hyperf.php migrate`
 4. 启动运行项目 `php bin/hyperf.php start`
 
-注 ：[项目运行之前请确保 Mysql、Redis 及 Nginx 服务]
+注 ：[项目运行之前请确保 MySQL、Redis 及 Nginx 服务]
+
 ## Nginx 相关配置(代理 swoole 服务)
 
 ##### 配置 Http 服务
+
 ```
 upstream hyperfhttp {
     # Hyperf HTTP Server 的 IP 及 端口
@@ -68,6 +75,7 @@ server {
 ```
 
 ##### 配置 WebSocket 服务
+
 ```
 # 至少需要一个 Hyperf 节点，多个配置多行
 upstream hyperf_websocket {
@@ -99,6 +107,7 @@ server {
 ```
 
 ##### 配置图片域名
+
 ```
 server {
     listen 80;
@@ -128,8 +137,10 @@ server {
 ```
 
 ### 注意事项
+
 1. 请确保 PHP 安装 openssl、redis 扩展
 2. 请确保 Swoole 扩展开启 openssl 扩展
+
 ```
 [root@iZuf6cs69fbc86cwpu9iv3Z vhost]# php --ri swoole
 swoole

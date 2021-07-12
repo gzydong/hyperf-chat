@@ -29,6 +29,8 @@ class User extends BaseModel implements Authenticatable
 
     protected $table = 'users';
 
+    public $timestamps = true;
+
     protected $fillable = [
         'mobile',
         'nickname',

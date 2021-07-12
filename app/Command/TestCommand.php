@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Helper\Hash;
-use App\Model\User;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
-use Hyperf\DbConnection\Db;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -36,9 +33,6 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
-        User::create([
-            'mobile'   => '18798271181',
-            'password' => Hash::make('asdfbasjhdfbasj'),
-        ]);
+
     }
 }

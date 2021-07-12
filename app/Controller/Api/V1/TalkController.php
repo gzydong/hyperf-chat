@@ -16,7 +16,6 @@ use App\Cache\UnreadTalk;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
 use App\Model\Talk\TalkList;
-use App\Model\UsersFriend;
 use App\Service\UserFriendService;
 use App\Support\UserRelation;
 use Hyperf\Di\Annotation\Inject;
