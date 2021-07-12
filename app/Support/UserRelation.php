@@ -4,7 +4,7 @@ namespace App\Support;
 
 use App\Constants\TalkMode;
 use App\Model\Group\Group;
-use App\Model\UsersFriend;
+use App\Service\UserFriendService;
 
 class UserRelation
 {
@@ -19,7 +19,7 @@ class UserRelation
     public static function isFriendOrGroupMember(int $user_id, int $receiver_id, int $talk_type)
     {
         if ($talk_type == TalkMode::PRIVATE_CHAT) {
-            return UsersFriend::isFriend($user_id, $receiver_id, true);
+            return container()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true);
         } else if ($talk_type == TalkMode::GROUP_CHAT) {
             return Group::isMember($receiver_id, $user_id);
         }

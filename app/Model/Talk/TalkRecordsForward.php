@@ -30,7 +30,6 @@ class TalkRecordsForward extends BaseModel
     ];
 
     protected $casts = [
-        'id'        => 'integer',
         'record_id' => 'integer',
         'user_id'   => 'integer',
     ];

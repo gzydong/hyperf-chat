@@ -38,7 +38,6 @@ class ArticleAnnex extends BaseModel
     ];
 
     protected $casts = [
-        'id'         => 'integer',
         'user_id'    => 'integer',
         'article_id' => 'integer',
         'file_size'  => 'integer',

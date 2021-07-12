@@ -6,7 +6,7 @@ use App\Cache\FriendApply;
 use App\Constants\TalkMessageEvent;
 use App\Model\User;
 use App\Model\UsersFriend;
-use App\Model\UsersFriendsApply;
+use App\Model\UsersFriendApply;
 use App\Support\MessageProducer;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
@@ -25,13 +25,13 @@ class ContactApplyService
      */
     public function create(int $user_id, int $friend_id, string $remark)
     {
-        $result = UsersFriendsApply::where([
+        $result = UsersFriendApply::where([
             ['user_id', '=', $user_id],
             ['friend_id', '=', $friend_id],
         ])->orderByDesc('id')->first();
 
         if (!$result) {
-            $result = UsersFriendsApply::create([
+            $result = UsersFriendApply::create([
                 'user_id'    => $user_id,
                 'friend_id'  => $friend_id,
                 'remark'     => $remark,
@@ -66,7 +66,7 @@ class ContactApplyService
      */
     public function accept(int $user_id, int $apply_id, string $remarks = '')
     {
-        $info = UsersFriendsApply::where('id', $apply_id)->first();
+        $info = UsersFriendApply::where('id', $apply_id)->first();
         if (!$info || $info->friend_id != $user_id) {
             return false;
         }
@@ -117,7 +117,7 @@ class ContactApplyService
      */
     public function decline(int $user_id, int $apply_id, string $reason = '')
     {
-        $result = UsersFriendsApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
+        $result = UsersFriendApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
 
         if (!$result) return false;
 
@@ -136,7 +136,7 @@ class ContactApplyService
      */
     public function getApplyRecords(int $user_id, $page = 1, $page_size = 30): array
     {
-        $rowsSqlObj = UsersFriendsApply::select([
+        $rowsSqlObj = UsersFriendApply::select([
             'users_friends_apply.id',
             'users_friends_apply.remark',
             'users.nickname',

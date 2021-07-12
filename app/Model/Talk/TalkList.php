@@ -51,4 +51,29 @@ class TalkList extends BaseModel
         'created_at'  => 'datetime',
         'updated_at'  => 'datetime'
     ];
+
+
+    /**
+     * @param array $params
+     * @return array
+     */
+    public static function item(array $params): array
+    {
+        $item = [
+            'id'          => 0,
+            'talk_type'   => 0,
+            'receiver_id' => 0,
+            'is_top'      => 0,
+            'is_disturb'  => 0,
+            'is_online'   => false,
+            'avatar'      => '',
+            'name'        => '',
+            'remark_name' => '',
+            'unread_num'  => 0,
+            'msg_text'    => '',
+            'updated_at'  => date('Y-m-d H:i:s')
+        ];
+
+        return array_merge($item, array_intersect_key($params, $item));
+    }
 }

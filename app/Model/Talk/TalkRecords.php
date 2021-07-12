@@ -44,7 +44,6 @@ class TalkRecords extends BaseModel
     ];
 
     protected $casts = [
-        'id'          => 'integer',
         'talk_type'   => 'integer',
         'msg_type'    => 'integer',
         'user_id'     => 'integer',

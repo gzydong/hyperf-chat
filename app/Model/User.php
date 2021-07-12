@@ -42,7 +42,10 @@ class User extends BaseModel implements Authenticatable
         'updated_at',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'gender'   => 'integer',
+        'is_robot' => 'integer',
+    ];
 
     protected $hidden = [
         'password'

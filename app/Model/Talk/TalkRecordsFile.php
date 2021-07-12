@@ -42,7 +42,6 @@ class TalkRecordsFile extends BaseModel
     ];
 
     protected $casts = [
-        'id'          => 'integer',
         'record_id'   => 'integer',
         'user_id'     => 'integer',
         'file_source' => 'integer',

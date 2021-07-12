@@ -15,7 +15,9 @@ use App\Cache\Repository\LockRedis;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
+use App\Model\Talk\TalkList;
 use App\Model\UsersFriend;
+use App\Service\UserFriendService;
 use App\Support\UserRelation;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -75,7 +77,7 @@ class TalkController extends CController
      *
      * @return ResponseInterface
      */
-    public function create()
+    public function create(UserFriendService $service)
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id']);
         $this->validate($params, [
@@ -100,27 +102,18 @@ class TalkController extends CController
             return $this->response->fail('创建失败！');
         }
 
-        $data = [
+        $data = TalkList::item([
             'id'          => $result['id'],
             'talk_type'   => $result['talk_type'],
             'receiver_id' => $result['receiver_id'],
-            'is_top'      => 0,
-            'is_disturb'  => 0,
-            'is_online'   => 1,
-            'avatar'      => '',
-            'name'        => '',
-            'remark_name' => '',
-            'unread_num'  => 0,
-            'msg_text'    => '',
-            'updated_at'  => date('Y-m-d H:i:s')
-        ];
+        ]);
 
         if ($result['talk_type'] == TalkMode::PRIVATE_CHAT) {
             $userInfo            = User::where('id', $data['receiver_id'])->first(['nickname', 'avatar']);
             $data['avatar']      = $userInfo->avatar;
             $data['name']        = $userInfo->nickname;
             $data['unread_num']  = UnreadTalk::getInstance()->read($data['receiver_id'], $user_id);
-            $data['remark_name'] = UsersFriend::getFriendRemark($user_id, (int)$data['receiver_id']);
+            $data['remark_name'] = $service->getFriendRemark($user_id, (int)$data['receiver_id']);
         } else if ($result['talk_type'] == TalkMode::GROUP_CHAT) {
             $groupInfo      = Group::where('id', $data['receiver_id'])->first(['group_name', 'avatar']);
             $data['name']   = $groupInfo->group_name;

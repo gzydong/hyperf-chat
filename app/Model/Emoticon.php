@@ -19,10 +19,15 @@ class Emoticon extends BaseModel
 {
     protected $table = 'emoticon';
 
-    protected $fillable = [];
+    protected $fillable = [
+        'name',
+        'icon',
+        'status',
+        'created_at',
+        'updated_at',
+    ];
 
     protected $casts = [
-        'id'         => 'integer',
         'status'     => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

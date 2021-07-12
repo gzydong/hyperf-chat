@@ -14,7 +14,7 @@ namespace App\Model;
  * @property string $created_at 创建时间
  * @package App\ModelÒ
  */
-class UsersFriendsApply extends BaseModel
+class UsersFriendApply extends BaseModel
 {
     protected $table = 'users_friends_apply';
 
@@ -27,7 +27,6 @@ class UsersFriendsApply extends BaseModel
     ];
 
     protected $casts = [
-        'id'         => 'integer',
         'user_id'    => 'integer',
         'friend_id'  => 'integer',
         'created_at' => 'datetime'

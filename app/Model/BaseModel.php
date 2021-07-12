@@ -14,6 +14,15 @@ use Hyperf\DbConnection\Model\Model as CModel;
 abstract class BaseModel extends CModel
 {
     /**
+     * 不可批量赋值的属性
+     *
+     * @var array
+     */
+    protected $guarded = [
+        'id'
+    ];
+
+    /**
      * 关闭自动维护时间字段
      *
      * @var bool

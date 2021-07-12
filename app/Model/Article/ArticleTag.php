@@ -27,7 +27,6 @@ class ArticleTag extends BaseModel
     ];
 
     protected $casts = [
-        'id'         => 'integer',
         'user_id'    => 'integer',
         'sort'       => 'integer',
         'created_at' => 'integer'

@@ -34,7 +34,6 @@ class EmoticonItem extends BaseModel
     ];
 
     protected $casts = [
-        'id'          => 'integer',
         'emoticon_id' => 'integer',
         'user_id'     => 'integer',
         'file_size'   => 'integer',

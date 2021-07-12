@@ -7,7 +7,6 @@ use App\Cache\ServerRunID;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMode;
 use App\Model\Talk\TalkList;
-use App\Model\UsersFriend;
 
 class TalkListService
 {
@@ -126,30 +125,24 @@ class TalkListService
 
         if (!$rows) return [];
 
-        $socketFDService = make(SocketClientService::class);
-        $runIdAll        = ServerRunID::getInstance()->getServerRunIdAll();
-
-        return array_map(function ($item) use ($user_id, $socketFDService, $runIdAll) {
-            $data['id']          = $item['id'];
-            $data['talk_type']   = $item['talk_type'];
-            $data['receiver_id'] = $item['receiver_id'];
-            $data['avatar']      = '';     // 默认头像
-            $data['name']        = '';     // 对方昵称/群名称
-            $data['remark_name'] = '';     // 好友备注
-            $data['unread_num']  = 0;      // 未读消息
-            $data['is_online']   = false;  // 是否在线
-            $data['is_top']      = $item['is_top'];
-            $data['is_disturb']  = $item['is_disturb'];
-            $data['msg_text']    = '......';
-            $data['updated_at']  = $item['updated_at'] ?: '2020-01-01 00:00:00';
+        $runIdAll = ServerRunID::getInstance()->getServerRunIdAll();
+        return array_map(function ($item) use ($user_id, $runIdAll) {
+            $data = TalkList::item([
+                'id'          => $item['id'],
+                'talk_type'   => $item['talk_type'],
+                'receiver_id' => $item['receiver_id'],
+                'is_top'      => $item['is_top'],
+                'is_disturb'  => $item['is_disturb'],
+                'updated_at'  => $item['updated_at'] ?: '2020-01-01 00:00:00',
+            ]);
 
             if ($item['talk_type'] == TalkMode::PRIVATE_CHAT) {
                 $data['name']        = $item['nickname'];
                 $data['avatar']      = $item['user_avatar'];
                 $data['unread_num']  = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
-                $data['is_online']   = $socketFDService->isOnlineAll($item['receiver_id'], $runIdAll);
-                $data['remark_name'] = UsersFriend::getFriendRemark($user_id, (int)$item['receiver_id']);
-            } else {
+                $data['is_online']   = container()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
+                $data['remark_name'] = container()->get(UserFriendService::class)->getFriendRemark($user_id, $item['receiver_id']);
+            } else if (TalkMode::GROUP_CHAT) {
                 $data['name']   = strval($item['group_name']);
                 $data['avatar'] = $item['group_avatar'];
             }

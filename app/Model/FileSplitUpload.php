@@ -40,7 +40,6 @@ class FileSplitUpload extends BaseModel
     ];
 
     protected $casts = [
-        'id'          => 'integer',
         'file_type'   => 'integer',
         'user_id'     => 'integer',
         'split_index' => 'integer',

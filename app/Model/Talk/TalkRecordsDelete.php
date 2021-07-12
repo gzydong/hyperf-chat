@@ -22,7 +22,6 @@ class TalkRecordsDelete extends BaseModel
     protected $fillable = [];
 
     protected $casts = [
-        'id'         => 'integer',
         'record_id'  => 'integer',
         'user_id'    => 'integer',
         'created_at' => 'datetime'

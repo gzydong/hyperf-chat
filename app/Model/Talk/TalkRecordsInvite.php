@@ -28,7 +28,6 @@ class TalkRecordsInvite extends BaseModel
     ];
 
     protected $casts = [
-        'id'              => 'integer',
         'record_id'       => 'integer',
         'type'            => 'integer',
         'operate_user_id' => 'integer'

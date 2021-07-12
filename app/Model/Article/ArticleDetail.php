@@ -26,7 +26,6 @@ class ArticleDetail extends BaseModel
     ];
 
     protected $casts = [
-        'id'         => 'integer',
         'article_id' => 'integer'
     ];
 }

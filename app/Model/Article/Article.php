@@ -40,7 +40,6 @@ class Article extends BaseModel
     ];
 
     protected $casts = [
-        'id'          => 'integer',
         'user_id'     => 'integer',
         'class_id'    => 'integer',
         'is_asterisk' => 'integer',

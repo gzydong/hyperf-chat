@@ -6,7 +6,7 @@ use App\Helper\Hash;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
 use App\Model\UsersFriend;
-use App\Model\UsersFriendsApply;
+use App\Model\UsersFriendApply;
 use Hyperf\DbConnection\Db;
 
 class UserService extends BaseService
@@ -125,13 +125,13 @@ class UserService extends BaseService
 
         // 判断查询信息是否是自己
         if ($friend_id != $me_user_id) {
-            $is_friend = UsersFriend::isFriend($me_user_id, $friend_id, true, true);
+            $is_friend = container()->get(UserFriendService::class)->isFriend($me_user_id, $friend_id, true, true);
 
             $info['friend_status'] = $is_friend ? 2 : 1;
             if ($is_friend) {
-                $info['nickname_remark'] = UsersFriend::getFriendRemark($me_user_id, $friend_id);
+                $info['nickname_remark'] = container()->get(UserFriendService::class)->getFriendRemark($me_user_id, $friend_id);
             } else {
-                $res = UsersFriendsApply::where('user_id', $me_user_id)
+                $res = UsersFriendApply::where('user_id', $me_user_id)
                     ->where('friend_id', $friend_id)
                     ->orderBy('id', 'desc')
                     ->exists();

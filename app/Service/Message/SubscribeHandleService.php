@@ -13,7 +13,7 @@ use App\Model\Talk\TalkRecordsForward;
 use App\Model\Talk\TalkRecordsInvite;
 use App\Model\Group\Group;
 use App\Model\User;
-use App\Model\UsersFriendsApply;
+use App\Model\UsersFriendApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
 
@@ -282,7 +282,7 @@ class SubscribeHandleService
     {
         $data = $data['data'];
 
-        $applyInfo = UsersFriendsApply::where('id', $data['apply_id'])->first();
+        $applyInfo = UsersFriendApply::where('id', $data['apply_id'])->first();
         if (!$applyInfo) return true;
 
         $fds = $this->clientService->findUserFds($data['type'] == 1 ? $applyInfo->friend_id : $applyInfo->user_id);

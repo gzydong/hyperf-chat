@@ -11,6 +11,7 @@ use App\Model\Talk\TalkRecords;
 use App\Model\Group\Group;
 use App\Model\UsersFriend;
 use App\Service\SocketClientService;
+use App\Service\UserFriendService;
 use App\Support\MessageProducer;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Frame;
@@ -57,9 +58,8 @@ class ReceiveHandleService
 
         // 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
         if ($data['talk_type'] == TalkMode::PRIVATE_CHAT) {
-            if (!UsersFriend::isFriend((int)$data['sender_id'], (int)$data['receiver_id'], true)) {
-                return;
-            }
+            $isTrue = container()->get(UserFriendService::class)->isFriend((int)$data['sender_id'], (int)$data['receiver_id'], true);
+            if (!$isTrue) return;
         } else if ($data['talk_type'] == TalkMode::GROUP_CHAT) {
             if (!Group::isMember((int)$data['receiver_id'], (int)$data['sender_id'])) {
                 return;

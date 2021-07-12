@@ -22,7 +22,6 @@ class UsersEmoticon extends BaseModel
     ];
 
     protected $casts = [
-        'id'      => 'integer',
         'user_id' => 'integer'
     ];
 

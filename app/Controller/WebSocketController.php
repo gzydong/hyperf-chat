@@ -121,11 +121,11 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         // 判断是否存在异地登录
         $isOnline = $this->client->isOnlineAll($user_id);
-        if (!$isOnline) {
-            MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_ONLINE_STATUS, [
-                'user_id' => $user_id,
-                'status'  => 0,
-            ]));
-        }
+        if ($isOnline) return;
+
+        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_ONLINE_STATUS, [
+            'user_id' => $user_id,
+            'status'  => 0,
+        ]));
     }
 }
