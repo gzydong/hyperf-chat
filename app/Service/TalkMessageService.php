@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Constants\TalkMessageType;
 use App\Model\Talk\TalkRecordsCode;
+use App\Model\Talk\TalkRecordsVote;
 use Exception;
 use App\Constants\MediaFileType;
 use App\Model\Talk\TalkRecords;
@@ -72,6 +73,37 @@ class TalkMessageService
             $file['created_at'] = date('Y-m-d H:i:s');
             if (!TalkRecordsFile::create($file)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');
+            }
+
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollBack();
+            return false;
+        }
+
+        return $insert->id;
+    }
+
+    /**
+     * @param array $message
+     * @param array $vote
+     */
+    public function insertVoteMessage(array $message, array $vote)
+    {
+        Db::beginTransaction();
+        try {
+            $message['msg_type']   = TalkMessageType::FILE_MESSAGE;
+            $message['created_at'] = date('Y-m-d H:i:s');
+            $message['updated_at'] = date('Y-m-d H:i:s');
+
+            $insert = TalkRecords::create($message);
+            if (!$insert) {
+                throw new Exception('插入聊天记录失败...');
+            }
+
+            $vote['record_id'] = $insert->id;
+            if (!TalkRecordsVote::create($vote)) {
+                throw new Exception('插入聊天记录(投票消息)失败...');
             }
 
             Db::commit();
