@@ -425,7 +425,7 @@ class TalkService extends BaseService
         $sqlObj = TalkRecords::whereIn('id', $records_ids);
 
         if ($talk_type == TalkMode::PRIVATE_CHAT) {
-            if (!container()->get(UserFriendService::class)->isFriend($user_id, $receiver_id)) return [];
+            if (!container()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) return [];
 
             $sqlObj = $sqlObj->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([

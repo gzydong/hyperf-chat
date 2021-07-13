@@ -30,22 +30,18 @@ class UserFriendService
      *
      * @param int  $user_id   用户ID
      * @param int  $friend_id 好友ID
-     * @param bool $is_cache  是否允许读取缓存
      * @param bool $is_mutual 相互互为好友
      * @return bool
      */
-    public function isFriend(int $user_id, int $friend_id, bool $is_cache = false, $is_mutual = false)
+    public function isFriend(int $user_id, int $friend_id, $is_mutual = false)
     {
-        $cacheKey = "good_friends:{$user_id}_{$friend_id}";
-        if ($is_cache && redis()->get($cacheKey)) {
-            return true;
+        $isTrue1 = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->exists();
+        if ($is_mutual === false) {
+            return $isTrue1;
         }
 
-        $isTrue = UsersFriend::query()->where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->exists();
-        if ($isTrue) {
-            redis()->setex($cacheKey, 60 * 5, 1);
-        }
+        $isTrue2 = UsersFriend::where('user_id', $friend_id)->where('friend_id', $user_id)->where('status', 1)->exists();
 
-        return $isTrue;
+        return $isTrue1 && $isTrue2;
     }
 }

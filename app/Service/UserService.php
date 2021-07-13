@@ -125,7 +125,7 @@ class UserService extends BaseService
 
         // 判断查询信息是否是自己
         if ($friend_id != $me_user_id) {
-            $is_friend = container()->get(UserFriendService::class)->isFriend($me_user_id, $friend_id, true, true);
+            $is_friend = container()->get(UserFriendService::class)->isFriend($me_user_id, $friend_id, true);
 
             $info['friend_status'] = $is_friend ? 2 : 1;
             if ($is_friend) {

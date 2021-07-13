@@ -13,6 +13,7 @@ use App\Model\UsersFriend;
 use App\Service\SocketClientService;
 use App\Service\UserFriendService;
 use App\Support\MessageProducer;
+use App\Support\UserRelation;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
@@ -57,13 +58,12 @@ class ReceiveHandleService
         if (!in_array($data['talk_type'], TalkMode::getTypes())) return;
 
         // 验证发送消息用户与接受消息用户之间是否存在好友或群聊关系
-        if ($data['talk_type'] == TalkMode::PRIVATE_CHAT) {
-            $isTrue = container()->get(UserFriendService::class)->isFriend((int)$data['sender_id'], (int)$data['receiver_id'], true);
-            if (!$isTrue) return;
-        } else if ($data['talk_type'] == TalkMode::GROUP_CHAT) {
-            if (!Group::isMember((int)$data['receiver_id'], (int)$data['sender_id'])) {
-                return;
-            }
+        $isTrue = UserRelation::isFriendOrGroupMember($user_id, (int)$data['receiver_id'], (int)$data['talk_type']);
+        if (!$isTrue) {
+            $server->push($frame->fd, json_encode(['event_error', [
+                'message' => '暂不属于好友关系或群聊成员，无法发送聊天消息！'
+            ]]));
+            return;
         }
 
         $result = TalkRecords::create([
