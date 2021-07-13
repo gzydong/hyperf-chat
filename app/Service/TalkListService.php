@@ -7,6 +7,7 @@ use App\Cache\ServerRunID;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMode;
 use App\Model\Talk\TalkList;
+use Carbon\Carbon;
 
 class TalkListService
 {
@@ -133,7 +134,7 @@ class TalkListService
                 'receiver_id' => $item['receiver_id'],
                 'is_top'      => $item['is_top'],
                 'is_disturb'  => $item['is_disturb'],
-                'updated_at'  => $item['updated_at'] ?: '2020-01-01 00:00:00',
+                'updated_at'  => Carbon::parse($item['updated_at'])->toDateTimeString(),
             ]);
 
             if ($item['talk_type'] == TalkMode::PRIVATE_CHAT) {

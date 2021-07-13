@@ -2,7 +2,6 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Cache\LastMessage;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMessageEvent;
 use App\Constants\TalkMode;
@@ -60,7 +59,7 @@ class TalkMessageController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
-        $record_id = $this->talkMessageService->insertCodeMessage([
+        $isTrue = $this->talkMessageService->insertCodeMessage([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
@@ -70,19 +69,7 @@ class TalkMessageController extends CController
             'code'      => $params['code']
         ]);
 
-        if (!$record_id) return $this->response->fail('消息发送失败！');
-
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id
-        ]));
-
-        LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
-            'text'       => '[代码消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
+        if (!$isTrue) return $this->response->fail('消息发送失败！');
 
         return $this->response->success();
     }
@@ -122,7 +109,7 @@ class TalkMessageController extends CController
         }
 
         // 创建图片消息记录
-        $record_id = $this->talkMessageService->insertFileMessage([
+        $isTrue = $this->talkMessageService->insertFileMessage([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
@@ -134,19 +121,7 @@ class TalkMessageController extends CController
             'original_name' => $file->getClientFilename(),
         ]);
 
-        if (!$record_id) return $this->response->fail('图片上传失败！');
-
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id,
-        ]));
-
-        LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
-            'text'       => '[图片消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
+        if (!$isTrue) return $this->response->fail('图片上传失败！');
 
         return $this->response->success();
     }
@@ -181,7 +156,7 @@ class TalkMessageController extends CController
             return $this->response->fail('文件不存在...');
         }
 
-        $record_id = $this->talkMessageService->insertFileMessage([
+        $isTrue = $this->talkMessageService->insertFileMessage([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id']
@@ -194,19 +169,7 @@ class TalkMessageController extends CController
             'save_dir'      => $save_dir,
         ]);
 
-        if (!$record_id) return $this->response->fail('表情发送失败！');
-
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id
-        ]));
-
-        LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
-            'text'       => '[文件消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
+        if (!$isTrue) return $this->response->fail('表情发送失败！');
 
         return $this->response->success();
     }
@@ -236,6 +199,10 @@ class TalkMessageController extends CController
             'title'   => $params['title'],
             'options' => $params['options'],
         ]);
+
+        if (!$isTrue) return $this->response->fail('发起投票失败！');
+
+        return $this->response->success();
     }
 
     /**
@@ -260,7 +227,7 @@ class TalkMessageController extends CController
 
         if (!$emoticon) return $this->response->fail('表情不存在！');
 
-        $record_id = $this->talkMessageService->insertFileMessage([
+        $isTrue = $this->talkMessageService->insertFileMessage([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
@@ -272,19 +239,7 @@ class TalkMessageController extends CController
             'original_name' => '图片表情',
         ]);
 
-        if (!$record_id) return $this->response->fail('表情发送失败！');
-
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
-            'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['receiver_id'],
-            'talk_type'   => (int)$params['talk_type'],
-            'record_id'   => $record_id
-        ]));
-
-        LastMessage::getInstance()->save((int)$params['talk_type'], $user_id, (int)$params['receiver_id'], [
-            'text'       => '[表情包消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
+        if (!$isTrue) return $this->response->fail('表情发送失败！');
 
         return $this->response->success();
     }

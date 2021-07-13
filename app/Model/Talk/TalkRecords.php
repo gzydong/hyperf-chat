@@ -28,8 +28,6 @@ class TalkRecords extends BaseModel
 {
     protected $table = 'talk_records';
 
-    public $timestamps = true;
-
     protected $fillable = [
         'talk_type',
         'msg_type',

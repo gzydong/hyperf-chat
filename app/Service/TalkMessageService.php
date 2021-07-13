@@ -2,9 +2,12 @@
 
 namespace App\Service;
 
+use App\Cache\LastMessage;
+use App\Constants\TalkMessageEvent;
 use App\Constants\TalkMessageType;
 use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsVote;
+use App\Support\MessageProducer;
 use Exception;
 use App\Constants\MediaFileType;
 use App\Model\Talk\TalkRecords;
@@ -18,7 +21,7 @@ class TalkMessageService
      *
      * @param array $message
      * @param array $code
-     * @return bool|int
+     * @return bool
      */
     public function insertCodeMessage(array $message, array $code)
     {
@@ -45,7 +48,19 @@ class TalkMessageService
             return false;
         }
 
-        return $insert->id;
+        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+            'sender_id'   => $insert->user_id,
+            'receiver_id' => $insert->receiver_id,
+            'talk_type'   => $insert->talk_type,
+            'record_id'   => $insert->id
+        ]));
+
+        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
+            'text'       => '[代码消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return true;
     }
 
     /**
@@ -53,7 +68,7 @@ class TalkMessageService
      *
      * @param array $message
      * @param array $file
-     * @return bool|int
+     * @return bool
      */
     public function insertFileMessage(array $message, array $file)
     {
@@ -81,7 +96,19 @@ class TalkMessageService
             return false;
         }
 
-        return $insert->id;
+        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+            'sender_id'   => $insert->user_id,
+            'receiver_id' => $insert->receiver_id,
+            'talk_type'   => $insert->talk_type,
+            'record_id'   => $insert->id
+        ]));
+
+        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
+            'text'       => '[图片消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return true;
     }
 
     /**
@@ -112,6 +139,18 @@ class TalkMessageService
             return false;
         }
 
-        return $insert->id;
+        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+            'sender_id'   => $insert->user_id,
+            'receiver_id' => $insert->receiver_id,
+            'talk_type'   => $insert->talk_type,
+            'record_id'   => $insert->id
+        ]));
+
+        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
+            'text'       => '[投票消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return true;
     }
 }

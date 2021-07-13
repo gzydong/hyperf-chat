@@ -84,7 +84,7 @@ class ReceiveHandleService
         // 缓存最后一条聊天消息
         LastMessage::getInstance()->save($result->talk_type, $result->user_id, $result->receiver_id, [
             'text'       => mb_substr($result->content, 0, 30),
-            'created_at' => $result->created_at
+            'created_at' => date('Y-m-d H:i:s')
         ]);
 
         MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [

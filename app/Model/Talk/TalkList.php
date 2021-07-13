@@ -18,7 +18,7 @@ use App\Model\BaseModel;
  * @property integer $is_disturb    消息免打扰
  * @property integer $is_robot      是否机器人
  * @property string  $created_at    创建时间
- * @property string  $updated_at    更新时间
+ * @property \Carbon\Carbon  $updated_at    更新时间
  * @package App\Model
  */
 class TalkList extends BaseModel
