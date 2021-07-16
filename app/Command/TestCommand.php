@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Model\Talk\TalkRecordsVote;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
+use Hyperf\DbConnection\Db;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -33,6 +35,6 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
-
+        echo chr(65);
     }
 }

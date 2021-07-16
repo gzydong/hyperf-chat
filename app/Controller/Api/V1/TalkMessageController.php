@@ -185,22 +185,45 @@ class TalkMessageController extends CController
             'receiver_id' => 'required|integer|min:1',
             'mode'        => 'required|integer|in:0,1',
             'title'       => 'required',
-            'options'     => 'required|array',
+            'options'     => 'required|array|max:6',
         ]);
 
         $user_id = $this->uid();
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], TalkMode::GROUP_CHAT)) {
+            return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
+        }
 
-        $this->talkMessageService->insertVoteMessage([
+        $isTrue = $this->talkMessageService->insertVoteMessage([
             'talk_type'   => TalkMode::GROUP_CHAT,
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
         ], [
+            'user_id' => $user_id,
             'mode'    => $params['mode'],
             'title'   => $params['title'],
             'options' => $params['options'],
         ]);
 
         if (!$isTrue) return $this->response->fail('发起投票失败！');
+
+        return $this->response->success();
+    }
+
+    /**
+     * 投票处理
+     * @RequestMapping(path="vote/handle", methods="post")
+     */
+    public function handleVote()
+    {
+        $params = $this->request->inputs(['record_id', 'options']);
+        $this->validate($params, [
+            'record_id' => 'required|integer|min:1',
+            'options'   => 'required|array',
+        ]);
+
+        $isTrue = $this->talkMessageService->handleVote($this->uid(), $params);
+
+        if (!$isTrue) return $this->response->fail('投票失败，请稍后再试！');
 
         return $this->response->success();
     }
@@ -334,10 +357,6 @@ class TalkMessageController extends CController
 
         [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
         if (!$isTrue) return $this->response->fail($message);
-
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_REVOKE_TALK, [
-            'record_id' => $params['record_id']
-        ]));
 
         return $this->response->success([], $message);
     }

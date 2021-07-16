@@ -4,13 +4,8 @@ namespace App\Service\Message;
 
 use App\Cache\SocketRoom;
 use App\Constants\TalkMessageEvent;
-use App\Constants\TalkMessageType;
 use App\Constants\TalkMode;
 use App\Model\Talk\TalkRecords;
-use App\Model\Talk\TalkRecordsCode;
-use App\Model\Talk\TalkRecordsFile;
-use App\Model\Talk\TalkRecordsForward;
-use App\Model\Talk\TalkRecordsInvite;
 use App\Model\Group\Group;
 use App\Model\User;
 use App\Model\UsersFriendApply;
@@ -77,9 +72,8 @@ class SubscribeHandleService
      * 对话聊天消息
      *
      * @param array $data 队列消息
-     * @return string
      */
-    public function onConsumeTalk(array $data): string
+    public function onConsumeTalk(array $data): void
     {
         $talk_type   = $data['data']['talk_type'];
         $sender_id   = $data['data']['sender_id'];
@@ -103,9 +97,8 @@ class SubscribeHandleService
         }
 
         // 客户端ID去重
-        if (!$fds = array_unique($fds)) {
-            return true;
-        }
+        if (!$fds = array_unique($fds)) return;
+
 
         $result = TalkRecords::leftJoin('users', 'users.id', '=', 'talk_records.user_id')
             ->where('talk_records.id', $record_id)
@@ -122,103 +115,41 @@ class SubscribeHandleService
                 'users.avatar',
             ]);
 
-        if (!$result) return true;
+        if (!$result) return;
 
-        $file = $code_block = $forward = $invite = [];
 
-        switch ($result->msg_type) {
-            case TalkMessageType::FILE_MESSAGE:
-                $file = TalkRecordsFile::where('record_id', $result->id)->first([
-                    'id', 'record_id', 'user_id', 'file_source', 'file_type',
-                    'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir'
-                ]);
-
-                $file = $file ? $file->toArray() : [];
-                $file && $file['file_url'] = get_media_url($file['save_dir']);
-                break;
-
-            case TalkMessageType::FORWARD_MESSAGE:
-                $forward     = ['num' => 0, 'list' => []];
-                $forwardInfo = TalkRecordsForward::where('record_id', $result->id)->first(['records_id', 'text']);
-                if ($forwardInfo) {
-                    $forward = [
-                        'num'  => count(parse_ids($forwardInfo->records_id)),
-                        'list' => json_decode($forwardInfo->text, true) ?? []
-                    ];
-                }
-                break;
-
-            case TalkMessageType::CODE_MESSAGE:
-                $code_block = TalkRecordsCode::where('record_id', $result->id)->first(['record_id', 'code_lang', 'code']);
-                $code_block = $code_block ? $code_block->toArray() : [];
-                break;
-
-            case TalkMessageType::GROUP_INVITE_MESSAGE:
-                $notifyInfo = TalkRecordsInvite::where('record_id', $result->id)->first([
-                    'record_id', 'type', 'operate_user_id', 'user_ids'
-                ]);
-
-                $userInfo = User::where('id', $notifyInfo->operate_user_id)->first(['nickname', 'id']);
-                $invite   = [
-                    'type'         => $notifyInfo->type,
-                    'operate_user' => ['id' => $userInfo->id, 'nickname' => $userInfo->nickname],
-                    'users'        => User::whereIn('id', parse_ids($notifyInfo->user_ids))->get(['id', 'nickname'])->toArray()
-                ];
-
-                unset($notifyInfo, $userInfo);
-                break;
-        }
-
-        $notify = [
+        $message = container()->get(FormatMessageService::class)->handleChatRecords([$result->toArray()])[0];
+        $notify  = [
             'sender_id'   => $sender_id,
             'receiver_id' => $receiver_id,
             'talk_type'   => $talk_type,
-            'data'        => $this->formatTalkMessage([
-                'id'           => $result->id,
-                'talk_type'    => $result->talk_type,
-                'msg_type'     => $result->msg_type,
-                "user_id"      => $result->user_id,
-                "receiver_id"  => $result->receiver_id,
-                'avatar'       => $result->avatar,
-                'nickname'     => $result->nickname,
+            'data'        => array_merge($message, [
                 'group_name'   => $groupInfo ? $groupInfo->group_name : '',
-                'group_avatar' => $groupInfo ? $groupInfo->avatar : '',
-                "created_at"   => $result->created_at,
-                "content"      => $result->content,
-                "file"         => $file,
-                "code_block"   => $code_block,
-                'forward'      => $forward,
-                'invite'       => $invite
+                'group_avatar' => $groupInfo ? $groupInfo->avatar : ''
             ])
         ];
 
         $this->socketPushNotify($fds, json_encode([TalkMessageEvent::EVENT_TALK, $notify]));
-
-        return true;
     }
 
     /**
      * 键盘输入事件消息
      *
      * @param array $data 队列消息
-     * @return string
      */
-    public function onConsumeKeyboard(array $data): string
+    public function onConsumeKeyboard(array $data): void
     {
         $fds = $this->clientService->findUserFds($data['data']['receiver_id']);
 
         $this->socketPushNotify($fds, json_encode([TalkMessageEvent::EVENT_KEYBOARD, $data['data']]));
-
-        return true;
     }
 
     /**
      * 用户上线或下线消息
      *
      * @param array $data 队列消息
-     * @return string
      */
-    public function onConsumeOnlineStatus(array $data): string
+    public function onConsumeOnlineStatus(array $data): void
     {
         $user_id = (int)$data['data']['user_id'];
         $status  = (int)$data['data']['status'];
@@ -236,17 +167,14 @@ class SubscribeHandleService
                 'status'  => $status
             ]
         ]));
-
-        return true;
     }
 
     /**
      * 撤销聊天消息
      *
      * @param array $data 队列消息
-     * @return string
      */
-    public function onConsumeRevokeTalk(array $data): string
+    public function onConsumeRevokeTalk(array $data): void
     {
         $record = TalkRecords::where('id', $data['data']['record_id'])->first(['id', 'talk_type', 'user_id', 'receiver_id']);
 
@@ -268,22 +196,19 @@ class SubscribeHandleService
             'receiver_id' => $record->receiver_id,
             'record_id'   => $record->id,
         ]]));
-
-        return true;
     }
 
     /**
      * 好友申请消息
      *
      * @param array $data 队列消息
-     * @return string
      */
-    public function onConsumeFriendApply(array $data): string
+    public function onConsumeFriendApply(array $data): void
     {
         $data = $data['data'];
 
         $applyInfo = UsersFriendApply::where('id', $data['apply_id'])->first();
-        if (!$applyInfo) return true;
+        if (!$applyInfo) return;
 
         $fds = $this->clientService->findUserFds($data['type'] == 1 ? $applyInfo->friend_id : $applyInfo->user_id);
 
@@ -312,8 +237,6 @@ class SubscribeHandleService
         ];
 
         $this->socketPushNotify(array_unique($fds), json_encode([TalkMessageEvent::EVENT_FRIEND_APPLY, $msg]));
-
-        return true;
     }
 
     /**
@@ -328,43 +251,5 @@ class SubscribeHandleService
         foreach ($fds as $fd) {
             $server->exist(intval($fd)) && $server->push(intval($fd), $message);
         }
-    }
-
-    /**
-     * 格式化对话的消息体
-     *
-     * @param array $data 对话的消息
-     * @return array
-     */
-    private function formatTalkMessage(array $data): array
-    {
-        $message = [
-            "id"           => 0, // 消息记录ID
-            "talk_type"    => 1, // 消息来源[1:好友私信;2:群聊]
-            "msg_type"     => 1, // 消息类型
-            "user_id"      => 0, // 发送者用户ID
-            "receiver_id"  => 0, // 接收者ID[好友ID或群ID]
-
-            // 发送消息人的信息
-            "nickname"     => "",// 用户昵称
-            "avatar"       => "",// 用户头像
-            "group_name"   => "",// 群组名称
-            "group_avatar" => "",// 群组头像
-
-            // 不同的消息类型
-            "file"         => [],
-            "code_block"   => [],
-            "forward"      => [],
-            "invite"       => [],
-
-            // 消息创建时间
-            "content"      => '',// 文本消息
-            "created_at"   => "",
-
-            // 消息属性
-            "is_revoke"    => 0, // 消息是否撤销
-        ];
-
-        return array_merge($message, array_intersect_key($data, $message));
     }
 }
