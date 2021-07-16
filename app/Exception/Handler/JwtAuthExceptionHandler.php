@@ -21,7 +21,6 @@ class JwtAuthExceptionHandler extends ExceptionHandler
         $data = json_encode([
             'code'    => $throwable->getCode(),
             'message' => $throwable->getMessage(),
-            'data'    => []
         ], JSON_UNESCAPED_UNICODE);
 
         // 阻止异常冒泡

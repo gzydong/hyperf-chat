@@ -15,9 +15,10 @@ return [
             Hyperf\HttpServer\Exception\Handler\HttpExceptionHandler::class,
             App\Exception\Handler\JwtAuthExceptionHandler::class,
             App\Exception\Handler\ValidateExceptionHandler::class,
+            App\Exception\Handler\BaseExceptionHandler::class,
             App\Exception\Handler\AppExceptionHandler::class,
         ],
-        'ws' => [
+        'ws'   => [
             App\Exception\Handler\WebSocketExceptionHandler::class
         ],
     ],
