@@ -40,11 +40,12 @@ class TalkRecordsVote extends BaseModel
     ];
 
     protected $casts = [
-        'record_id'    => 'integer',
-        'user_id'      => 'integer',
-        'answer_mode'  => 'integer',
-        'answer_num'   => 'integer',
-        'answered_num' => 'integer',
-        'status'       => 'integer'
+        'record_id'     => 'integer',
+        'user_id'       => 'integer',
+        'answer_mode'   => 'integer',
+        'answer_num'    => 'integer',
+        'answered_num'  => 'integer',
+        'status'        => 'integer',
+        'answer_option' => 'array',
     ];
 }

@@ -185,7 +185,7 @@ class TalkMessageController extends CController
             'receiver_id' => 'required|integer|min:1',
             'mode'        => 'required|integer|in:0,1',
             'title'       => 'required',
-            'options'     => 'required|array|max:6',
+            'options'     => 'required|array',
         ]);
 
         $user_id = $this->uid();
@@ -198,10 +198,10 @@ class TalkMessageController extends CController
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
         ], [
-            'user_id' => $user_id,
-            'mode'    => $params['mode'],
-            'title'   => $params['title'],
-            'options' => $params['options'],
+            'user_id'       => $user_id,
+            'title'         => $params['title'],
+            'answer_mode'   => $params['mode'],
+            'answer_option' => $params['options'],
         ]);
 
         if (!$isTrue) return $this->response->fail('发起投票失败！');
@@ -218,7 +218,7 @@ class TalkMessageController extends CController
         $params = $this->request->inputs(['record_id', 'options']);
         $this->validate($params, [
             'record_id' => 'required|integer|min:1',
-            'options'   => 'required|array',
+            'options'   => 'required',
         ]);
 
         $isTrue = $this->talkMessageService->handleVote($this->uid(), $params);

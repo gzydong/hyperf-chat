@@ -127,27 +127,25 @@ class TalkMessageService
 
         Db::beginTransaction();
         try {
-            $message['msg_type']   = TalkMessageType::FILE_MESSAGE;
+            $message['msg_type']   = TalkMessageType::VOTE_MESSAGE;
             $message['created_at'] = date('Y-m-d H:i:s');
             $message['updated_at'] = date('Y-m-d H:i:s');
 
-            $insert = TalkRecords::create($message);
-
+            $insert  = TalkRecords::create($message);
             $options = [];
-            foreach ($vote['options'] as $k => $option) {
+            foreach ($vote['answer_option'] as $k => $option) {
                 $options[chr(65 + $k)] = $option;
             }
 
-            $vote['record_id']  = $insert->id;
-            $vote['user_id']    = $options;
-            $vote['options']    = $options;
-            $vote['answer_num'] = $answer_num;
-            $vote['created_at'] = date('Y-m-d H:i:s');
-            $vote['updated_at'] = $vote['created_at'];
+            $vote['record_id']     = $insert->id;
+            $vote['answer_option'] = $options;
+            $vote['answer_num']    = $answer_num;
+            $vote['created_at']    = date('Y-m-d H:i:s');
+            $vote['updated_at']    = $vote['created_at'];
+
             if (!TalkRecordsVote::create($vote)) {
                 throw new Exception('插入聊天记录(投票消息)失败...');
             }
-
             Db::commit();
         } catch (Exception $e) {
             Db::rollBack();
@@ -181,8 +179,11 @@ class TalkMessageService
     {
         $record = TalkRecords::join('talk_records_vote as vote', 'vote.record_id', '=', 'talk_records.id')
             ->where('talk_records.id', $params['record_id'])
+            ->withCasts([
+                'answer_option' => 'array'
+            ])
             ->first([
-                'talk_records.id', 'talk_records.receiver_id', 'talk_records.talk_type',
+                'talk_records.id', 'talk_records.receiver_id', 'talk_records.talk_type', 'talk_records.msg_type',
                 'vote.id as vote_id', 'vote.answer_mode', 'vote.answer_option', 'vote.answer_num', 'vote.status as vote_status'
             ]);
 
@@ -203,9 +204,8 @@ class TalkMessageService
 
         sort($options);
 
-        $answerOption = json_decode($record->answer_option, true);
         foreach ($options as $value) {
-            if (!isset($answerOption[$value])) return false;
+            if (!isset($record->answer_option[$value])) return false;
         }
 
         // 单选模式取第一个
@@ -231,7 +231,6 @@ class TalkMessageService
                 }
             });
         } catch (\Exception $e) {
-            logger()->error($e->getMessage());
             return false;
         }
 

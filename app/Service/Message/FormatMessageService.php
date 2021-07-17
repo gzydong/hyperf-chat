@@ -60,7 +60,7 @@ class FormatMessageService
     {
         if (empty($rows)) return [];
 
-        $files = $codes = $forwards = $invites = [];
+        $files = $codes = $forwards = $invites = $votes = [];
         foreach ($rows as $value) {
             switch ($value['msg_type']) {
                 case TalkMessageType::FILE_MESSAGE:
@@ -75,6 +75,10 @@ class FormatMessageService
                 case TalkMessageType::CODE_MESSAGE:
                     $codes[] = $value['id'];
                     break;
+                case TalkMessageType::VOTE_MESSAGE:
+                    $votes[] = $value['id'];
+                    break;
+                default:
             }
         }
 
