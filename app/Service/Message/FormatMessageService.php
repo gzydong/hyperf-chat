@@ -2,11 +2,13 @@
 
 namespace App\Service\Message;
 
+use App\Cache\VoteCache;
 use App\Constants\TalkMessageType;
 use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsFile;
 use App\Model\Talk\TalkRecordsForward;
 use App\Model\Talk\TalkRecordsInvite;
+use App\Model\Talk\TalkRecordsVote;
 use App\Model\User;
 
 class FormatMessageService
@@ -102,6 +104,12 @@ class FormatMessageService
             $forwards = TalkRecordsForward::whereIn('record_id', $forwards)->get(['record_id', 'records_id', 'text'])->keyBy('record_id')->toArray();
         }
 
+        if ($votes) {
+            $votes = TalkRecordsVote::whereIn('record_id', $votes)->get([
+                'id', 'record_id', 'title', 'answer_mode', 'status', 'answer_option', 'answer_num', 'answered_num'
+            ])->keyBy('record_id')->toArray();
+        }
+
         foreach ($rows as $k => $row) {
             $rows[$k]['file']       = [];
             $rows[$k]['code_block'] = [];
@@ -135,7 +143,20 @@ class FormatMessageService
                     break;
 
                 case TalkMessageType::VOTE_MESSAGE:// 投票消息
-                    // todo 待开发
+                    $options = [];
+                    foreach ($votes[$row['id']]['answer_option'] as $k2 => $value) {
+                        $options[] = [
+                            'key'   => $k2,
+                            'value' => $value
+                        ];
+                    }
+
+                    $votes[$row['id']]['answer_option'] = $options;
+
+                    $rows[$k]['vote'] = [
+                        'vote_users' => VoteCache::getInstance()->getOrSetVoteCache($votes[$row['id']]['id']),
+                        'detail'     => $votes[$row['id']]
+                    ];
                     break;
 
                 case TalkMessageType::GROUP_INVITE_MESSAGE:// 入群消息/退群消息

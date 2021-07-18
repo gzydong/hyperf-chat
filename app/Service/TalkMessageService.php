@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Cache\LastMessage;
+use App\Cache\VoteCache;
 use App\Constants\TalkMessageEvent;
 use App\Constants\TalkMessageType;
 use App\Model\Group\GroupMember;
@@ -197,10 +198,11 @@ class TalkMessageService
             return false;
         }
 
-        $options = explode(',', $params['options']);
-        if (!$options) {
+        if (TalkRecordsVoteAnswer::where('vote_id', $record->vote_id)->where('user_id', $user_id)->exists()) {
             return false;
         }
+
+        $options = $params['options'];
 
         sort($options);
 
@@ -209,7 +211,7 @@ class TalkMessageService
         }
 
         // 单选模式取第一个
-        if ($record->answer_mode == 1) {
+        if ($record->answer_mode == 0) {
             $options = [$options[0]];
         }
 
@@ -233,6 +235,8 @@ class TalkMessageService
         } catch (\Exception $e) {
             return false;
         }
+
+        VoteCache::getInstance()->updateVoteCache($record->vote_id);
 
         return true;
     }

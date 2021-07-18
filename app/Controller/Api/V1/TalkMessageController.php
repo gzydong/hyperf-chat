@@ -221,6 +221,11 @@ class TalkMessageController extends CController
             'options'   => 'required',
         ]);
 
+        $params['options'] = array_filter(explode(',', $params['options']));
+        if (!$params['options']) {
+            return $this->response->fail('投票失败，请稍后再试！');
+        }
+
         $isTrue = $this->talkMessageService->handleVote($this->uid(), $params);
 
         if (!$isTrue) return $this->response->fail('投票失败，请稍后再试！');
