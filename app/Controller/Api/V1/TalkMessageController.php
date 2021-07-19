@@ -226,11 +226,11 @@ class TalkMessageController extends CController
             return $this->response->fail('投票失败，请稍后再试！');
         }
 
-        $isTrue = $this->talkMessageService->handleVote($this->uid(), $params);
+        [$isTrue, $cache] = $this->talkMessageService->handleVote($this->uid(), $params);
 
         if (!$isTrue) return $this->response->fail('投票失败，请稍后再试！');
 
-        return $this->response->success();
+        return $this->response->success($cache);
     }
 
     /**

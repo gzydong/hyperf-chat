@@ -3,6 +3,7 @@
 namespace App\Service\Message;
 
 use App\Cache\VoteCache;
+use App\Cache\VoteStatisticsCache;
 use App\Constants\TalkMessageType;
 use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsFile;
@@ -152,10 +153,10 @@ class FormatMessageService
                     }
 
                     $votes[$row['id']]['answer_option'] = $options;
-
-                    $rows[$k]['vote'] = [
+                    $rows[$k]['vote']                   = [
+                        'statistics' => VoteStatisticsCache::getInstance()->getOrSetVoteCache($votes[$row['id']]['id']),
                         'vote_users' => VoteCache::getInstance()->getOrSetVoteCache($votes[$row['id']]['id']),
-                        'detail'     => $votes[$row['id']]
+                        'detail'     => $votes[$row['id']],
                     ];
                     break;
 

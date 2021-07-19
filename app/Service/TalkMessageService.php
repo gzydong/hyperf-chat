@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Cache\LastMessage;
 use App\Cache\VoteCache;
+use App\Cache\VoteStatisticsCache;
 use App\Constants\TalkMessageEvent;
 use App\Constants\TalkMessageType;
 use App\Model\Group\GroupMember;
@@ -176,7 +177,7 @@ class TalkMessageService
      * @param array $params
      * @return bool
      */
-    public function handleVote(int $user_id, array $params): bool
+    public function handleVote(int $user_id, array $params): array
     {
         $record = TalkRecords::join('talk_records_vote as vote', 'vote.record_id', '=', 'talk_records.id')
             ->where('talk_records.id', $params['record_id'])
@@ -191,15 +192,15 @@ class TalkMessageService
         if (!$record) return false;
 
         if ($record->msg_type != TalkMessageType::VOTE_MESSAGE) {
-            return false;
+            return [false, []];
         }
 
         if (!UserRelation::isFriendOrGroupMember($user_id, $record->receiver_id, $record->talk_type)) {
-            return false;
+            return [false, []];
         }
 
         if (TalkRecordsVoteAnswer::where('vote_id', $record->vote_id)->where('user_id', $user_id)->exists()) {
-            return false;
+            return [false, []];
         }
 
         $options = $params['options'];
@@ -207,7 +208,7 @@ class TalkMessageService
         sort($options);
 
         foreach ($options as $value) {
-            if (!isset($record->answer_option[$value])) return false;
+            if (!isset($record->answer_option[$value])) return [false, []];
         }
 
         // 单选模式取第一个
@@ -233,11 +234,15 @@ class TalkMessageService
                 }
             });
         } catch (\Exception $e) {
-            return false;
+            return [false, []];
         }
 
+        // 更新投票缓存
         VoteCache::getInstance()->updateVoteCache($record->vote_id);
+        $cache = VoteStatisticsCache::getInstance()->updateVoteCache($record->vote_id);
 
-        return true;
+        // todo 推送消息
+
+        return [true, $cache];
     }
 }
