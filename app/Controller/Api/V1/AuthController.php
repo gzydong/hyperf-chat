@@ -10,7 +10,7 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Event\UserLogin;
+use App\Event\LoginEvent;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -60,7 +60,7 @@ class AuthController extends CController
             return $this->response->error('登录异常，请稍后再试！');
         }
 
-        event()->dispatch(new UserLogin($this->request, $user));
+        event()->dispatch(new LoginEvent($this->request, $user));
 
         return $this->response->success([
             'authorize' => [

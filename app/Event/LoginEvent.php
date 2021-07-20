@@ -1,11 +1,12 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Event;
 
 use App\Model\User;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
-class UserLogin
+class LoginEvent
 {
     /**
      * @var User

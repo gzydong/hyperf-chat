@@ -10,7 +10,6 @@ class TalkEvent
      */
     public $event_name;
 
-
     /**
      * @var array 消息数据
      */
