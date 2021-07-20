@@ -3,11 +3,11 @@
 namespace App\Service;
 
 use App\Cache\FriendApply;
-use App\Constants\TalkMessageEvent;
+use App\Constants\TalkEventConstant;
+use App\Event\TalkEvent;
 use App\Model\User;
 use App\Model\UsersFriend;
 use App\Model\UsersFriendApply;
-use App\Support\MessageProducer;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
 
@@ -49,7 +49,7 @@ class ContactApplyService
         // 判断对方是否在线。如果在线发送消息通知
         $isOnline = container()->get(SocketClientService::class)->isOnlineAll($friend_id);
         if ($isOnline) {
-            MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
+            event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_FRIEND_APPLY, [
                 'apply_id' => $result->id,
                 'type'     => 1,
             ]));
@@ -100,7 +100,7 @@ class ContactApplyService
         // 判断对方是否在线。如果在线发送消息通知
         $isOnline = container()->get(SocketClientService::class)->isOnlineAll($info->user_id);
         if ($isOnline) {
-            MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_FRIEND_APPLY, [
+            event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_FRIEND_APPLY, [
                 'apply_id' => $apply_id,
                 'type'     => 2,
             ]));

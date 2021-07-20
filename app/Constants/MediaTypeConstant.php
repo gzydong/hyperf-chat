@@ -3,11 +3,11 @@
 namespace App\Constants;
 
 /**
- * Class FileMediaType
+ * Class MediaTypeConstant
  *
  * @package App\Constants
  */
-class MediaFileType
+class MediaTypeConstant
 {
     const FILE_IMAGE = 1; //图片文件
     const FILE_VIDEO = 2; //视频文件

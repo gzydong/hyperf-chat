@@ -13,9 +13,8 @@ namespace App\Controller;
 
 use App\Cache\SocketRoom;
 use App\Service\Message\ReceiveHandleService;
-use App\Support\MessageProducer;
 use Hyperf\Di\Annotation\Inject;
-use App\Constants\TalkMessageEvent;
+use App\Constants\TalkEventConstant;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
@@ -25,6 +24,8 @@ use Swoole\Http\Response;
 use Swoole\WebSocket\Server;
 use App\Service\SocketClientService;
 use App\Model\Group\GroupMember;
+use App\Event\TalkEvent;
+
 
 /**
  * Class WebSocketController
@@ -76,7 +77,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         }
 
         if (!$isOnline) {
-            MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_ONLINE_STATUS, [
+            event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_ONLINE_STATUS, [
                 'user_id' => $user_id,
                 'status'  => 1,
             ]));
@@ -123,7 +124,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $isOnline = $this->client->isOnlineAll($user_id);
         if ($isOnline) return;
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_ONLINE_STATUS, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_ONLINE_STATUS, [
             'user_id' => $user_id,
             'status'  => 0,
         ]));

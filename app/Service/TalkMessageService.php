@@ -5,16 +5,16 @@ namespace App\Service;
 use App\Cache\LastMessage;
 use App\Cache\VoteCache;
 use App\Cache\VoteStatisticsCache;
-use App\Constants\TalkMessageEvent;
+use App\Constants\TalkEventConstant;
 use App\Constants\TalkMessageType;
+use App\Event\TalkEvent;
 use App\Model\Group\GroupMember;
 use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsVote;
 use App\Model\Talk\TalkRecordsVoteAnswer;
-use App\Support\MessageProducer;
 use App\Support\UserRelation;
 use Exception;
-use App\Constants\MediaFileType;
+use App\Constants\MediaTypeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsFile;
 use Hyperf\DbConnection\Db;
@@ -53,17 +53,17 @@ class TalkMessageService
             return false;
         }
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
+            'text'       => '[代码消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $insert->user_id,
             'receiver_id' => $insert->receiver_id,
             'talk_type'   => $insert->talk_type,
             'record_id'   => $insert->id
         ]));
-
-        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
-            'text'       => '[代码消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
 
         return true;
     }
@@ -89,7 +89,7 @@ class TalkMessageService
             }
 
             $file['record_id']  = $insert->id;
-            $file['file_type']  = MediaFileType::getMediaType($file['file_suffix']);
+            $file['file_type']  = MediaTypeConstant::getMediaType($file['file_suffix']);
             $file['created_at'] = date('Y-m-d H:i:s');
             if (!TalkRecordsFile::create($file)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');
@@ -101,17 +101,17 @@ class TalkMessageService
             return false;
         }
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
+            'text'       => '[图片消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $insert->user_id,
             'receiver_id' => $insert->receiver_id,
             'talk_type'   => $insert->talk_type,
             'record_id'   => $insert->id
         ]));
-
-        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
-            'text'       => '[图片消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
 
         return true;
     }
@@ -154,18 +154,17 @@ class TalkMessageService
             return false;
         }
 
-        // 推送消息通知
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
+            'text'       => '[投票消息]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $insert->user_id,
             'receiver_id' => $insert->receiver_id,
             'talk_type'   => $insert->talk_type,
             'record_id'   => $insert->id
         ]));
-
-        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
-            'text'       => '[投票消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
 
         return true;
     }

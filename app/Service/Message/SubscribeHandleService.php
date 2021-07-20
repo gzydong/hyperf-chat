@@ -1,10 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service\Message;
 
 use App\Cache\SocketRoom;
-use App\Constants\TalkMessageEvent;
-use App\Constants\TalkMode;
+use App\Constants\TalkEventConstant;
+use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\Group\Group;
 use App\Model\User;
@@ -21,19 +22,19 @@ class SubscribeHandleService
      */
     const EVENTS = [
         // 聊天消息事件
-        TalkMessageEvent::EVENT_TALK          => 'onConsumeTalk',
+        TalkEventConstant::EVENT_TALK          => 'onConsumeTalk',
 
         // 键盘输入事件
-        TalkMessageEvent::EVENT_KEYBOARD      => 'onConsumeKeyboard',
+        TalkEventConstant::EVENT_KEYBOARD      => 'onConsumeKeyboard',
 
         // 用户在线状态事件
-        TalkMessageEvent::EVENT_ONLINE_STATUS => 'onConsumeOnlineStatus',
+        TalkEventConstant::EVENT_ONLINE_STATUS => 'onConsumeOnlineStatus',
 
         // 聊天消息推送事件
-        TalkMessageEvent::EVENT_REVOKE_TALK   => 'onConsumeRevokeTalk',
+        TalkEventConstant::EVENT_REVOKE_TALK   => 'onConsumeRevokeTalk',
 
         // 好友申请相关事件
-        TalkMessageEvent::EVENT_FRIEND_APPLY  => 'onConsumeFriendApply'
+        TalkEventConstant::EVENT_FRIEND_APPLY  => 'onConsumeFriendApply'
     ];
 
     /**
@@ -83,12 +84,12 @@ class SubscribeHandleService
         $fds       = [];
         $groupInfo = null;
 
-        if ($talk_type == TalkMode::PRIVATE_CHAT) {
+        if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
             $fds = array_merge(
                 $this->clientService->findUserFds($sender_id),
                 $this->clientService->findUserFds($receiver_id)
             );
-        } else if ($talk_type == TalkMode::GROUP_CHAT) {
+        } else if ($talk_type == TalkModeConstant::GROUP_CHAT) {
             foreach (SocketRoom::getInstance()->getRoomMembers(strval($receiver_id)) as $uid) {
                 $fds = array_merge($fds, $this->clientService->findUserFds(intval($uid)));
             }
@@ -129,7 +130,7 @@ class SubscribeHandleService
             ])
         ];
 
-        $this->socketPushNotify($fds, json_encode([TalkMessageEvent::EVENT_TALK, $notify]));
+        $this->socketPushNotify($fds, json_encode([TalkEventConstant::EVENT_TALK, $notify]));
     }
 
     /**
@@ -141,7 +142,7 @@ class SubscribeHandleService
     {
         $fds = $this->clientService->findUserFds($data['data']['receiver_id']);
 
-        $this->socketPushNotify($fds, json_encode([TalkMessageEvent::EVENT_KEYBOARD, $data['data']]));
+        $this->socketPushNotify($fds, json_encode([TalkEventConstant::EVENT_KEYBOARD, $data['data']]));
     }
 
     /**
@@ -162,7 +163,7 @@ class SubscribeHandleService
         }
 
         $this->socketPushNotify(array_unique($fds), json_encode([
-            TalkMessageEvent::EVENT_ONLINE_STATUS, [
+            TalkEventConstant::EVENT_ONLINE_STATUS, [
                 'user_id' => $user_id,
                 'status'  => $status
             ]
@@ -179,10 +180,10 @@ class SubscribeHandleService
         $record = TalkRecords::where('id', $data['data']['record_id'])->first(['id', 'talk_type', 'user_id', 'receiver_id']);
 
         $fds = [];
-        if ($record->talk_type == TalkMode::PRIVATE_CHAT) {
+        if ($record->talk_type == TalkModeConstant::PRIVATE_CHAT) {
             $fds = array_merge($fds, $this->clientService->findUserFds($record->user_id));
             $fds = array_merge($fds, $this->clientService->findUserFds($record->receiver_id));
-        } else if ($record->talk_type == TalkMode::GROUP_CHAT) {
+        } else if ($record->talk_type == TalkModeConstant::GROUP_CHAT) {
             $userIds = SocketRoom::getInstance()->getRoomMembers(strval($record->receiver_id));
             foreach ($userIds as $uid) {
                 $fds = array_merge($fds, $this->clientService->findUserFds((int)$uid));
@@ -190,7 +191,7 @@ class SubscribeHandleService
         }
 
         $fds = array_unique($fds);
-        $this->socketPushNotify($fds, json_encode([TalkMessageEvent::EVENT_REVOKE_TALK, [
+        $this->socketPushNotify($fds, json_encode([TalkEventConstant::EVENT_REVOKE_TALK, [
             'talk_type'   => $record->talk_type,
             'sender_id'   => $record->user_id,
             'receiver_id' => $record->receiver_id,
@@ -236,7 +237,7 @@ class SubscribeHandleService
             'mobile'   => $friendInfo->mobile,
         ];
 
-        $this->socketPushNotify(array_unique($fds), json_encode([TalkMessageEvent::EVENT_FRIEND_APPLY, $msg]));
+        $this->socketPushNotify(array_unique($fds), json_encode([TalkEventConstant::EVENT_FRIEND_APPLY, $msg]));
     }
 
     /**

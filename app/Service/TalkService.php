@@ -2,11 +2,11 @@
 
 namespace App\Service;
 
-use App\Constants\TalkMessageEvent;
+use App\Constants\TalkEventConstant;
 use App\Constants\TalkMessageType;
-use App\Constants\TalkMode;
+use App\Constants\TalkModeConstant;
+use App\Event\TalkEvent;
 use App\Service\Message\FormatMessageService;
-use App\Support\MessageProducer;
 use Exception;
 use App\Model\Group\Group;
 use App\Model\Talk\TalkRecords;
@@ -53,7 +53,7 @@ class TalkService extends BaseService
             $rowsSqlObj->where('talk_records.id', '<', $record_id);
         }
 
-        if ($talk_type == TalkMode::PRIVATE_CHAT) {
+        if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
             $rowsSqlObj->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([
                     ['talk_records.user_id', '=', $user_id],
@@ -98,9 +98,9 @@ class TalkService extends BaseService
         ]);
 
         // 判断是否有权限查看
-        if ($result->talk_type == TalkMode::PRIVATE_CHAT && ($result->user_id != $user_id && $result->receiver_id != $user_id)) {
+        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT && ($result->user_id != $user_id && $result->receiver_id != $user_id)) {
             return [];
-        } else if ($result->talk_type == TalkMode::GROUP_CHAT && !Group::isMember($result->receiver_id, $user_id)) {
+        } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT && !Group::isMember($result->receiver_id, $user_id)) {
             return [];
         }
 
@@ -138,13 +138,13 @@ class TalkService extends BaseService
      */
     public function removeRecords(int $user_id, int $talk_type, int $receiver_id, array $record_ids)
     {
-        if ($talk_type == TalkMode::PRIVATE_CHAT) {// 私聊信息
+        if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {// 私聊信息
             $ids = TalkRecords::whereIn('id', $record_ids)->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([['user_id', '=', $user_id], ['receiver_id', '=', $receiver_id]])
                     ->orWhere([['user_id', '=', $receiver_id], ['receiver_id', '=', $user_id]]);
             })->where('talk_type', $talk_type)->pluck('id');
         } else {// 群聊信息
-            $ids = TalkRecords::whereIn('id', $record_ids)->where('talk_type', TalkMode::GROUP_CHAT)->pluck('id');
+            $ids = TalkRecords::whereIn('id', $record_ids)->where('talk_type', TalkModeConstant::GROUP_CHAT)->pluck('id');
         }
 
         // 判断要删除的消息在数据库中是否存在
@@ -153,7 +153,7 @@ class TalkService extends BaseService
         }
 
         // 判读是否属于群消息并且判断是否是群成员
-        if ($talk_type == TalkMode::GROUP_CHAT && !Group::isMember($receiver_id, $user_id)) {
+        if ($talk_type == TalkModeConstant::GROUP_CHAT && !Group::isMember($receiver_id, $user_id)) {
             return false;
         }
 
@@ -185,11 +185,11 @@ class TalkService extends BaseService
             return [false, '已超过有效的撤回时间', []];
         }
 
-        if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
+        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
             if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
                 return [false, '非法操作', []];
             }
-        } else if ($result->talk_type == TalkMode::GROUP_CHAT) {
+        } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT) {
             if (!Group::isMember($result->receiver_id, $user_id)) {
                 return [false, '非法操作', []];
             }
@@ -198,7 +198,7 @@ class TalkService extends BaseService
         $result->is_revoke = 1;
         $result->save();
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_REVOKE_TALK, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_REVOKE_TALK, [
             'record_id' => $result->id
         ]));
 
@@ -225,11 +225,11 @@ class TalkService extends BaseService
         if (!$result) return [];
 
         // 根据消息类型判断用户是否有转发权限
-        if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
+        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
             if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
                 return [];
             }
-        } else if ($result->talk_type == TalkMode::GROUP_CHAT) {
+        } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT) {
             if (!Group::isMember($result->receiver_id, $user_id)) {
                 return [];
             }
@@ -324,7 +324,7 @@ class TalkService extends BaseService
 
         $sqlObj = TalkRecords::whereIn('id', $records_ids);
 
-        if ($talk_type == TalkMode::PRIVATE_CHAT) {
+        if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
             if (!container()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) return [];
 
             $sqlObj = $sqlObj->where(function ($query) use ($user_id, $receiver_id) {
@@ -339,7 +339,7 @@ class TalkService extends BaseService
         } else {
             if (!Group::isMember($receiver_id, $user_id)) return [];
 
-            $sqlObj = $sqlObj->where('receiver_id', $receiver_id)->whereIn('msg_type', $msg_type)->where('talk_type', TalkMode::GROUP_CHAT)->where('is_revoke', 0);
+            $sqlObj = $sqlObj->where('receiver_id', $receiver_id)->whereIn('msg_type', $msg_type)->where('talk_type', TalkModeConstant::GROUP_CHAT)->where('is_revoke', 0);
         }
 
         $result = $sqlObj->get();

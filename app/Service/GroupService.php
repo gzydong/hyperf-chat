@@ -5,15 +5,15 @@ namespace App\Service;
 
 use App\Cache\LastMessage;
 use App\Cache\SocketRoom;
-use App\Constants\TalkMessageEvent;
+use App\Constants\TalkEventConstant;
 use App\Constants\TalkMessageType;
-use App\Constants\TalkMode;
+use App\Constants\TalkModeConstant;
+use App\Event\TalkEvent;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsInvite;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Model\Talk\TalkList;
-use App\Support\MessageProducer;
 use Hyperf\DbConnection\Db;
 use Exception;
 
@@ -62,7 +62,7 @@ class GroupService extends BaseService
                 ];
 
                 $chatList[] = [
-                    'talk_type'   => TalkMode::GROUP_CHAT,
+                    'talk_type'   => TalkModeConstant::GROUP_CHAT,
                     'user_id'     => $friend_id,
                     'receiver_id' => $group->id,
                     'created_at'  => date('Y-m-d H:i:s'),
@@ -79,7 +79,7 @@ class GroupService extends BaseService
             }
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkMode::GROUP_CHAT,
+                'talk_type'   => TalkModeConstant::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $group->id,
                 'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
@@ -100,7 +100,7 @@ class GroupService extends BaseService
             return [false, null];
         }
 
-        LastMessage::getInstance()->save(TalkMode::GROUP_CHAT, $user_id, $group->id, [
+        LastMessage::getInstance()->save(TalkModeConstant::GROUP_CHAT, $user_id, $group->id, [
             'text'       => '[入群通知]',
             'created_at' => date('Y-m-d H:i:s')
         ]);
@@ -110,10 +110,10 @@ class GroupService extends BaseService
             SocketRoom::getInstance()->addRoomMember(strval($group->id), strval($value));
         }
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $user_id,
             'receiver_id' => $group->id,
-            'talk_type'   => TalkMode::GROUP_CHAT,
+            'talk_type'   => TalkModeConstant::GROUP_CHAT,
             'record_id'   => $result->id
         ]));
 
@@ -194,7 +194,7 @@ class GroupService extends BaseService
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
         $members = GroupMember::where('group_id', $group_id)->whereIn('user_id', $friend_ids)->get(['id', 'user_id', 'is_quit'])->keyBy('user_id')->toArray();
-        $chatArr = TalkList::where('talk_type', TalkMode::GROUP_CHAT)
+        $chatArr = TalkList::where('talk_type', TalkModeConstant::GROUP_CHAT)
             ->where('receiver_id', $group_id)
             ->whereIn('user_id', $friend_ids)
             ->get(['id', 'user_id', 'is_delete'])
@@ -213,7 +213,7 @@ class GroupService extends BaseService
 
             if (!isset($chatArr[$uid])) {
                 $insertArr1[] = [
-                    'talk_type'   => TalkMode::GROUP_CHAT,
+                    'talk_type'   => TalkModeConstant::GROUP_CHAT,
                     'user_id'     => $uid,
                     'receiver_id' => $group_id,
                     'created_at'  => date('Y-m-d H:i:s'),
@@ -252,7 +252,7 @@ class GroupService extends BaseService
             }
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkMode::GROUP_CHAT,
+                'talk_type'   => TalkModeConstant::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $group_id,
                 'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
@@ -273,7 +273,7 @@ class GroupService extends BaseService
             return false;
         }
 
-        LastMessage::getInstance()->save(TalkMode::GROUP_CHAT, $user_id, $group_id, [
+        LastMessage::getInstance()->save(TalkModeConstant::GROUP_CHAT, $user_id, $group_id, [
             'text'       => '[入群通知]',
             'created_at' => date('Y-m-d H:i:s')
         ]);
@@ -283,10 +283,10 @@ class GroupService extends BaseService
             SocketRoom::getInstance()->addRoomMember(strval($group_id), strval($value));
         }
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $user_id,
             'receiver_id' => $group_id,
-            'talk_type'   => TalkMode::GROUP_CHAT,
+            'talk_type'   => TalkModeConstant::GROUP_CHAT,
             'record_id'   => $result->id
         ]));
 
@@ -317,7 +317,7 @@ class GroupService extends BaseService
             if ($count == 0) throw new Exception('更新记录失败...');
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkMode::GROUP_CHAT,
+                'talk_type'   => TalkModeConstant::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $group_id,
                 'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
@@ -334,7 +334,7 @@ class GroupService extends BaseService
             ]);
 
             TalkList::where([
-                ['talk_type', '=', TalkMode::GROUP_CHAT],
+                ['talk_type', '=', TalkModeConstant::GROUP_CHAT],
                 ['user_id', '=', $user_id],
                 ['receiver_id', '=', $group_id],
             ])->update(['is_delete' => 1]);
@@ -348,10 +348,10 @@ class GroupService extends BaseService
         // 移出聊天室
         SocketRoom::getInstance()->delRoomMember(strval($group_id), strval($user_id));
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $user_id,
             'receiver_id' => (int)$params['group_id'],
-            'talk_type'   => TalkMode::GROUP_CHAT,
+            'talk_type'   => TalkModeConstant::GROUP_CHAT,
             'record_id'   => $result->id
         ]));
 
@@ -382,7 +382,7 @@ class GroupService extends BaseService
             if ($count == 0) throw new Exception('更新记录失败...');
 
             $result = TalkRecords::create([
-                'talk_type'   => TalkMode::GROUP_CHAT,
+                'talk_type'   => TalkModeConstant::GROUP_CHAT,
                 'user_id'     => 0,
                 'receiver_id' => $group_id,
                 'msg_type'    => TalkMessageType::GROUP_INVITE_MESSAGE,
@@ -397,7 +397,7 @@ class GroupService extends BaseService
                 'user_ids'        => implode(',', $member_ids)
             ]);
 
-            TalkList::whereIn('user_id', $member_ids)->where('receiver_id', $group_id)->where('talk_type', TalkMode::GROUP_CHAT)->update([
+            TalkList::whereIn('user_id', $member_ids)->where('receiver_id', $group_id)->where('talk_type', TalkModeConstant::GROUP_CHAT)->update([
                 'is_delete'  => 1,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
@@ -413,10 +413,10 @@ class GroupService extends BaseService
             SocketRoom::getInstance()->delRoomMember(strval($group_id), strval($uid));
         }
 
-        MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $user_id,
             'receiver_id' => $group_id,
-            'talk_type'   => TalkMode::GROUP_CHAT,
+            'talk_type'   => TalkModeConstant::GROUP_CHAT,
             'record_id'   => $result->id
         ]));
 
@@ -461,7 +461,7 @@ class GroupService extends BaseService
         $list = [];
         if ($items) {
             $list = TalkList::query()->where('user_id', $user_id)
-                ->where('talk_type', TalkMode::GROUP_CHAT)
+                ->where('talk_type', TalkModeConstant::GROUP_CHAT)
                 ->whereIn('receiver_id', array_column($items, 'id'))
                 ->get(['receiver_id', 'is_disturb'])->keyBy('receiver_id')->toArray();
         }

@@ -10,7 +10,7 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\TalkMode;
+use App\Constants\TalkModeConstant;
 use App\Service\GroupNoticeService;
 use App\Service\TalkListService;
 use App\Service\UserService;
@@ -215,7 +215,7 @@ class GroupController extends CController
             'is_manager'       => $groupInfo->creator_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
             'visit_card'       => GroupMember::visitCard($user_id, $group_id),
-            'is_disturb'       => (int)$service->isDisturb($user_id, $group_id, TalkMode::GROUP_CHAT),
+            'is_disturb'       => (int)$service->isDisturb($user_id, $group_id, TalkModeConstant::GROUP_CHAT),
             'notice'           => $notice ? $notice->toArray() : []
         ]);
     }

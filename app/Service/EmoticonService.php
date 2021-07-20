@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Constants\TalkMessageType;
-use App\Constants\TalkMode;
+use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsFile;
 use App\Model\EmoticonItem;
@@ -101,7 +101,7 @@ class EmoticonService extends BaseService
 
         if (!$result) return [false, []];
 
-        if ($result->talk_type == TalkMode::PRIVATE_CHAT) {
+        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
             if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
                 return [false, []];
             }

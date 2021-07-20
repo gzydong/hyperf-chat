@@ -7,7 +7,7 @@ namespace App\Constants;
  *
  * @package App\Constants
  */
-class TalkMessageEvent
+class TalkEventConstant
 {
     /**
      * 对话消息通知 - 事件名

@@ -7,7 +7,7 @@ namespace App\Constants;
  *
  * @package App\Constants
  */
-class TalkMode
+class TalkModeConstant
 {
     /**
      * 私信

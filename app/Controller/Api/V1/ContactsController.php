@@ -10,7 +10,7 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\TalkMode;
+use App\Constants\TalkModeConstant;
 use App\Service\TalkListService;
 use App\Service\UserService;
 use Hyperf\Di\Annotation\Inject;
@@ -77,7 +77,7 @@ class ContactsController extends CController
             return $this->response->fail('好友关系解除失败！');
         }
 
-        container()->get(TalkListService::class)->deleteByType($user_id, $params['friend_id'], TalkMode::PRIVATE_CHAT);
+        container()->get(TalkListService::class)->deleteByType($user_id, $params['friend_id'], TalkModeConstant::PRIVATE_CHAT);
 
         // TODO 推送消息（待完善）
 

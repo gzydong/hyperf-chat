@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Cache\LastMessage;
 use App\Cache\ServerRunID;
 use App\Cache\UnreadTalk;
-use App\Constants\TalkMode;
+use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkList;
 use Carbon\Carbon;
 
@@ -113,10 +113,10 @@ class TalkListService
 
         $rows = TalkList::from('talk_list as list')
             ->leftJoin('users', function ($join) {
-                $join->on('users.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkMode::PRIVATE_CHAT);
+                $join->on('users.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkModeConstant::PRIVATE_CHAT);
             })
             ->leftJoin('group', function ($join) {
-                $join->on('group.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkMode::GROUP_CHAT);
+                $join->on('group.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkModeConstant::GROUP_CHAT);
             })
             ->where('list.user_id', $user_id)
             ->where('list.is_delete', 0)
@@ -137,13 +137,13 @@ class TalkListService
                 'updated_at'  => Carbon::parse($item['updated_at'])->toDateTimeString(),
             ]);
 
-            if ($item['talk_type'] == TalkMode::PRIVATE_CHAT) {
+            if ($item['talk_type'] == TalkModeConstant::PRIVATE_CHAT) {
                 $data['name']        = $item['nickname'];
                 $data['avatar']      = $item['user_avatar'];
                 $data['unread_num']  = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
                 $data['is_online']   = container()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
                 $data['remark_name'] = container()->get(UserFriendService::class)->getFriendRemark($user_id, $item['receiver_id']);
-            } else if (TalkMode::GROUP_CHAT) {
+            } else if (TalkModeConstant::GROUP_CHAT) {
                 $data['name']   = strval($item['group_name']);
                 $data['avatar'] = $item['group_avatar'];
             }

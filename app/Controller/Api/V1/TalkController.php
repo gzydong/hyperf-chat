@@ -14,7 +14,7 @@ use App\Cache\LastMessage;
 use App\Cache\Repository\LockRedis;
 use App\Cache\UnreadTalk;
 use App\Constants\TalkMessageType;
-use App\Constants\TalkMode;
+use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkList;
 use App\Service\UserFriendService;
 use App\Support\UserRelation;
@@ -63,7 +63,7 @@ class TalkController extends CController
         // 读取用户的未读消息列表
         if ($list = UnreadTalk::getInstance()->reads($user_id)) {
             foreach ($list as $friend_id => $num) {
-                $this->talkListService->create($user_id, $friend_id, TalkMode::PRIVATE_CHAT);
+                $this->talkListService->create($user_id, $friend_id, TalkModeConstant::PRIVATE_CHAT);
             }
         }
 
@@ -107,13 +107,13 @@ class TalkController extends CController
             'receiver_id' => $result['receiver_id'],
         ]);
 
-        if ($result['talk_type'] == TalkMode::PRIVATE_CHAT) {
+        if ($result['talk_type'] == TalkModeConstant::PRIVATE_CHAT) {
             $userInfo            = User::where('id', $data['receiver_id'])->first(['nickname', 'avatar']);
             $data['avatar']      = $userInfo->avatar;
             $data['name']        = $userInfo->nickname;
             $data['unread_num']  = UnreadTalk::getInstance()->read($data['receiver_id'], $user_id);
             $data['remark_name'] = $service->getFriendRemark($user_id, (int)$data['receiver_id']);
-        } else if ($result['talk_type'] == TalkMode::GROUP_CHAT) {
+        } else if ($result['talk_type'] == TalkModeConstant::GROUP_CHAT) {
             $groupInfo      = Group::where('id', $data['receiver_id'])->first(['group_name', 'avatar']);
             $data['name']   = $groupInfo->group_name;
             $data['avatar'] = $groupInfo->avatar;
@@ -200,7 +200,7 @@ class TalkController extends CController
         ]);
 
         // 设置好友消息未读数
-        if ($params['talk_type'] == TalkMode::PRIVATE_CHAT) {
+        if ($params['talk_type'] == TalkModeConstant::PRIVATE_CHAT) {
             UnreadTalk::getInstance()->reset((int)$params['receiver_id'], $this->uid());
         }
 
@@ -223,7 +223,7 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        if ($params['talk_type'] == TalkMode::GROUP_CHAT && !Group::isMember((int)$params['receiver_id'], $user_id)) {
+        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !Group::isMember((int)$params['receiver_id'], $user_id)) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
         }
 
@@ -278,7 +278,7 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        if ($params['talk_type'] == TalkMode::GROUP_CHAT && !Group::isMember((int)$params['receiver_id'], $user_id)) {
+        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !Group::isMember((int)$params['receiver_id'], $user_id)) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
         }
 

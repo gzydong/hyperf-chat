@@ -3,12 +3,12 @@
 namespace App\Controller\Api\V1;
 
 use App\Cache\UnreadTalk;
-use App\Constants\TalkMessageEvent;
-use App\Constants\TalkMode;
+use App\Constants\TalkEventConstant;
+use App\Constants\TalkModeConstant;
+use App\Event\TalkEvent;
 use App\Model\EmoticonItem;
 use App\Model\FileSplitUpload;
 use App\Service\TalkMessageService;
-use App\Support\MessageProducer;
 use App\Support\UserRelation;
 use App\Service\EmoticonService;
 use App\Service\TalkService;
@@ -189,12 +189,12 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], TalkMode::GROUP_CHAT)) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], TalkModeConstant::GROUP_CHAT)) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
         $isTrue = $this->talkMessageService->insertVoteMessage([
-            'talk_type'   => TalkMode::GROUP_CHAT,
+            'talk_type'   => TalkModeConstant::GROUP_CHAT,
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
         ], [
@@ -289,13 +289,13 @@ class TalkMessageController extends CController
         $receive_user_ids = $receive_group_ids = [];
         if (isset($params['receive_user_ids']) && !empty($params['receive_user_ids'])) {
             $receive_user_ids = array_map(function ($friend_id) {
-                return ['talk_type' => TalkMode::PRIVATE_CHAT, 'id' => (int)$friend_id];
+                return ['talk_type' => TalkModeConstant::PRIVATE_CHAT, 'id' => (int)$friend_id];
             }, $params['receive_user_ids']);
         }
 
         if (isset($params['receive_group_ids']) && !empty($params['receive_group_ids'])) {
             $receive_group_ids = array_map(function ($group_id) {
-                return ['talk_type' => TalkMode::GROUP_CHAT, 'id' => (int)$group_id];
+                return ['talk_type' => TalkModeConstant::GROUP_CHAT, 'id' => (int)$group_id];
             }, $params['receive_group_ids']);
         }
 
@@ -318,7 +318,7 @@ class TalkMessageController extends CController
 
         // 消息推送队列
         foreach ($ids as $value) {
-            MessageProducer::publish(MessageProducer::create(TalkMessageEvent::EVENT_TALK, [
+            event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
                 'sender_id'   => $user_id,
                 'receiver_id' => $value['receiver_id'],
                 'talk_type'   => $value['talk_type'],
