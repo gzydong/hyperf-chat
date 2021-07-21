@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Cache\LastMessage;
 use App\Cache\ServerRunID;
-use App\Cache\UnreadTalk;
+use App\Cache\UnreadTalkCache;
 use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkList;
 use Carbon\Carbon;
@@ -140,7 +140,7 @@ class TalkListService
             if ($item['talk_type'] == TalkModeConstant::PRIVATE_CHAT) {
                 $data['name']        = $item['nickname'];
                 $data['avatar']      = $item['user_avatar'];
-                $data['unread_num']  = UnreadTalk::getInstance()->read($item['receiver_id'], $user_id);
+                $data['unread_num']  = UnreadTalkCache::getInstance()->read($item['receiver_id'], $user_id);
                 $data['is_online']   = container()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
                 $data['remark_name'] = container()->get(UserFriendService::class)->getFriendRemark($user_id, $item['receiver_id']);
             } else if (TalkModeConstant::GROUP_CHAT) {

@@ -100,7 +100,6 @@ class SubscribeHandleService
         // 客户端ID去重
         if (!$fds = array_unique($fds)) return;
 
-
         $result = TalkRecords::leftJoin('users', 'users.id', '=', 'talk_records.user_id')
             ->where('talk_records.id', $record_id)
             ->first([

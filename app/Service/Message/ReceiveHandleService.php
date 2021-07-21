@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Service\Message;
 
 use App\Cache\LastMessage;
-use App\Cache\UnreadTalk;
+use App\Cache\UnreadTalkCache;
 use App\Constants\TalkEventConstant;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
@@ -76,7 +76,7 @@ class ReceiveHandleService
 
         // 判断是否私信
         if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            UnreadTalk::getInstance()->increment($result->user_id, $result->receiver_id);
+            UnreadTalkCache::getInstance()->increment($result->user_id, $result->receiver_id);
         }
 
         // 缓存最后一条聊天消息

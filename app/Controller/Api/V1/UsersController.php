@@ -129,12 +129,12 @@ class UsersController extends CController
     }
 
     /**
-     * 通过手机号查找用户
+     * 通过用户ID查找用户
      * @RequestMapping(path="search-user", methods="post")
      *
      * @return ResponseInterface
      */
-    public function searchUserInfo()
+    public function search()
     {
         $params = $this->request->inputs(['user_id']);
         $this->validate($params, ['user_id' => 'required|integer']);

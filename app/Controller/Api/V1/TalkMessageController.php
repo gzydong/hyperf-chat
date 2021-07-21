@@ -2,7 +2,7 @@
 
 namespace App\Controller\Api\V1;
 
-use App\Cache\UnreadTalk;
+use App\Cache\UnreadTalkCache;
 use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
@@ -312,7 +312,7 @@ class TalkMessageController extends CController
 
         if ($receive_user_ids) {
             foreach ($receive_user_ids as $v) {
-                UnreadTalk::getInstance()->increment($user_id, $v['id']);
+                UnreadTalkCache::getInstance()->increment($user_id, $v['id']);
             }
         }
 

@@ -12,7 +12,7 @@ namespace App\Controller\Api\V1;
 
 use App\Cache\LastMessage;
 use App\Cache\Repository\LockRedis;
-use App\Cache\UnreadTalk;
+use App\Cache\UnreadTalkCache;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkList;
@@ -61,7 +61,7 @@ class TalkController extends CController
         $user_id = $this->uid();
 
         // 读取用户的未读消息列表
-        if ($list = UnreadTalk::getInstance()->reads($user_id)) {
+        if ($list = UnreadTalkCache::getInstance()->reads($user_id)) {
             foreach ($list as $friend_id => $num) {
                 $this->talkListService->create($user_id, $friend_id, TalkModeConstant::PRIVATE_CHAT);
             }
@@ -85,8 +85,11 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        $lock    = 'talk:list:' . $user_id . '-' . $params['receiver_id'] . '-' . $params['talk_type'];
-        if (!LockRedis::getInstance()->lock($lock, 10)) {
+        $string  = join('-', [$user_id, $params['receiver_id'], $params['talk_type'], md5($request->getHeaderLine('user-agent'))]);
+        $lock    = 'talk:list:' . $string;
+
+        // 防止前端并发请求
+        if (!LockRedis::getInstance()->lock($lock, 60)) {
             return $this->response->fail('创建失败！');
         }
 
@@ -111,7 +114,7 @@ class TalkController extends CController
             $userInfo            = User::where('id', $data['receiver_id'])->first(['nickname', 'avatar']);
             $data['avatar']      = $userInfo->avatar;
             $data['name']        = $userInfo->nickname;
-            $data['unread_num']  = UnreadTalk::getInstance()->read($data['receiver_id'], $user_id);
+            $data['unread_num']  = UnreadTalkCache::getInstance()->read($data['receiver_id'], $user_id);
             $data['remark_name'] = $service->getFriendRemark($user_id, (int)$data['receiver_id']);
         } else if ($result['talk_type'] == TalkModeConstant::GROUP_CHAT) {
             $groupInfo      = Group::where('id', $data['receiver_id'])->first(['group_name', 'avatar']);
@@ -201,7 +204,7 @@ class TalkController extends CController
 
         // 设置好友消息未读数
         if ($params['talk_type'] == TalkModeConstant::PRIVATE_CHAT) {
-            UnreadTalk::getInstance()->reset((int)$params['receiver_id'], $this->uid());
+            UnreadTalkCache::getInstance()->reset((int)$params['receiver_id'], $this->uid());
         }
 
         return $this->response->success();

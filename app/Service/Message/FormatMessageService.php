@@ -24,31 +24,33 @@ class FormatMessageService
     private function formatTalkMessage(array $data): array
     {
         $message = [
-            "id"           => 0, // 消息记录ID
-            "talk_type"    => 1, // 消息来源[1:好友私信;2:群聊]
-            "msg_type"     => 1, // 消息类型
-            "user_id"      => 0, // 发送者用户ID
-            "receiver_id"  => 0, // 接收者ID[好友ID或群ID]
+            "id"           => 0,  // 消息记录ID
+            "talk_type"    => 1,  // 消息来源[1:好友私信;2:群聊]
+            "msg_type"     => 1,  // 消息类型
+            "user_id"      => 0,  // 发送者用户ID
+            "receiver_id"  => 0,  // 接收者ID[好友ID或群ID]
 
             // 发送消息人的信息
-            "nickname"     => "",// 用户昵称
-            "avatar"       => "",// 用户头像
-            "group_name"   => "",// 群组名称
-            "group_avatar" => "",// 群组头像
+            "nickname"     => '', // 用户昵称
+            "avatar"       => '', // 用户头像
+            "group_name"   => '', // 群组名称
+            "group_avatar" => '', // 群组头像
 
             // 不同的消息类型
-            "file"         => [],
-            "code_block"   => [],
-            "forward"      => [],
-            "invite"       => [],
-            "vote"         => [],
+            "file"         => [], // 文件消息
+            "code_block"   => [], // 代码消息
+            "forward"      => [], // 转发消息
+            "invite"       => [], // 邀请消息
+            "vote"         => [], // 投票消息
 
             // 消息创建时间
-            "content"      => '',// 文本消息
-            "created_at"   => "",
+            "content"      => '', // 文本消息
+            "created_at"   => '', // 发送时间
 
             // 消息属性
-            "is_revoke"    => 0, // 消息是否撤销
+            "is_revoke"    => 0,  // 消息是否撤销
+            "is_mark"      => 0,  // 消息是否重要
+            "is_read"      => 0,  // 消息是否已读
         ];
 
         return array_merge($message, array_intersect_key($data, $message));
@@ -62,7 +64,7 @@ class FormatMessageService
      */
     public function handleChatRecords(array $rows)
     {
-        if (empty($rows)) return [];
+        if (!$rows) return [];
 
         $files = $codes = $forwards = $invites = $votes = [];
         foreach ($rows as $value) {
@@ -106,6 +108,7 @@ class FormatMessageService
             $forwards = TalkRecordsForward::whereIn('record_id', $forwards)->get(['record_id', 'records_id', 'text'])->keyBy('record_id')->toArray();
         }
 
+        // 查询投票消息
         if ($votes) {
             $votes = TalkRecordsVote::whereIn('record_id', $votes)->get([
                 'id', 'record_id', 'title', 'answer_mode', 'status', 'answer_option', 'answer_num', 'answered_num'
@@ -120,14 +123,16 @@ class FormatMessageService
             $rows[$k]['vote']       = [];
 
             switch ($row['msg_type']) {
-                case TalkMessageType::FILE_MESSAGE:// 文件消息
+                // 文件消息
+                case TalkMessageType::FILE_MESSAGE:
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
                     if ($rows[$k]['file']) {
                         $rows[$k]['file']['file_url'] = get_media_url($rows[$k]['file']['save_dir']);
                     }
                     break;
 
-                case TalkMessageType::FORWARD_MESSAGE:// 会话记录消息
+                // 会话记录消息
+                case TalkMessageType::FORWARD_MESSAGE:
                     if (isset($forwards[$row['id']])) {
                         $rows[$k]['forward'] = [
                             'num'  => substr_count($forwards[$row['id']]['records_id'], ',') + 1,
@@ -136,7 +141,8 @@ class FormatMessageService
                     }
                     break;
 
-                case TalkMessageType::CODE_MESSAGE:// 代码块消息
+                // 代码块消息
+                case TalkMessageType::CODE_MESSAGE:
                     $rows[$k]['code_block'] = $codes[$row['id']] ?? [];
                     if ($rows[$k]['code_block']) {
                         $rows[$k]['code_block']['code'] = htmlspecialchars_decode($rows[$k]['code_block']['code']);
@@ -144,7 +150,8 @@ class FormatMessageService
                     }
                     break;
 
-                case TalkMessageType::VOTE_MESSAGE:// 投票消息
+                // 投票消息
+                case TalkMessageType::VOTE_MESSAGE:
                     $options = [];
                     foreach ($votes[$row['id']]['answer_option'] as $k2 => $value) {
                         $options[] = [
@@ -161,7 +168,8 @@ class FormatMessageService
                     ];
                     break;
 
-                case TalkMessageType::GROUP_INVITE_MESSAGE:// 入群消息/退群消息
+                // 入群消息/退群消息
+                case TalkMessageType::GROUP_INVITE_MESSAGE:
                     if (isset($invites[$row['id']])) {
                         $rows[$k]['invite'] = [
                             'type'         => $invites[$row['id']]['type'],

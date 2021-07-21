@@ -9,7 +9,7 @@ use App\Cache\Repository\HashRedis;
  *
  * @package App\Cache
  */
-class UnreadTalk extends HashRedis
+class UnreadTalkCache extends HashRedis
 {
     public $name = 'unread-talk';
 
