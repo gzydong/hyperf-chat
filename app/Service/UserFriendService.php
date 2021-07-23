@@ -36,6 +36,7 @@ class UserFriendService
     public function isFriend(int $user_id, int $friend_id, $is_mutual = false)
     {
         $isTrue1 = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->exists();
+
         if ($is_mutual === false) {
             return $isTrue1;
         }
