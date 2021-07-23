@@ -82,19 +82,19 @@ class TalkService extends BaseService
 
         $rows = $rowsSqlObj->orderBy('talk_records.id', 'desc')->limit($limit)->get()->toArray();
 
-        if ($record_id === 0 && $talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            if (!di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) {
-                array_unshift($rows, [
-                    'id'          => ($rows[0]['id'] ?? 0) + 1,
-                    'talk_type'   => TalkModeConstant::PRIVATE_CHAT,
-                    'msg_type'    => TalkMessageType::SYSTEM_TEXT_MESSAGE,
-                    'user_id'     => 0,
-                    'receiver_id' => $user_id,
-                    'content'     => '你与对方已解除好友关系，系统已禁止发送消息！',
-                    'created_at'  => date('Y-m-d H:i:s'),
-                ]);
-            }
-        }
+        //if ($record_id === 0 && $talk_type == TalkModeConstant::PRIVATE_CHAT) {
+        //    if (!di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) {
+        //        array_unshift($rows, [
+        //            'id'          => ($rows[0]['id'] ?? 0) + 1,
+        //            'talk_type'   => TalkModeConstant::PRIVATE_CHAT,
+        //            'msg_type'    => TalkMessageType::SYSTEM_TEXT_MESSAGE,
+        //            'user_id'     => 0,
+        //            'receiver_id' => $user_id,
+        //            'content'     => '你与对方已解除好友关系，系统已禁止发送消息！',
+        //            'created_at'  => date('Y-m-d H:i:s'),
+        //        ]);
+        //    }
+        //}
 
         return di()->get(FormatMessageService::class)->handleChatRecords($rows);
     }
