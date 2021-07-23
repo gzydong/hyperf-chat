@@ -141,8 +141,8 @@ class TalkListService
                 $data['name']        = $item['nickname'];
                 $data['avatar']      = $item['user_avatar'];
                 $data['unread_num']  = UnreadTalkCache::getInstance()->read($item['receiver_id'], $user_id);
-                $data['is_online']   = container()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
-                $data['remark_name'] = container()->get(UserFriendService::class)->getFriendRemark($user_id, $item['receiver_id']);
+                $data['is_online']   = di()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
+                $data['remark_name'] = di()->get(UserFriendService::class)->getFriendRemark($user_id, $item['receiver_id']);
             } else if (TalkModeConstant::GROUP_CHAT) {
                 $data['name']   = strval($item['group_name']);
                 $data['avatar'] = $item['group_avatar'];

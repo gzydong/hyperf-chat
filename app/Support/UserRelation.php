@@ -19,7 +19,7 @@ class UserRelation
     public static function isFriendOrGroupMember(int $user_id, int $receiver_id, int $talk_type)
     {
         if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            return container()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true);
+            return di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true);
         } else if ($talk_type == TalkModeConstant::GROUP_CHAT) {
             return Group::isMember($receiver_id, $user_id);
         }

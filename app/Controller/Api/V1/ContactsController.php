@@ -52,7 +52,7 @@ class ContactsController extends CController
         if ($rows) {
             $runArr = ServerRunID::getInstance()->getServerRunIdAll();
             foreach ($rows as $k => $row) {
-                $rows[$k]['is_online'] = container()->get(SocketClientService::class)->isOnlineAll($row['id'], $runArr);
+                $rows[$k]['is_online'] = di()->get(SocketClientService::class)->isOnlineAll($row['id'], $runArr);
             }
         }
 
@@ -77,7 +77,7 @@ class ContactsController extends CController
             return $this->response->fail('好友关系解除失败！');
         }
 
-        container()->get(TalkListService::class)->deleteByType($user_id, $params['friend_id'], TalkModeConstant::PRIVATE_CHAT);
+        di()->get(TalkListService::class)->deleteByType($user_id, $params['friend_id'], TalkModeConstant::PRIVATE_CHAT);
 
         // TODO 推送消息（待完善）
 

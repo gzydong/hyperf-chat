@@ -125,11 +125,11 @@ class UserService extends BaseService
 
         // 判断查询信息是否是自己
         if ($friend_id != $me_user_id) {
-            $is_friend = container()->get(UserFriendService::class)->isFriend($me_user_id, $friend_id, true);
+            $is_friend = di()->get(UserFriendService::class)->isFriend($me_user_id, $friend_id, true);
 
             $info['friend_status'] = $is_friend ? 2 : 1;
             if ($is_friend) {
-                $info['nickname_remark'] = container()->get(UserFriendService::class)->getFriendRemark($me_user_id, $friend_id);
+                $info['nickname_remark'] = di()->get(UserFriendService::class)->getFriendRemark($me_user_id, $friend_id);
             } else {
                 $res = UsersFriendApply::where('user_id', $me_user_id)
                     ->where('friend_id', $friend_id)

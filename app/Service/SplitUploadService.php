@@ -68,7 +68,7 @@ class SplitUploadService
 
         $save_path = "tmp/{$hashName}/" . "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp";
         try {
-            container()->get(Filesystem::class)->write($save_path, file_get_contents($file->getRealPath()));
+            di()->get(Filesystem::class)->write($save_path, file_get_contents($file->getRealPath()));
         } catch (\Exception $e) {
             return false;
         }
@@ -119,7 +119,7 @@ class SplitUploadService
 
         $file_merge = "tmp/{$hash_name}/{$fileInfo->original_name}.tmp";
 
-        $filesystem = container()->get(Filesystem::class);
+        $filesystem = di()->get(Filesystem::class);
         $root_path  = $filesystem->getConfig()->get('root');
         foreach ($files as $file) {
             file_put_contents(

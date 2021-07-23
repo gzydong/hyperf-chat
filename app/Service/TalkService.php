@@ -81,7 +81,7 @@ class TalkService extends BaseService
         });
 
         $rows = $rowsSqlObj->orderBy('talk_records.id', 'desc')->limit($limit)->get()->toArray();
-        return container()->get(FormatMessageService::class)->handleChatRecords($rows);
+        return di()->get(FormatMessageService::class)->handleChatRecords($rows);
     }
 
     /**
@@ -124,7 +124,7 @@ class TalkService extends BaseService
         $rowsSqlObj->whereIn('talk_records.id', explode(',', $forward->records_id));
         $rows = $rowsSqlObj->get()->toArray();
 
-        return container()->get(FormatMessageService::class)->handleChatRecords($rows);
+        return di()->get(FormatMessageService::class)->handleChatRecords($rows);
     }
 
     /**
@@ -325,7 +325,7 @@ class TalkService extends BaseService
         $sqlObj = TalkRecords::whereIn('id', $records_ids);
 
         if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            if (!container()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) return [];
+            if (!di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) return [];
 
             $sqlObj = $sqlObj->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([
@@ -476,7 +476,7 @@ class TalkService extends BaseService
         }
 
         $rows = $rowsSqlObj->orderBy('talk_records.id', 'desc')->forPage($page, $page_size)->get()->toArray();
-        $rows = container()->get(FormatMessageService::class)->handleChatRecords($rows);
+        $rows = di()->get(FormatMessageService::class)->handleChatRecords($rows);
 
         return $this->getPagingRows($rows, $count, $page, $page_size);
     }

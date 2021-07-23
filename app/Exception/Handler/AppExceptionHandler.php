@@ -70,7 +70,7 @@ class AppExceptionHandler extends ExceptionHandler
                 email()->send(
                     $adminEmail,
                     '系统报错通知',
-                    container()->get(MailerTemplate::class)->errorNotice($throwable)
+                    di()->get(MailerTemplate::class)->errorNotice($throwable)
                 );
             } catch (\Exception $exception) {
 

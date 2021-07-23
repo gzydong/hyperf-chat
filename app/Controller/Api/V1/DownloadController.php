@@ -33,7 +33,7 @@ class DownloadController extends CController
 {
     private function getFilePath(string $path)
     {
-        return container()->get(Filesystem::class)->getConfig()->get('root') . '/' . $path;
+        return di()->get(Filesystem::class)->getConfig()->get('root') . '/' . $path;
     }
 
     /**

@@ -47,7 +47,7 @@ class ContactApplyService
         FriendApply::getInstance()->incr($friend_id, 1);
 
         // 判断对方是否在线。如果在线发送消息通知
-        $isOnline = container()->get(SocketClientService::class)->isOnlineAll($friend_id);
+        $isOnline = di()->get(SocketClientService::class)->isOnlineAll($friend_id);
         if ($isOnline) {
             event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_FRIEND_APPLY, [
                 'apply_id' => $result->id,
@@ -98,7 +98,7 @@ class ContactApplyService
         }
 
         // 判断对方是否在线。如果在线发送消息通知
-        $isOnline = container()->get(SocketClientService::class)->isOnlineAll($info->user_id);
+        $isOnline = di()->get(SocketClientService::class)->isOnlineAll($info->user_id);
         if ($isOnline) {
             event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_FRIEND_APPLY, [
                 'apply_id' => $apply_id,

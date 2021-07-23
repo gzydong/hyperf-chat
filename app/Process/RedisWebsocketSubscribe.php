@@ -34,7 +34,7 @@ class RedisWebsocketSubscribe extends AbstractProcess
      */
     public function handle(): void
     {
-        $this->handleService = container()->get(SubscribeHandleService::class);
+        $this->handleService = di()->get(SubscribeHandleService::class);
 
         redis()->subscribe($this->chans, [$this, 'subscribe']);
     }

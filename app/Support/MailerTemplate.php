@@ -21,7 +21,7 @@ class MailerTemplate
      */
     private function view(string $engine, string $template, $params = []): string
     {
-        return container()->get($engine)->render($template, $params, config('view.config', []));
+        return di()->get($engine)->render($template, $params, config('view.config', []));
     }
 
     /**

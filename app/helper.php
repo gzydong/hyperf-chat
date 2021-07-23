@@ -21,7 +21,7 @@ use Hyperf\Redis\Redis;
  *
  * @return \Psr\Container\ContainerInterface
  */
-function container()
+function di()
 {
     return ApplicationContext::getContainer();
 }
@@ -33,7 +33,7 @@ function container()
  */
 function redis()
 {
-    return container()->get(Redis::class);
+    return di()->get(Redis::class);
 }
 
 /**
@@ -43,7 +43,7 @@ function redis()
  */
 function server()
 {
-    return container()->get(ServerFactory::class)->getServer()->getServer();
+    return di()->get(ServerFactory::class)->getServer()->getServer();
 }
 
 /**
@@ -53,7 +53,7 @@ function server()
  */
 function frame()
 {
-    return container()->get(Frame::class);
+    return di()->get(Frame::class);
 }
 
 /**
@@ -63,7 +63,7 @@ function frame()
  */
 function websocket()
 {
-    return container()->get(WebSocketServer::class);
+    return di()->get(WebSocketServer::class);
 }
 
 /**
@@ -73,7 +73,7 @@ function websocket()
  */
 function cache()
 {
-    return container()->get(Psr\SimpleCache\CacheInterface::class);
+    return di()->get(Psr\SimpleCache\CacheInterface::class);
 }
 
 /**
@@ -81,7 +81,7 @@ function cache()
  */
 function event()
 {
-    return container()->get(\Psr\EventDispatcher\EventDispatcherInterface::class);
+    return di()->get(\Psr\EventDispatcher\EventDispatcherInterface::class);
 }
 
 /**
@@ -91,7 +91,7 @@ function event()
  */
 function stdout_log()
 {
-    return container()->get(StdoutLoggerInterface::class);
+    return di()->get(StdoutLoggerInterface::class);
 }
 
 /**
@@ -102,7 +102,7 @@ function stdout_log()
  */
 function logger(string $name = 'APP')
 {
-    return container()->get(LoggerFactory::class)->get($name);
+    return di()->get(LoggerFactory::class)->get($name);
 }
 
 /**
@@ -112,7 +112,7 @@ function logger(string $name = 'APP')
  */
 function request()
 {
-    return container()->get(ServerRequestInterface::class);
+    return di()->get(ServerRequestInterface::class);
 }
 
 /**
@@ -122,13 +122,13 @@ function request()
  */
 function response()
 {
-    return container()->get(ResponseInterface::class);
+    return di()->get(ResponseInterface::class);
 }
 
 
 function email()
 {
-    return container()->get(\App\Support\Mail::class);
+    return di()->get(\App\Support\Mail::class);
 }
 
 
@@ -257,7 +257,7 @@ function parse_ids($ids)
  */
 function push_amqp(\Hyperf\Amqp\Message\ProducerMessage $message, bool $confirm = false, int $timeout = 5)
 {
-    return container()->get(\Hyperf\Amqp\Producer::class)->produce($message, $confirm, $timeout);
+    return di()->get(\Hyperf\Amqp\Producer::class)->produce($message, $confirm, $timeout);
 }
 
 /**

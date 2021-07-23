@@ -12,7 +12,7 @@ abstract class AbstractRedis
 
     public static function getInstance()
     {
-        return container()->get(static::class);
+        return di()->get(static::class);
     }
 
     /**

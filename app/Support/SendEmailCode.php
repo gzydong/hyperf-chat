@@ -59,7 +59,7 @@ class SendEmailCode
         // ...执行发送(后期使用队列)
         email()->send(
             $email, 'Lumen IM(绑定邮箱验证码)',
-            container()->get(MailerTemplate::class)->emailCode($sms_code)
+            di()->get(MailerTemplate::class)->emailCode($sms_code)
         );
 
         return true;

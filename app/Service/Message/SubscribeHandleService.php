@@ -118,7 +118,7 @@ class SubscribeHandleService
         if (!$result) return;
 
 
-        $message = container()->get(FormatMessageService::class)->handleChatRecords([$result->toArray()])[0];
+        $message = di()->get(FormatMessageService::class)->handleChatRecords([$result->toArray()])[0];
         $notify  = [
             'sender_id'   => $sender_id,
             'receiver_id' => $receiver_id,
@@ -156,7 +156,7 @@ class SubscribeHandleService
 
         $fds = [];
 
-        $ids = container()->get(UserService::class)->getFriendIds($user_id);
+        $ids = di()->get(UserService::class)->getFriendIds($user_id);
         foreach ($ids as $friend_id) {
             $fds = array_merge($fds, $this->clientService->findUserFds(intval($friend_id)));
         }
