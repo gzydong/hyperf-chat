@@ -19,7 +19,7 @@ class TalkListService
      * @param int $talk_type   创建类型[1:私聊;2:群聊;]
      * @return array
      */
-    public function create(int $user_id, int $receiver_id, int $talk_type)
+    public function create(int $user_id, int $receiver_id, int $talk_type, bool $is_robot = false)
     {
         $result = TalkList::updateOrCreate([
             'talk_type'   => $talk_type,
@@ -29,6 +29,7 @@ class TalkListService
             'is_top'     => 0,
             'is_delete'  => 0,
             'is_disturb' => 0,
+            'is_robot'   => intval($is_robot),
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);

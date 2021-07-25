@@ -5,11 +5,15 @@ namespace App\Service;
 use App\Cache\LastMessage;
 use App\Cache\VoteCache;
 use App\Cache\VoteStatisticsCache;
+use App\Constants\RobotConstant;
 use App\Constants\TalkEventConstant;
 use App\Constants\TalkMessageType;
+use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
 use App\Model\Group\GroupMember;
+use App\Model\Talk\TalkList;
 use App\Model\Talk\TalkRecordsCode;
+use App\Model\Talk\TalkRecordsLogin;
 use App\Model\Talk\TalkRecordsVote;
 use App\Model\Talk\TalkRecordsVoteAnswer;
 use App\Support\UserRelation;
@@ -243,5 +247,58 @@ class TalkMessageService
         // todo 推送消息
 
         return [true, $cache];
+    }
+
+    /**
+     * 添加登录消息
+     *
+     * @param array $message
+     * @param array $loginParams
+     * @return bool
+     */
+    public function insertLoginMessage(array $message, array $loginParams)
+    {
+        Db::beginTransaction();
+        try {
+            $message['receiver_id'] = RobotConstant::LOGIN_ROBOT;
+            $message['talk_type']   = TalkModeConstant::PRIVATE_CHAT;
+            $message['msg_type']    = TalkMessageType::USER_LOGIN_MESSAGE;
+            $message['created_at']  = date('Y-m-d H:i:s');
+            $message['updated_at']  = date('Y-m-d H:i:s');
+
+            $insert = TalkRecords::create($message);
+            if (!$insert) {
+                throw new Exception('插入聊天记录失败...');
+            }
+
+            $loginParams['record_id']  = $insert->id;
+            $loginParams['created_at'] = date('Y-m-d H:i:s');
+
+            if (!TalkRecordsLogin::create($loginParams)) {
+                throw new Exception('插入聊天记录(登录消息)失败...');
+            }
+
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollBack();
+            return false;
+        }
+
+        // 创建对话列表
+        di()->get(TalkListService::class)->create($insert->user_id, $insert->receiver_id, $insert->talk_type, true);
+
+        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
+            'text'       => '[登录提醒]',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
+            'sender_id'   => $insert->user_id,
+            'receiver_id' => $insert->receiver_id,
+            'talk_type'   => $insert->talk_type,
+            'record_id'   => $insert->id
+        ]));
+
+        return true;
     }
 }

@@ -112,3 +112,19 @@ CREATE TABLE `lar_talk_records_vote_answer` (
     PRIMARY KEY (`id`),
     KEY `idx_vote_id_user_id` (`vote_id`,`user_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='聊天对话记录（投票消息统计表）';
+
+
+CREATE TABLE `lar_talk_records_login` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '登录ID',
+  `record_id` int(11) unsigned DEFAULT '0' COMMENT '消息记录ID',
+  `user_id` int(11) unsigned DEFAULT '0' COMMENT '用户ID',
+  `ip` varchar(20) NOT NULL DEFAULT '' COMMENT 'IP地址',
+  `platform` varchar(20) NOT NULL DEFAULT '' COMMENT '登录平台[h5,ios,windows,mac,web]',
+  `agent` varchar(255) NOT NULL DEFAULT '' COMMENT '设备信息',
+  `address` varchar(100) NOT NULL DEFAULT '' COMMENT 'IP所在地',
+  `reason` varchar(100) NOT NULL DEFAULT '' COMMENT '登录异常提示',
+  `created_at` datetime NOT NULL COMMENT '登录时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_record_id` (`record_id`) USING BTREE,
+  KEY `idx_user_id` (`user_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='聊天对话记录（登录日志）';

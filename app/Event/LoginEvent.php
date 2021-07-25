@@ -28,6 +28,11 @@ class LoginEvent
     public $ip;
 
     /**
+     * @var string
+     */
+    public $agent;
+
+    /**
      * UserLogin constructor.
      *
      * @param RequestInterface $request
@@ -38,6 +43,8 @@ class LoginEvent
         $this->user = $user;
 
         $this->platform = $request->input('platform', '');
+
+        $this->agent = $request->getHeaderLine('user-agent');
 
         $this->ip = $this->getClientRealIp($request);
     }

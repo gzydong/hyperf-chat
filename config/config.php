@@ -28,6 +28,13 @@ return [
     // 管理员邮箱
     'admin_email'    => env('ADMIN_EMAIL', ''),
 
+    'juhe_api' => [
+        'ip' => [
+            'api' => 'http://apis.juhe.cn/ip/ipNew',
+            'key' => env('JUHE_IP_KEY', '')
+        ],
+    ],
+
     StdoutLoggerInterface::class => [
         'log_level' => [
             LogLevel::ALERT,

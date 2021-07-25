@@ -11,7 +11,7 @@ use App\Model\BaseModel;
  *
  * @property int    $id
  * @property int    $record_id        消息记录ID
- * @property int    $user_id          通知类型[1:入群通知;2:自动退群;3:管理员踢群]
+ * @property int    $user_id          用户ID
  * @property string $title            投票标题
  * @property int    $answer_mode      投票模式
  * @property string $answer_option    投票选项
