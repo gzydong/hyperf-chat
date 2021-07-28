@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service\Message;
 
+use App\Cache\GroupCache;
 use App\Cache\SocketRoom;
 use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
@@ -12,6 +13,7 @@ use App\Model\User;
 use App\Model\UsersFriendApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
+use Hyperf\Utils\Arr;
 
 class SubscribeHandleService
 {
@@ -94,7 +96,7 @@ class SubscribeHandleService
                 $fds = array_merge($fds, $this->clientService->findUserFds(intval($uid)));
             }
 
-            $groupInfo = Group::where('id', $receiver_id)->first(['group_name', 'avatar']);
+            $groupInfo = GroupCache::getInstance()->getOrSetCache($receiver_id);
         }
 
         // 客户端ID去重
@@ -124,8 +126,8 @@ class SubscribeHandleService
             'receiver_id' => $receiver_id,
             'talk_type'   => $talk_type,
             'data'        => array_merge($message, [
-                'group_name'   => $groupInfo ? $groupInfo->group_name : '',
-                'group_avatar' => $groupInfo ? $groupInfo->avatar : ''
+                'group_name'   => $groupInfo ? $groupInfo['group_name'] : '',
+                'group_avatar' => $groupInfo ? $groupInfo['avatar'] : ''
             ])
         ];
 

@@ -9,9 +9,9 @@ use App\Traits\StaticInstance;
 
 class VoteCache extends StringRedis
 {
-    protected $name = 'vote-cache';
-
     use StaticInstance;
+
+    protected $name = 'vote-cache';
 
     /**
      * 更新投票缓存
@@ -19,7 +19,7 @@ class VoteCache extends StringRedis
      * @param int $vote_id 投票ID
      * @return array
      */
-    public function updateVoteCache(int $vote_id): array
+    public function updateCache(int $vote_id): array
     {
         $vote_users = TalkRecordsVoteAnswer::where('vote_id', $vote_id)->pluck('user_id')->toArray();
         $vote_users = array_unique($vote_users);
@@ -34,9 +34,9 @@ class VoteCache extends StringRedis
      * @param int $vote_id 投票ID
      * @return array
      */
-    public function getOrSetVoteCache(int $vote_id): array
+    public function getOrSetCache(int $vote_id): array
     {
         $cache = $this->get(strval($vote_id));
-        return $cache ? json_decode($cache, true) : $this->updateVoteCache($vote_id);
+        return $cache ? json_decode($cache, true) : $this->updateCache($vote_id);
     }
 }

@@ -19,7 +19,6 @@ use App\Middleware\JWTAuthMiddleware;
 use App\Model\Article\ArticleAnnex;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsFile;
-use App\Model\Group\Group;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use League\Flysystem\Filesystem;
 

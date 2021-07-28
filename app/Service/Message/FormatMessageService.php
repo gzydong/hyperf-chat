@@ -163,7 +163,7 @@ class FormatMessageService
                     $votes[$row['id']]['answer_option'] = $options;
                     $rows[$k]['vote']                   = [
                         'statistics' => VoteStatisticsCache::getInstance()->getOrSetVoteCache($votes[$row['id']]['id']),
-                        'vote_users' => VoteCache::getInstance()->getOrSetVoteCache($votes[$row['id']]['id']),
+                        'vote_users' => VoteCache::getInstance()->getOrSetCache($votes[$row['id']]['id']),
                         'detail'     => $votes[$row['id']],
                     ];
                     break;

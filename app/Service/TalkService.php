@@ -9,7 +9,6 @@ use App\Event\TalkEvent;
 use App\Service\Group\GroupMemberService;
 use App\Service\Message\FormatMessageService;
 use Exception;
-use App\Model\Group\Group;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsFile;

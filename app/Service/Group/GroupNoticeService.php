@@ -3,7 +3,6 @@
 namespace App\Service\Group;
 
 use Exception;
-use App\Model\Group\Group;
 use App\Model\Group\GroupNotice;
 use App\Service\BaseService;
 

@@ -54,7 +54,7 @@ class ArticleService extends BaseService
     {
         $items = ArticleTag::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name', Db::raw('0 as count')])->toArray();
         foreach ($items as $k => $item) {
-            $items[$k]['count'] = (int)Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
+            $items[$k]['count'] = Article::where('user_id', $user_id)->whereRaw("FIND_IN_SET({$item['id']},tags_id)")->count();
         }
 
         return $items;

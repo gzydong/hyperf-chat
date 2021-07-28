@@ -9,6 +9,7 @@ use App\Model\Talk\TalkRecordsVote;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\DbConnection\Db;
+use Hyperf\Utils\Arr;
 use Psr\Container\ContainerInterface;
 use Hyperf\Guzzle\ClientFactory;
 use function _HumbugBox39a196d4601e\RingCentral\Psr7\build_query;
@@ -40,24 +41,35 @@ class TestCommand extends HyperfCommand
     {
         //VoteStatisticsCache::getInstance()->updateVoteCache(15);
 
-        $api     = config('juhe_api.ip');
-        $options = [];
-        $client  = di()->get(ClientFactory::class)->create($options);
-        $params  = [
-            'ip'  => '47.105.180.123',
-            'key' => $api['key'],
+
+        $array = [
+            'name' => 'yuandong',
+            'sex'  => 1,
+            'age'  => 18
         ];
 
-        $address  = '';
-        $response = $client->get($api['api'] . '?' . http_build_query($params));
-        if ($response->getStatusCode() == 200) {
-            $result = json_decode($response->getBody()->getContents(), true);
-            if ($result['resultcode'] == 200) {
-                unset($result['result']['Isp']);
-                $address = join(' ', $result['result']);
-            }
-        }
 
-        var_dump($address);
+
+        var_dump(Arr::only($array,['name','age','tt']));
+
+        //$api     = config('juhe_api.ip');
+        //$options = [];
+        //$client  = di()->get(ClientFactory::class)->create($options);
+        //$params  = [
+        //    'ip'  => '47.105.180.123',
+        //    'key' => $api['key'],
+        //];
+        //
+        //$address  = '';
+        //$response = $client->get($api['api'] . '?' . http_build_query($params));
+        //if ($response->getStatusCode() == 200) {
+        //    $result = json_decode($response->getBody()->getContents(), true);
+        //    if ($result['resultcode'] == 200) {
+        //        unset($result['result']['Isp']);
+        //        $address = join(' ', $result['result']);
+        //    }
+        //}
+        //
+        //var_dump($address);
     }
 }

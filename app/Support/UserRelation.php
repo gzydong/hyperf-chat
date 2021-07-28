@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Constants\TalkModeConstant;
-use App\Model\Group\Group;
 use App\Service\Group\GroupMemberService;
 use App\Service\UserFriendService;
 

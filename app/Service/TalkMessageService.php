@@ -241,7 +241,7 @@ class TalkMessageService
         }
 
         // 更新投票缓存
-        VoteCache::getInstance()->updateVoteCache($record->vote_id);
+        VoteCache::getInstance()->updateCache($record->vote_id);
         $cache = VoteStatisticsCache::getInstance()->updateVoteCache($record->vote_id);
 
         // todo 推送消息

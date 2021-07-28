@@ -7,7 +7,6 @@ use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsFile;
 use App\Model\EmoticonItem;
-use App\Model\Group\Group;
 use App\Model\UsersEmoticon;
 use App\Service\Group\GroupMemberService;
 

@@ -121,7 +121,7 @@ class ContactApplyService
 
         if (!$result) return false;
 
-        // 做聊天记录的推送
+        // todo 做聊天记录的推送
 
         return true;
     }
