@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Group;
 
-use _HumbugBox39a196d4601e\Nette\Neon\Exception;
+use Exception;
 use App\Model\Group\Group;
 use App\Model\Group\GroupNotice;
+use App\Service\BaseService;
 
-class GroupNoticeService
+class GroupNoticeService extends BaseService
 {
     public function create(int $user_id, array $params)
     {
@@ -43,12 +44,11 @@ class GroupNoticeService
     public function delete(int $notice_id, int $user_id)
     {
         $notice = GroupNotice::where('id', $notice_id)->first();
-        if (!$notice) {
-            return false;
-        }
+
+        if (!$notice) return false;
 
         // 判断用户是否是管理员
-        if (!Group::isManager($user_id, $notice->group_id)) {
+        if (!di()->get(GroupMemberService::class)->isAuth($notice->group_id, $user_id)) {
             throw new Exception('非管理员，无法进行操作！', 403);
         }
 

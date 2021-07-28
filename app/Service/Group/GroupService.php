@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Group;
 
 use App\Cache\LastMessage;
 use App\Cache\SocketRoom;
@@ -16,6 +16,7 @@ use App\Model\Group\GroupMember;
 use App\Model\Talk\TalkList;
 use Hyperf\DbConnection\Db;
 use Exception;
+use App\Service\BaseService;
 
 /**
  * Class GroupService
@@ -24,6 +25,17 @@ use Exception;
  */
 class GroupService extends BaseService
 {
+    /**
+     * 判断群组是否已解散
+     *
+     * @param int $group_id 群ID
+     * @return bool
+     */
+    public function isDismiss(int $group_id): bool
+    {
+        return Group::query()->where('id', $group_id)->where('is_dismiss', 1)->exists();
+    }
+
     /**
      * 创建群组
      *
@@ -303,7 +315,7 @@ class GroupService extends BaseService
     public function quit(int $user_id, int $group_id)
     {
         // 判断是否属于管理员
-        if (Group::isManager($user_id, $group_id)) {
+        if (di()->get(GroupMemberService::class)->isAuth($group_id, $user_id)) {
             return false;
         }
 
@@ -368,7 +380,7 @@ class GroupService extends BaseService
      */
     public function removeMember(int $group_id, int $user_id, array $member_ids)
     {
-        if (!Group::isManager($user_id, $group_id)) {
+        if (di()->get(GroupMemberService::class)->isAuth($group_id, $user_id)) {
             return false;
         }
 

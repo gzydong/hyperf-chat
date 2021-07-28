@@ -6,6 +6,7 @@ use App\Constants\TalkEventConstant;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
+use App\Service\Group\GroupMemberService;
 use App\Service\Message\FormatMessageService;
 use Exception;
 use App\Model\Group\Group;
@@ -115,7 +116,7 @@ class TalkService extends BaseService
         // 判断是否有权限查看
         if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT && ($result->user_id != $user_id && $result->receiver_id != $user_id)) {
             return [];
-        } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT && !Group::isMember($result->receiver_id, $user_id)) {
+        } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember($result->receiver_id, $user_id)) {
             return [];
         }
 
@@ -168,7 +169,7 @@ class TalkService extends BaseService
         }
 
         // 判读是否属于群消息并且判断是否是群成员
-        if ($talk_type == TalkModeConstant::GROUP_CHAT && !Group::isMember($receiver_id, $user_id)) {
+        if ($talk_type == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember($receiver_id, $user_id)) {
             return false;
         }
 
@@ -205,7 +206,7 @@ class TalkService extends BaseService
                 return [false, '非法操作', []];
             }
         } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT) {
-            if (!Group::isMember($result->receiver_id, $user_id)) {
+            if (!di()->get(GroupMemberService::class)->isMember($result->receiver_id, $user_id)) {
                 return [false, '非法操作', []];
             }
         }
@@ -245,7 +246,7 @@ class TalkService extends BaseService
                 return [];
             }
         } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT) {
-            if (!Group::isMember($result->receiver_id, $user_id)) {
+            if (!di()->get(GroupMemberService::class)->isMember($result->receiver_id, $user_id)) {
                 return [];
             }
         }
@@ -352,7 +353,7 @@ class TalkService extends BaseService
                 ]);
             })->whereIn('msg_type', $msg_type)->where('talk_type', $talk_type)->where('is_revoke', 0);
         } else {
-            if (!Group::isMember($receiver_id, $user_id)) return [];
+            if (!di()->get(GroupMemberService::class)->isMember($receiver_id, $user_id)) return [];
 
             $sqlObj = $sqlObj->where('receiver_id', $receiver_id)->whereIn('msg_type', $msg_type)->where('talk_type', TalkModeConstant::GROUP_CHAT)->where('is_revoke', 0);
         }

@@ -10,6 +10,7 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Service\Group\GroupMemberService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -65,7 +66,7 @@ class DownloadController extends CController
                     return $this->response->fail('非法请求！');
                 }
             } else {
-                if (!Group::isMember($recordsInfo->receiver_id, $user_id)) {
+                if (!di()->get(GroupMemberService::class)->isMember($recordsInfo->receiver_id, $user_id)) {
                     return $this->response->fail('非法请求！');
                 }
             }

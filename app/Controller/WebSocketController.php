@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Cache\SocketRoom;
+use App\Service\Group\GroupMemberService;
 use App\Service\Message\ReceiveHandleService;
 use Hyperf\Di\Annotation\Inject;
 use App\Constants\TalkEventConstant;
@@ -71,7 +72,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $this->client->bind($request->fd, $user_id);
 
         // 加入群聊
-        $groupIds = GroupMember::getUserGroupIds($user_id);
+        $groupIds = di()->get(GroupMemberService::class)->getUserGroupIds($user_id);
         foreach ($groupIds as $group_id) {
             SocketRoom::getInstance()->addRoomMember(strval($group_id), strval($user_id));
         }
@@ -97,11 +98,14 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         $result = json_decode($frame->data, true);
 
-        if (isset(ReceiveHandleService::EVENTS[$result['event']])) {
-            call_user_func_array([$this->receiveHandle, ReceiveHandleService::EVENTS[$result['event']]], [
-                $server, $frame, $result['data']
-            ]);
+        if (!isset(ReceiveHandleService::EVENTS[$result['event']])) {
+            return;
         }
+
+        // 回调处理
+        call_user_func_array([$this->receiveHandle, ReceiveHandleService::EVENTS[$result['event']]], [
+            $server, $frame, $result['data']
+        ]);
     }
 
     /**

@@ -43,38 +43,4 @@ class GroupMember extends BaseModel
         'created_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
-
-    /**
-     * 获取聊天群成员ID
-     *
-     * @param int $group_id 群聊ID
-     * @return array
-     */
-    public static function getGroupMemberIds(int $group_id)
-    {
-        return self::query()->where('group_id', $group_id)->where('is_quit', 0)->pluck('user_id')->toArray() ?? [];
-    }
-
-    /**
-     * 获取用户的群名片
-     *
-     * @param int $user_id  用户ID
-     * @param int $group_id 群ID
-     * @return string
-     */
-    public static function visitCard(int $user_id, int $group_id)
-    {
-        return self::query()->where('group_id', $group_id)->where('user_id', $user_id)->value('user_card') ?? "";
-    }
-
-    /**
-     * 获取用户的所有群ID
-     *
-     * @param int $user_id 用户ID
-     * @return array
-     */
-    public static function getUserGroupIds(int $user_id)
-    {
-        return self::query()->where('user_id', $user_id)->where('is_quit', 0)->pluck('group_id')->toArray() ?? [];
-    }
 }

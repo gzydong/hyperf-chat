@@ -16,6 +16,7 @@ use App\Cache\UnreadTalkCache;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkList;
+use App\Service\Group\GroupMemberService;
 use App\Service\UserFriendService;
 use App\Support\UserRelation;
 use Hyperf\Di\Annotation\Inject;
@@ -226,7 +227,8 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !Group::isMember((int)$params['receiver_id'], $user_id)) {
+
+        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember((int)$params['receiver_id'], $user_id)) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
         }
 
@@ -281,7 +283,7 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !Group::isMember((int)$params['receiver_id'], $user_id)) {
+        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember((int)$params['receiver_id'], $user_id)) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
         }
 

@@ -11,7 +11,8 @@
 namespace App\Controller\Api\V1;
 
 use App\Constants\TalkModeConstant;
-use App\Service\GroupNoticeService;
+
+use App\Service\Group\GroupMemberService;
 use App\Service\TalkListService;
 use App\Service\UserService;
 use Hyperf\Di\Annotation\Inject;
@@ -22,7 +23,8 @@ use App\Middleware\JWTAuthMiddleware;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
 use App\Model\Group\GroupNotice;
-use App\Service\GroupService;
+use App\Service\Group\GroupService;
+use App\Service\Group\GroupNoticeService;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -39,6 +41,12 @@ class GroupController extends CController
      * @var GroupService
      */
     private $groupService;
+
+    /**
+     * @inject
+     * @var GroupMemberService
+     */
+    private $groupMemberService;
 
     /**
      * 创建群组
@@ -214,7 +222,7 @@ class GroupController extends CController
             'created_at'       => $groupInfo->created_at,
             'is_manager'       => $groupInfo->creator_id == $user_id,
             'manager_nickname' => $groupInfo->nickname,
-            'visit_card'       => GroupMember::visitCard($user_id, $group_id),
+            'visit_card'       => $this->groupMemberService->getVisitCard($group_id, $user_id),
             'is_disturb'       => (int)$service->isDisturb($user_id, $group_id, TalkModeConstant::GROUP_CHAT),
             'notice'           => $notice ? $notice->toArray() : []
         ]);
@@ -252,7 +260,7 @@ class GroupController extends CController
         $group_id = $this->request->input('group_id', 0);
         $friends  = $service->getUserFriends($this->uid());
         if ($group_id > 0 && $friends) {
-            if ($ids = GroupMember::getGroupMemberIds($group_id)) {
+            if ($ids = $this->groupMemberService->getMemberIds($group_id)) {
                 foreach ($friends as $k => $item) {
                     if (in_array($item['id'], $ids)) unset($friends[$k]);
                 }
@@ -289,7 +297,7 @@ class GroupController extends CController
         $group_id = $this->request->input('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!Group::isMember($group_id, $user_id)) {
+        if (!$this->groupMemberService->isMember($group_id, $user_id)) {
             return $this->response->fail('非法操作！');
         }
 
@@ -324,7 +332,7 @@ class GroupController extends CController
         $group_id = $this->request->input('group_id', 0);
 
         // 判断用户是否是群成员
-        if (!Group::isMember($group_id, $user_id)) {
+        if (!$this->groupMemberService->isMember($group_id, $user_id)) {
             return $this->response->fail('非管理员禁止操作！');
         }
 
@@ -352,7 +360,7 @@ class GroupController extends CController
         $user_id = $this->uid();
 
         // 判断用户是否是管理员
-        if (!Group::isManager($user_id, $params['group_id'])) {
+        if (!$this->groupMemberService->isAuth($params['group_id'], $user_id)) {
             return $this->response->fail('非管理员禁止操作！');
         }
 

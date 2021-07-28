@@ -9,6 +9,7 @@ use App\Model\Talk\TalkRecordsFile;
 use App\Model\EmoticonItem;
 use App\Model\Group\Group;
 use App\Model\UsersEmoticon;
+use App\Service\Group\GroupMemberService;
 
 /**
  * 表情服务层
@@ -106,7 +107,7 @@ class EmoticonService extends BaseService
                 return [false, []];
             }
         } else {
-            if (!Group::isMember($result->receiver_id, $user_id)) {
+            if (!di()->get(GroupMemberService::class)->isMember($result->receiver_id, $user_id)) {
                 return [false, []];
             }
         }

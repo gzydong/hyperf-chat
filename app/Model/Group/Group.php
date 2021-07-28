@@ -51,48 +51,4 @@ class Group extends BaseModel
         'is_dismiss' => 'integer',
         'created_at' => 'datetime'
     ];
-
-    /**
-     * 获取群聊成员
-     */
-    public function members()
-    {
-        return $this->hasMany(GroupMember::class, 'group_id', 'id');
-    }
-
-    /**
-     * 判断用户是否是管理员
-     *
-     * @param int       $user_id  用户ID
-     * @param int       $group_id 群ID
-     * @param int|array $leader   管理员类型[0:普通成员;1:管理员;2:群主;]
-     * @return bool
-     */
-    public static function isManager(int $user_id, int $group_id, $leader = 2)
-    {
-        return self::query()->where('id', $group_id)->where('creator_id', $user_id)->exists();
-    }
-
-    /**
-     * 判断群组是否已解散
-     *
-     * @param int $group_id 群ID
-     * @return bool
-     */
-    public static function isDismiss(int $group_id)
-    {
-        return self::query()->where('id', $group_id)->where('is_dismiss', 1)->exists();
-    }
-
-    /**
-     * 判断用户是否是群成员
-     *
-     * @param int $group_id 群ID
-     * @param int $user_id  用户ID
-     * @return bool
-     */
-    public static function isMember(int $group_id, int $user_id)
-    {
-        return GroupMember::where('group_id', $group_id)->where('user_id', $user_id)->where('is_quit', 0)->exists();
-    }
 }

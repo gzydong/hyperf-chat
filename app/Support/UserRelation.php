@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Constants\TalkModeConstant;
 use App\Model\Group\Group;
+use App\Service\Group\GroupMemberService;
 use App\Service\UserFriendService;
 
 class UserRelation
@@ -21,7 +22,7 @@ class UserRelation
         if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
             return di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true);
         } else if ($talk_type == TalkModeConstant::GROUP_CHAT) {
-            return Group::isMember($receiver_id, $user_id);
+            return di()->get(GroupMemberService::class)->isMember($receiver_id, $user_id);
         }
 
         return false;

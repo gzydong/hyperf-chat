@@ -12,8 +12,6 @@ class IndexController extends AbstractController
         $user   = $this->request->input('user', 'Hyperf');
         $method = $this->request->getMethod();
 
-        var_dump($this->request->all());
-
         return [
             'method'  => $method,
             'message' => "Hello {$user}.",
