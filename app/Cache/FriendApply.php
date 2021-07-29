@@ -3,6 +3,7 @@
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
+use App\Traits\StaticInstance;
 
 /**
  * 好友申请未读数 - 缓存助手
@@ -11,5 +12,7 @@ use App\Cache\Repository\HashRedis;
  */
 class FriendApply extends HashRedis
 {
+    use StaticInstance;
+
     public $name = 'friend-apply';
 }

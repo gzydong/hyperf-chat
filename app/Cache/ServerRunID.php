@@ -3,6 +3,7 @@
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
+use App\Traits\StaticInstance;
 
 /**
  * 服务运行ID - 缓存助手
@@ -11,6 +12,8 @@ use App\Cache\Repository\HashRedis;
  */
 class ServerRunID extends HashRedis
 {
+    use StaticInstance;
+
     protected $prefix = 'SERVER_RUN_ID';
 
     protected $name = '';

@@ -10,9 +10,9 @@ use App\Traits\StaticInstance;
 
 class VoteStatisticsCache extends StringRedis
 {
-    protected $name = 'vote-statistic-cache';
-
     use StaticInstance;
+
+    protected $name = 'vote-statistic-cache';
 
     /**
      * 更新投票统计缓存

@@ -3,6 +3,7 @@
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
+use App\Traits\StaticInstance;
 
 /**
  * 聊天最新消息 - 缓存助手
@@ -11,6 +12,8 @@ use App\Cache\Repository\HashRedis;
  */
 class LastMessage extends HashRedis
 {
+    use StaticInstance;
+
     public $name = 'last-message';
 
     /**

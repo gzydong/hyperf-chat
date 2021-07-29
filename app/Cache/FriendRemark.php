@@ -4,6 +4,7 @@ namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
 use App\Model\UsersFriend;
+use App\Traits\StaticInstance;
 
 /**
  * 好友备注 - 缓存助手
@@ -12,6 +13,8 @@ use App\Model\UsersFriend;
  */
 class FriendRemark extends HashRedis
 {
+    use StaticInstance;
+
     public $name = 'friend-remark';
 
     /**

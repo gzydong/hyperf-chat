@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
@@ -55,7 +56,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -87,7 +88,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -140,7 +141,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -189,7 +190,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], TalkModeConstant::GROUP_CHAT)) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], TalkModeConstant::GROUP_CHAT)) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
@@ -247,7 +248,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
-        if (!UserRelation::isFriendOrGroupMember($user_id, $params['receiver_id'], $params['talk_type'])) {
+        if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
