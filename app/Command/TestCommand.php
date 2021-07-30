@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Cache\VoteStatisticsCache;
 use App\Model\Talk\TalkRecordsVote;
+use App\Model\UsersFriend;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\DbConnection\Db;
@@ -39,18 +40,8 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
-        //VoteStatisticsCache::getInstance()->updateVoteCache(15);
 
-
-        $array = [
-            'name' => 'yuandong',
-            'sex'  => 1,
-            'age'  => 18
-        ];
-
-
-
-        var_dump(Arr::only($array,['name','age','tt']));
+        $this->updateData();
 
         //$api     = config('juhe_api.ip');
         //$options = [];
@@ -71,5 +62,27 @@ class TestCommand extends HyperfCommand
         //}
         //
         //var_dump($address);
+    }
+
+
+    // 更新好友表数据
+    public function updateData()
+    {
+        $max = UsersFriend::max('id');
+        UsersFriend::where('id', '<=', $max)->chunk(1000, function ($rows) {
+            $arr = [];
+            foreach ($rows as $row) {
+                $arr[] = [
+                    'user_id'    => $row->friend_id,
+                    'friend_id'  => $row->user_id,
+                    'status'     => 1,
+                    'remark'     => '',
+                    'updated_at' => date('Y-m-d H:i:s'),
+                    'created_at' => date('Y-m-d H:i:s'),
+                ];
+            }
+
+            UsersFriend::insert($arr);
+        });
     }
 }

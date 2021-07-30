@@ -86,7 +86,7 @@ class TalkController extends CController
         ]);
 
         $user_id = $this->uid();
-        $string  = join('-', [$user_id, $params['receiver_id'], $params['talk_type'], md5($request->getHeaderLine('user-agent'))]);
+        $string  = join('-', [$user_id, $params['receiver_id'], $params['talk_type'], md5($this->request->getHeaderLine('user-agent'))]);
         $lock    = 'talk:list:' . $string;
 
         // 防止前端并发请求

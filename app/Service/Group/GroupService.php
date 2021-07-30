@@ -82,11 +82,11 @@ class GroupService extends BaseService
                 ];
             }
 
-            if (!Db::table('group_member')->insert($groupMember)) {
+            if (!GroupMember::insert($groupMember)) {
                 throw new Exception('创建群成员信息失败');
             }
 
-            if (!Db::table('talk_list')->insert($chatList)) {
+            if (!TalkList::insert($chatList)) {
                 throw new Exception('创建群成员的聊天列表失败');
             }
 
@@ -249,7 +249,7 @@ class GroupService extends BaseService
             }
 
             if ($insertArr) {
-                Db::table('group_member')->insert($insertArr);
+                GroupMember::insert($insertArr);
             }
 
             if ($updateArr1) {
@@ -260,7 +260,7 @@ class GroupService extends BaseService
             }
 
             if ($insertArr1) {
-                Db::table('talk_list')->insert($insertArr1);
+                TalkList::insert($insertArr1);
             }
 
             $result = TalkRecords::create([

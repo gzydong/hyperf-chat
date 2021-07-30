@@ -22,11 +22,14 @@ ALTER TABLE `lar_emoticon` ADD `updated_at` datetime DEFAULT NULL COMMENT '更�
 ALTER TABLE `lar_emoticon` DROP INDEX `name`;
 ALTER TABLE `lar_emoticon` ADD UNIQUE uk_name (`name`);
 
+
 # lar_emoticon_details 数据表同步SQL
 ALTER TABLE `lar_emoticon_details` RENAME `lar_emoticon_item`;
 ALTER TABLE `lar_emoticon_item` MODIFY `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '表情包详情ID';
 ALTER TABLE `lar_emoticon_item` MODIFY `describe` varchar(20) DEFAULT '' COMMENT '表情描述';
 ALTER TABLE `lar_emoticon_item` MODIFY `url` varchar(255) DEFAULT '' COMMENT '图片链接';
+ALTER TABLE `lar_emoticon_item` DROP COLUMN `created_at`;
+ALTER TABLE `lar_emoticon_item` ADD `created_at` datetime DEFAULT NULL COMMENT '创建时间';
 ALTER TABLE `lar_emoticon_item` ADD `updated_at` datetime DEFAULT NULL COMMENT '更新时间';
 ALTER TABLE `lar_emoticon_item` comment '表情包详情表';
 
@@ -68,7 +71,9 @@ ALTER TABLE `lar_users_friends` DROP COLUMN `active`;
 ALTER TABLE `lar_users_friends` DROP COLUMN `user2_remark`;
 
 # lar_users_friends_apply 数据表同步SQL
-ALTER TABLE `lar_users_friends_apply` MODIFY `status` tinyint(4) unsigned DEFAULT '0' COMMENT '申请状态[0:等待处理;1:已同意;2:已拒绝;]';
+ALTER TABLE `lar_users_friends_apply` CHANGE `remarks` `remark` varchar(50) DEFAULT '' COMMENT '申请备注';
+ALTER TABLE `lar_users_friends_apply` DROP COLUMN `updated_at`;
+ALTER TABLE `lar_users_friends_apply` DROP COLUMN `status`;
 
 -- ----------------------------
 -- 以下是新增数据表
