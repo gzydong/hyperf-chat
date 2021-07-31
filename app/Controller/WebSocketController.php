@@ -24,7 +24,6 @@ use Swoole\Websocket\Frame;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Server;
 use App\Service\SocketClientService;
-use App\Model\Group\GroupMember;
 use App\Event\TalkEvent;
 
 

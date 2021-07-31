@@ -44,9 +44,8 @@ class ContactsApplyController extends CController
         $params['friend_id'] = (int)$params['friend_id'];
 
         $user = $userService->findById($params['friend_id']);
-        if (!$user) {
-            return $this->response->fail('用户不存在！');
-        }
+
+        if (!$user) return $this->response->fail('用户不存在！');
 
         $user_id = $this->uid();
         $key     = "{$user_id}_{$params['friend_id']}";
