@@ -2,6 +2,7 @@
 
 namespace App\Listener;
 
+use App\Helper\RegularHelper;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 use Hyperf\Validation\Event\ValidatorFactoryResolved;
@@ -27,20 +28,12 @@ class ValidatorFactoryResolvedListener implements ListenerInterface
 
         // 注册了 ids 验证器(验证英文逗号拼接的整形数字字符串 例如:[1,2,3,4,5])
         $validatorFactory->extend('ids', function ($attribute, $value) {
-            if (!is_string($value)) return false;
-
-            foreach (explode(',', $value) as $id) {
-                if (!check_int($id)) return false;
-            }
-
-            return true;
+            return is_string($value) && (empty($value) || RegularHelper::verify('ids', $value));
         });
 
         // 注册手机号验证器
         $validatorFactory->extend('phone', function ($attribute, $value) {
-            if (!is_string($value)) return false;
-
-            return (bool)preg_match('/^1[3456789][0-9]{9}$/', $value);
+            return is_string($value) && RegularHelper::verify('phone', $value);
         });
     }
 }
