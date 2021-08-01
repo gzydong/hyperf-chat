@@ -13,13 +13,13 @@ class CreateUsersEmoticonTable extends Migration
     {
         Schema::create('users_emoticon', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('表情包收藏ID');
-            $table->unsignedInteger('user_id')->default(0)->unique()->comment('用户ID');
+            $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
             $table->string('emoticon_ids', 255)->default('')->comment('表情包ID');
 
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
 
-            $table->index(['user_id'], 'idx_user_id');
+            $table->unique(['user_id'], 'uk_user_id');
         });
 
         $prefix = config('databases.default.prefix');

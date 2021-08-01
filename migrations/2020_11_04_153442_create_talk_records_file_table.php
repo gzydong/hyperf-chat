@@ -22,7 +22,7 @@ class CreateTalkRecordsFileTable extends Migration
             $table->string('original_name', 100)->default('')->comment('原文件名');
             $table->string('file_suffix', 10)->default('')->comment('文件后缀名');
             $table->unsignedBigInteger('file_size')->default(0)->comment('文件大小（单位字节）');
-            $table->string('save_dir', 500)->default('')->comment('文件保存地址（相对地址/第三方网络地址）');
+            $table->string('save_dir', 300)->default('')->comment('文件保存地址（相对地址/第三方网络地址）');
             $table->tinyInteger('is_delete')->default(0)->unsigned()->comment('文件是否已删除[0:否;1:已删除]');
             $table->dateTime('created_at')->nullable(true)->comment('创建时间');
 
@@ -30,7 +30,7 @@ class CreateTalkRecordsFileTable extends Migration
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
 
-            $table->unique(['record_id'], 'idx_record_id');
+            $table->unique(['record_id'], 'uk_record_id');
         });
 
         $prefix = config('databases.default.prefix');

@@ -37,7 +37,7 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
 1. 下载源码包
 2. 安装框架依赖包执行 `compsoer install` 命令 [项目根目录下执行]
 2. 拷贝项目根目录下 .env.example 文件为 .env 并正确配置相关参数（mysql、redis）
-3. 执行数据库迁移文件命令生成相关数据表  `php bin/hyperf.php migrate`
+3. 执行项目安装命令(安装数据库及测试数据)  `php bin/hyperf.php system:install`
 4. 启动运行项目 `php bin/hyperf.php start`
 
 注 ：[项目运行之前请确保 MySQL、Redis 及 Nginx 服务]

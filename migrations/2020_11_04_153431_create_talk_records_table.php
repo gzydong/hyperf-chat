@@ -13,7 +13,7 @@ class CreateTalkRecordsTable extends Migration
     public function up(): void
     {
         Schema::create('talk_records', function (Blueprint $table) {
-            $table->unsignedBigInteger('id', true)->comment('聊天记录ID');
+            $table->unsignedInteger('id', true)->comment('聊天记录ID');
             $table->unsignedTinyInteger('talk_type')->unsigned()->default(1)->comment('对话类型[1:私信;2:群聊;]');
             $table->unsignedTinyInteger('msg_type')->unsigned()->default(1)->comment('消息类型[1:文本消息;2:文件消息;3:会话消息;4:代码消息;5:投票消息;6:群公告;7:好友申请;8:登录通知;9:入群消息/退群消息;]');
             $table->unsignedInteger('user_id')->default(0)->comment('发送者ID（0:代表系统消息 >0: 用户ID）');
@@ -21,7 +21,7 @@ class CreateTalkRecordsTable extends Migration
             $table->tinyInteger('is_revoke')->default(0)->comment('是否撤回消息[0:否;1:是]');
             $table->tinyInteger('is_mark')->default(0)->comment('是否重要消息[0:否;1:是;]');
             $table->tinyInteger('is_read')->default(0)->comment('是否已读[0:否;1:是;]');
-            $table->unsignedBigInteger('quote_id')->default(0)->comment('引用消息ID');
+            $table->unsignedInteger('quote_id')->default(0)->comment('引用消息ID');
             $table->text('content')->nullable(true)->charset('utf8mb4')->comment('文本消息 {@nickname@}');
             $table->string('warn_users', 200)->default('')->comment('@好友 、 多个用英文逗号 “,” 拼接 (0:代表所有人)');
             $table->dateTime('created_at')->nullable(true)->comment('创建时间');

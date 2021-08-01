@@ -17,13 +17,13 @@ class CreateTalkRecordsInviteTable extends Migration
             $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
             $table->tinyInteger('type')->default(1)->comment('通知类型[1:入群通知;2:自动退群;3:管理员踢群]');
             $table->unsignedInteger('operate_user_id')->default(0)->comment('操作人的用户ID(邀请人)');
-            $table->string('user_ids', 255)->default('')->comment("用户ID，多个用','分割");
+            $table->string('user_ids', 255)->default('')->comment("用户ID，多个用 , 分割");
 
             $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
 
-            $table->index(['record_id'], 'idx_recordid');
+            $table->index(['record_id'], 'idx_record_id');
         });
 
         $prefix = config('databases.default.prefix');
