@@ -8,12 +8,10 @@ use App\Cache\SocketRoom;
 use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
-use App\Model\Group\Group;
 use App\Model\User;
 use App\Model\UsersFriendApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
-use Hyperf\Utils\Arr;
 
 class SubscribeHandleService
 {
@@ -87,20 +85,20 @@ class SubscribeHandleService
         $groupInfo = null;
 
         if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            $fds = array_merge(
-                $this->clientService->findUserFds($sender_id),
-                $this->clientService->findUserFds($receiver_id)
-            );
+            $fds[] = $this->clientService->findUserFds($sender_id);
+            $fds[] = $this->clientService->findUserFds($receiver_id);
         } else if ($talk_type == TalkModeConstant::GROUP_CHAT) {
             foreach (SocketRoom::getInstance()->getRoomMembers(strval($receiver_id)) as $uid) {
-                $fds = array_merge($fds, $this->clientService->findUserFds(intval($uid)));
+                $fds[] = $this->clientService->findUserFds(intval($uid));
             }
 
             $groupInfo = GroupCache::getInstance()->getOrSetCache($receiver_id);
         }
 
+        $fds = array_unique(array_merge(...$fds));
+
         // 客户端ID去重
-        if (!$fds = array_unique($fds)) return;
+        if (!$fds) return;
 
         $result = TalkRecords::leftJoin('users', 'users.id', '=', 'talk_records.user_id')
             ->where('talk_records.id', $record_id)
@@ -118,7 +116,6 @@ class SubscribeHandleService
             ]);
 
         if (!$result) return;
-
 
         $message = di()->get(FormatMessageService::class)->handleChatRecords([$result->toArray()])[0];
         $notify  = [
@@ -156,14 +153,15 @@ class SubscribeHandleService
         $user_id = (int)$data['data']['user_id'];
         $status  = (int)$data['data']['status'];
 
-        $fds = [];
-
         $ids = di()->get(UserService::class)->getFriendIds($user_id);
+        $fds = [];
         foreach ($ids as $friend_id) {
-            $fds = array_merge($fds, $this->clientService->findUserFds(intval($friend_id)));
+            $fds[] = $this->clientService->findUserFds(intval($friend_id));
         }
 
-        $this->socketPushNotify(array_unique($fds), json_encode([
+        $fds = array_unique(array_merge(...$fds));
+
+        $this->socketPushNotify($fds, json_encode([
             TalkEventConstant::EVENT_ONLINE_STATUS, [
                 'user_id' => $user_id,
                 'status'  => $status
@@ -182,16 +180,18 @@ class SubscribeHandleService
 
         $fds = [];
         if ($record->talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            $fds = array_merge($fds, $this->clientService->findUserFds($record->user_id));
-            $fds = array_merge($fds, $this->clientService->findUserFds($record->receiver_id));
+            $fds[] = $this->clientService->findUserFds($record->user_id);
+            $fds[] = $this->clientService->findUserFds($record->receiver_id);
         } else if ($record->talk_type == TalkModeConstant::GROUP_CHAT) {
-            $userIds = SocketRoom::getInstance()->getRoomMembers(strval($record->receiver_id));
-            foreach ($userIds as $uid) {
-                $fds = array_merge($fds, $this->clientService->findUserFds((int)$uid));
+            foreach (SocketRoom::getInstance()->getRoomMembers(strval($record->receiver_id)) as $uid) {
+                $fds[] = $this->clientService->findUserFds((int)$uid);
             }
         }
 
-        $fds = array_unique($fds);
+        $fds = array_unique(array_merge(...$fds));
+
+        if (!$fds) return;
+
         $this->socketPushNotify($fds, json_encode([TalkEventConstant::EVENT_REVOKE_TALK, [
             'talk_type'   => $record->talk_type,
             'sender_id'   => $record->user_id,

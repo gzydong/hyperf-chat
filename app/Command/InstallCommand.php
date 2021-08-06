@@ -36,7 +36,7 @@ class InstallCommand extends HyperfCommand
         $this->line('LumenIM 正在创建数据库，请耐心等待!', 'info');
         $this->call('migrate');
 
-        if ($this->confirm('是否需要生成测试数据')) {
+        if ($this->confirm('是否需要生成测试数据？')) {
             $this->call('db:seed');
         }
     }
