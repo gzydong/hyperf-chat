@@ -42,6 +42,15 @@ class TalkMessageController extends CController
     public $talkMessageService;
 
     /**
+     * 发送文本消息
+     * @RequestMapping(path="text", methods="post")
+     */
+    public function text()
+    {
+        // todo 待开发
+    }
+
+    /**
      * 发送代码块消息
      * @RequestMapping(path="code", methods="post")
      */

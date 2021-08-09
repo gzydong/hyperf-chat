@@ -18,7 +18,7 @@ use App\Model\BaseModel;
  * @property int     $is_mark           是否重要消息
  * @property int     $is_read           是否已读
  * @property int     $quote_id          引用消息ID
- * @property string  $warn_users        @好友
+ * @property string  $warn_users        引用好友
  * @property string  $content           文本消息
  * @property string  $created_at        创建时间
  * @property string  $updated_at        更新时间
