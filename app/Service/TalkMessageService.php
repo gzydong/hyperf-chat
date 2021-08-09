@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Cache\LastMessage;
+use App\Cache\UnreadTalkCache;
 use App\Cache\VoteCache;
 use App\Cache\VoteStatisticsCache;
 use App\Constants\RobotConstant;
@@ -25,6 +26,43 @@ use Hyperf\DbConnection\Db;
 
 class TalkMessageService
 {
+    /**
+     * 创建文本消息
+     *
+     * @param array $message
+     * @return bool
+     */
+    public function insertTextMessage(array $message)
+    {
+        $message['msg_type']   = TalkMessageType::TEXT_MESSAGE;
+        $message['content']    = htmlspecialchars($message['content']);
+        $message['created_at'] = date('Y-m-d H:i:s');
+        $message['updated_at'] = date('Y-m-d H:i:s');
+
+        $result = TalkRecords::create($message);
+
+        // 判断是否私信
+        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
+            UnreadTalkCache::getInstance()->increment($result->user_id, $result->receiver_id);
+        }
+
+        // 缓存最后一条聊天消息
+        LastMessage::getInstance()->save($result->talk_type, $result->user_id, $result->receiver_id, [
+            'text'       => mb_substr($result->content, 0, 30),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
+            'sender_id'   => $result->user_id,
+            'receiver_id' => $result->receiver_id,
+            'talk_type'   => $result->talk_type,
+            'record_id'   => $result->id
+        ]));
+
+        return true;
+    }
+
+
     /**
      * 创建代码块消息
      *

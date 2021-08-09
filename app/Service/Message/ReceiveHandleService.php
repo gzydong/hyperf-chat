@@ -11,6 +11,7 @@ use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
 use App\Model\Talk\TalkRecords;
 use App\Service\SocketClientService;
+use App\Service\TalkMessageService;
 use App\Support\UserRelation;
 use Swoole\Http\Response;
 use Swoole\WebSocket\Frame;
@@ -64,33 +65,12 @@ class ReceiveHandleService
             return;
         }
 
-        $result = TalkRecords::create([
+        di()->get(TalkMessageService::class)->insertTextMessage([
             'talk_type'   => $data['talk_type'],
             'user_id'     => $data['sender_id'],
             'receiver_id' => $data['receiver_id'],
-            'msg_type'    => TalkMessageType::TEXT_MESSAGE,
-            'content'     => htmlspecialchars($data['text_message']),
-            'created_at'  => date('Y-m-d H:i:s'),
-            'updated_at'  => date('Y-m-d H:i:s'),
+            'content'     => $data['text_message'],
         ]);
-
-        // 判断是否私信
-        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            UnreadTalkCache::getInstance()->increment($result->user_id, $result->receiver_id);
-        }
-
-        // 缓存最后一条聊天消息
-        LastMessage::getInstance()->save($result->talk_type, $result->user_id, $result->receiver_id, [
-            'text'       => mb_substr($result->content, 0, 30),
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
-            'sender_id'   => $result->user_id,
-            'receiver_id' => $result->receiver_id,
-            'talk_type'   => $result->talk_type,
-            'record_id'   => $result->id
-        ]));
     }
 
     /**
