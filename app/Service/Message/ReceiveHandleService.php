@@ -44,8 +44,8 @@ class ReceiveHandleService
      * 对话文本消息
      *
      * @param Response|Server $server
-     * @param Frame           $frame
-     * @param array|string    $data 解析后数据
+     * @param Frame $frame
+     * @param array|string $data 解析后数据
      * @return void
      */
     public function onTalk($server, Frame $frame, $data)
@@ -77,8 +77,8 @@ class ReceiveHandleService
      * 键盘输入消息
      *
      * @param Response|Server $server
-     * @param Frame           $frame
-     * @param array|string    $data 解析后数据
+     * @param Frame $frame
+     * @param array|string $data 解析后数据
      * @return false
      */
     public function onKeyboard($server, Frame $frame, $data)

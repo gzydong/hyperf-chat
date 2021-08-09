@@ -47,7 +47,21 @@ class TalkMessageController extends CController
      */
     public function text()
     {
-        // todo 待开发
+        $params = $this->request->inputs(['talk_type', 'receiver_id', 'text']);
+        $this->validate($params, [
+            'talk_type'   => 'required|in:1,2',
+            'receiver_id' => 'required|integer|min:1',
+            'text'        => 'required|max:65535',
+        ]);
+
+        di()->get(TalkMessageService::class)->insertTextMessage([
+            'talk_type'   => $params['talk_type'],
+            'user_id'     => $this->uid(),
+            'receiver_id' => $params['receiver_id'],
+            'content'     => $params['text'],
+        ]);
+
+        return $this->response->success();
     }
 
     /**
