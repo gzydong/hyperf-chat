@@ -3,13 +3,9 @@ declare(strict_types=1);
 
 namespace App\Service\Message;
 
-use App\Cache\LastMessage;
-use App\Cache\UnreadTalkCache;
 use App\Constants\TalkEventConstant;
-use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
-use App\Model\Talk\TalkRecords;
 use App\Service\SocketClientService;
 use App\Service\TalkMessageService;
 use App\Support\UserRelation;
@@ -44,8 +40,8 @@ class ReceiveHandleService
      * 对话文本消息
      *
      * @param Response|Server $server
-     * @param Frame $frame
-     * @param array|string $data 解析后数据
+     * @param Frame           $frame
+     * @param array|string    $data 解析后数据
      * @return void
      */
     public function onTalk($server, Frame $frame, $data)
@@ -77,9 +73,9 @@ class ReceiveHandleService
      * 键盘输入消息
      *
      * @param Response|Server $server
-     * @param Frame $frame
-     * @param array|string $data 解析后数据
-     * @return false
+     * @param Frame           $frame
+     * @param array|string    $data 解析后数据
+     * @return void
      */
     public function onKeyboard($server, Frame $frame, $data)
     {

@@ -20,7 +20,7 @@ trait StaticInstance
      *
      * @return static
      */
-    static public function getInstance()
+    public static function getInstance()
     {
         if (is_null(static::$instance)) {
             static::$instance = new static();

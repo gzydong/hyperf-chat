@@ -82,7 +82,7 @@ class SocketClientService
      * @param string $run_id  服务运行ID（默认当前服务ID）
      * @return array
      */
-    public function findUserFds(int $user_id, $run_id = SERVER_RUN_ID)
+    public function findUserFds(int $user_id, $run_id = SERVER_RUN_ID): array
     {
         return SocketUserBindFds::getInstance()->findFds($user_id, $run_id);
     }
