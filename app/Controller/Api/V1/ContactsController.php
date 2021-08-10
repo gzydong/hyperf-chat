@@ -129,7 +129,7 @@ class ContactsController extends CController
         ]);
 
         $user_id = $this->uid();
-        $isTrue  = $this->service->editRemark($user_id, intval($params['friend_id']), $params['remarks']);
+        $isTrue = $this->service->editRemark($user_id, intval($params['friend_id']), $params['remarks']);
         if (!$isTrue) {
             return $this->response->fail('备注修改失败！');
         }

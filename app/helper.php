@@ -15,13 +15,15 @@ use Swoole\Websocket\Frame;
 use Swoole\WebSocket\Server as WebSocketServer;
 use Hyperf\Utils\Str;
 use Hyperf\Redis\Redis;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * 容器实例
  *
- * @return \Psr\Container\ContainerInterface
+ * @return ContainerInterface
  */
-function di()
+function di(): ContainerInterface
 {
     return ApplicationContext::getContainer();
 }
@@ -98,9 +100,9 @@ function stdout_log()
  * 文件日志
  *
  * @param string $name
- * @return \Psr\Log\LoggerInterface
+ * @return LoggerInterface
  */
-function logger(string $name = 'APP')
+function logger(string $name = 'APP'): LoggerInterface
 {
     return di()->get(LoggerFactory::class)->get($name);
 }
@@ -190,7 +192,7 @@ function get_media_url(string $path)
  * @param array  $filesize 图片文件大小信息
  * @return string
  */
-function create_image_name(string $ext, array $filesize)
+function create_image_name(string $ext, array $filesize): string
 {
     return uniqid() . Str::random() . '_' . $filesize[0] . 'x' . $filesize[1] . '.' . $ext;
 }
@@ -277,7 +279,7 @@ function push_redis_subscribe(string $chan, $message)
  * @param string $ext 文件后缀名
  * @return string
  */
-function create_random_filename(string $ext)
+function create_random_filename(string $ext): string
 {
     $ext = $ext ? '.' . $ext : '';
     return Str::random(10) . uniqid() . $ext;
