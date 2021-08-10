@@ -329,7 +329,7 @@ class TalkMessageController extends CController
         if ($params['forward_mode'] == 1) {// 单条转发
             $ids = $this->talkService->forwardRecords($user_id, $params['receiver_id'], $params['records_ids']);
         } else {// 合并转发
-            $ids = $this->talkService->mergeForwardRecords($user_id, $params['receiver_id'], $params['talk_type'], $params['records_ids'], $items);
+            $ids = $this->talkService->mergeForwardRecords($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
         }
 
         if (!$ids) return $this->response->fail('转发失败！');
