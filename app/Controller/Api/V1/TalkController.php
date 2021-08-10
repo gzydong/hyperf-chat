@@ -291,7 +291,8 @@ class TalkController extends CController
             TalkMessageType::TEXT_MESSAGE,
             TalkMessageType::FILE_MESSAGE,
             TalkMessageType::FORWARD_MESSAGE,
-            TalkMessageType::CODE_MESSAGE
+            TalkMessageType::CODE_MESSAGE,
+            TalkMessageType::VOTE_MESSAGE
         ];
 
         if (in_array($params['msg_type'], $types)) {
