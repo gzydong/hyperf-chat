@@ -35,7 +35,7 @@ class AppExceptionHandler extends ExceptionHandler
         $data = json_encode([
             'code'   => ResponseCode::SERVER_ERROR,
             'error'  => $isDev ? $throwable->getMessage() : 'Internal Server Error.',
-            'traces' => $isDev ? $throwable->getTrace() : [],
+            'traces' => $isDev ? $throwable->getLine() : [],
         ], JSON_UNESCAPED_UNICODE);
 
         !$isDev && $this->sendAdminEmail($throwable);

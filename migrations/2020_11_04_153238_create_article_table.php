@@ -16,7 +16,7 @@ class CreateArticleTable extends Migration
             $table->unsignedInteger('id', true)->comment('笔记ID');
             $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
             $table->unsignedInteger('class_id')->default(0)->comment('分类ID');
-            $table->string('tags_id', 20)->default('')->comment('笔记关联标签');
+            $table->string('tags_id', 100)->default('')->comment('笔记关联标签');
             $table->string('title', 80)->default('')->charset('utf8mb4')->comment('笔记标题');
             $table->string('abstract', 200)->default('')->charset('utf8mb4')->comment('笔记摘要');
             $table->string('image', 255)->default('')->comment('笔记首图');

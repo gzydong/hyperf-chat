@@ -12,7 +12,6 @@ use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
 use App\Model\Group\GroupMember;
-use App\Model\Talk\TalkList;
 use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsLogin;
 use App\Model\Talk\TalkRecordsVote;
@@ -32,10 +31,10 @@ class TalkMessageService
      * @param array $message
      * @return bool
      */
-    public function insertTextMessage(array $message)
+    public function insertTextMessage(array $message): bool
     {
-        $message['msg_type']   = TalkMessageType::TEXT_MESSAGE;
-        $message['content']    = htmlspecialchars($message['content']);
+        $message['msg_type'] = TalkMessageType::TEXT_MESSAGE;
+        $message['content'] = htmlspecialchars($message['content']);
         $message['created_at'] = date('Y-m-d H:i:s');
         $message['updated_at'] = date('Y-m-d H:i:s');
 
@@ -70,11 +69,11 @@ class TalkMessageService
      * @param array $code
      * @return bool
      */
-    public function insertCodeMessage(array $message, array $code)
+    public function insertCodeMessage(array $message, array $code): bool
     {
         Db::beginTransaction();
         try {
-            $message['msg_type']   = TalkMessageType::CODE_MESSAGE;
+            $message['msg_type'] = TalkMessageType::CODE_MESSAGE;
             $message['created_at'] = date('Y-m-d H:i:s');
             $message['updated_at'] = date('Y-m-d H:i:s');
 
@@ -83,7 +82,7 @@ class TalkMessageService
                 throw new Exception('插入聊天记录失败...');
             }
 
-            $code['record_id']  = $insert->id;
+            $code['record_id'] = $insert->id;
             $code['created_at'] = date('Y-m-d H:i:s');
             if (!TalkRecordsCode::create($code)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');
@@ -117,11 +116,11 @@ class TalkMessageService
      * @param array $file
      * @return bool
      */
-    public function insertFileMessage(array $message, array $file)
+    public function insertFileMessage(array $message, array $file): bool
     {
         Db::beginTransaction();
         try {
-            $message['msg_type']   = TalkMessageType::FILE_MESSAGE;
+            $message['msg_type'] = TalkMessageType::FILE_MESSAGE;
             $message['created_at'] = date('Y-m-d H:i:s');
             $message['updated_at'] = date('Y-m-d H:i:s');
 
@@ -130,8 +129,8 @@ class TalkMessageService
                 throw new Exception('插入聊天记录失败...');
             }
 
-            $file['record_id']  = $insert->id;
-            $file['file_type']  = MediaTypeConstant::getMediaType($file['file_suffix']);
+            $file['record_id'] = $insert->id;
+            $file['file_type'] = MediaTypeConstant::getMediaType($file['file_suffix']);
             $file['created_at'] = date('Y-m-d H:i:s');
             if (!TalkRecordsFile::create($file)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');
@@ -165,27 +164,27 @@ class TalkMessageService
      * @param array $vote
      * @return bool
      */
-    public function insertVoteMessage(array $message, array $vote)
+    public function insertVoteMessage(array $message, array $vote): bool
     {
         $answer_num = GroupMember::where('group_id', $message['receiver_id'])->where('is_quit', 0)->count();
 
         Db::beginTransaction();
         try {
-            $message['msg_type']   = TalkMessageType::VOTE_MESSAGE;
+            $message['msg_type'] = TalkMessageType::VOTE_MESSAGE;
             $message['created_at'] = date('Y-m-d H:i:s');
             $message['updated_at'] = date('Y-m-d H:i:s');
 
-            $insert  = TalkRecords::create($message);
+            $insert = TalkRecords::create($message);
             $options = [];
             foreach ($vote['answer_option'] as $k => $option) {
                 $options[chr(65 + $k)] = $option;
             }
 
-            $vote['record_id']     = $insert->id;
+            $vote['record_id'] = $insert->id;
             $vote['answer_option'] = $options;
-            $vote['answer_num']    = $answer_num;
-            $vote['created_at']    = date('Y-m-d H:i:s');
-            $vote['updated_at']    = $vote['created_at'];
+            $vote['answer_num'] = $answer_num;
+            $vote['created_at'] = date('Y-m-d H:i:s');
+            $vote['updated_at'] = $vote['created_at'];
 
             if (!TalkRecordsVote::create($vote)) {
                 throw new Exception('插入聊天记录(投票消息)失败...');
@@ -216,7 +215,7 @@ class TalkMessageService
      *
      * @param int   $user_id
      * @param array $params
-     * @return bool
+     * @return array
      */
     public function handleVote(int $user_id, array $params): array
     {
@@ -230,7 +229,7 @@ class TalkMessageService
                 'vote.id as vote_id', 'vote.answer_mode', 'vote.answer_option', 'vote.answer_num', 'vote.status as vote_status'
             ]);
 
-        if (!$record) return false;
+        if (!$record) return [false, []];
 
         if ($record->msg_type != TalkMessageType::VOTE_MESSAGE) {
             return [false, []];
@@ -294,22 +293,22 @@ class TalkMessageService
      * @param array $loginParams
      * @return bool
      */
-    public function insertLoginMessage(array $message, array $loginParams)
+    public function insertLoginMessage(array $message, array $loginParams): bool
     {
         Db::beginTransaction();
         try {
             $message['receiver_id'] = RobotConstant::LOGIN_ROBOT;
-            $message['talk_type']   = TalkModeConstant::PRIVATE_CHAT;
-            $message['msg_type']    = TalkMessageType::USER_LOGIN_MESSAGE;
-            $message['created_at']  = date('Y-m-d H:i:s');
-            $message['updated_at']  = date('Y-m-d H:i:s');
+            $message['talk_type'] = TalkModeConstant::PRIVATE_CHAT;
+            $message['msg_type'] = TalkMessageType::USER_LOGIN_MESSAGE;
+            $message['created_at'] = date('Y-m-d H:i:s');
+            $message['updated_at'] = date('Y-m-d H:i:s');
 
             $insert = TalkRecords::create($message);
             if (!$insert) {
                 throw new Exception('插入聊天记录失败...');
             }
 
-            $loginParams['record_id']  = $insert->id;
+            $loginParams['record_id'] = $insert->id;
             $loginParams['created_at'] = date('Y-m-d H:i:s');
 
             if (!TalkRecordsLogin::create($loginParams)) {
