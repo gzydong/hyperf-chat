@@ -62,7 +62,7 @@ class FormatMessageService
      * @param array $rows 聊天记录
      * @return array
      */
-    public function handleChatRecords(array $rows)
+    public function handleChatRecords(array $rows): array
     {
         if (!$rows) return [];
 

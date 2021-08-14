@@ -22,7 +22,7 @@ class CreateTalkRecordsDeleteTable extends Migration
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
 
-            $table->index(['record_id', 'user_id'], 'idx_record_user_id');
+            $table->unique(['record_id', 'user_id'], 'uk_record_id_user_id');
         });
 
         $prefix = config('databases.default.prefix');

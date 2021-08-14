@@ -8,10 +8,7 @@ use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
 use App\Service\Group\GroupMemberService;
 use App\Service\Message\FormatMessageService;
-use Exception;
 use App\Model\Talk\TalkRecords;
-use App\Model\Talk\TalkRecordsCode;
-use App\Model\Talk\TalkRecordsFile;
 use App\Model\Talk\TalkRecordsForward;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
@@ -31,7 +28,7 @@ class TalkService extends BaseService
      * @param array $msg_type    消息类型
      * @return array
      */
-    public function getChatRecords(int $user_id, int $receiver_id, int $talk_type, int $record_id, $limit = 30, $msg_type = [])
+    public function getChatRecords(int $user_id, int $receiver_id, int $talk_type, int $record_id, $limit = 30, $msg_type = []): array
     {
         $fields = [
             'talk_records.id',
@@ -65,8 +62,9 @@ class TalkService extends BaseService
             });
         } else {
             $rowsSqlObj->where('talk_records.receiver_id', $receiver_id);
-            $rowsSqlObj->where('talk_records.talk_type', $talk_type);
         }
+
+        $rowsSqlObj->where('talk_records.talk_type', $talk_type);
 
         if ($msg_type) {
             $rowsSqlObj->whereIn('talk_records.msg_type', $msg_type);
@@ -106,7 +104,7 @@ class TalkService extends BaseService
      * @param int $record_id 聊天记录ID
      * @return array
      */
-    public function getForwardRecords(int $user_id, int $record_id)
+    public function getForwardRecords(int $user_id, int $record_id): array
     {
         $result = TalkRecords::where('id', $record_id)->first([
             'id', 'talk_type', 'msg_type', 'user_id', 'receiver_id', 'content', 'is_revoke', 'created_at'
@@ -151,7 +149,7 @@ class TalkService extends BaseService
      * @param array $record_ids  聊天记录ID
      * @return bool
      */
-    public function removeRecords(int $user_id, int $talk_type, int $receiver_id, array $record_ids)
+    public function removeRecords(int $user_id, int $talk_type, int $receiver_id, array $record_ids): bool
     {
         if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {// 私聊信息
             $ids = TalkRecords::whereIn('id', $record_ids)->where(function ($query) use ($user_id, $receiver_id) {
@@ -190,7 +188,7 @@ class TalkService extends BaseService
      * @param int $record_id 聊天记录ID
      * @return array
      */
-    public function revokeRecord(int $user_id, int $record_id)
+    public function revokeRecord(int $user_id, int $record_id): array
     {
         $result = TalkRecords::where('id', $record_id)->first(['id', 'talk_type', 'user_id', 'receiver_id', 'created_at']);
         if (!$result) return [false, '消息记录不存在'];
@@ -221,221 +219,6 @@ class TalkService extends BaseService
     }
 
     /**
-     * 转发消息（单条转发）
-     *
-     * @param int   $user_id      转发的用户ID
-     * @param int   $record_id    转发消息的记录ID
-     * @param array $receiver_ids 接受者数组  例如:[['talk_type' => 1,'id' => 3045]...] 二维数组
-     * @return array
-     */
-    public function forwardRecords(int $user_id, int $record_id, array $receiver_ids)
-    {
-        $msgTypeArray = [
-            TalkMessageType::TEXT_MESSAGE,
-            TalkMessageType::FILE_MESSAGE,
-            TalkMessageType::CODE_MESSAGE
-        ];
-
-        $result = TalkRecords::where('id', $record_id)->whereIn('msg_type', $msgTypeArray)->first();
-        if (!$result) return [];
-
-        // 根据消息类型判断用户是否有转发权限
-        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            if ($result->user_id != $user_id && $result->receiver_id != $user_id) {
-                return [];
-            }
-        } else if ($result->talk_type == TalkModeConstant::GROUP_CHAT) {
-            if (!di()->get(GroupMemberService::class)->isMember($result->receiver_id, $user_id)) {
-                return [];
-            }
-        }
-
-        $fileInfo = $codeBlock = null;
-        if ($result->msg_type == TalkMessageType::FILE_MESSAGE) {
-            $fileInfo = TalkRecordsFile::where('record_id', $record_id)->first();
-        } else if ($result->msg_type == TalkMessageType::CODE_MESSAGE) {
-            $codeBlock = TalkRecordsCode::where('record_id', $record_id)->first();
-        }
-
-        $insRecordIds = [];
-        Db::beginTransaction();
-        try {
-            foreach ($receiver_ids as $item) {
-                $res = TalkRecords::create([
-                    'talk_type'   => $item['talk_type'],
-                    'msg_type'    => $result->msg_type,
-                    'user_id'     => $user_id,
-                    'receiver_id' => $item['id'],
-                    'content'     => $result->content,
-                    'created_at'  => date('Y-m-d H:i:s'),
-                    'updated_at'  => date('Y-m-d H:i:s'),
-                ]);
-
-                if (!$res) {
-                    throw new Exception('插入消息记录失败');
-                }
-
-                $insRecordIds[] = [
-                    'record_id'   => $res->id,
-                    'receiver_id' => $res->receiver_id,
-                    'talk_type'   => $res->talk_type
-                ];
-
-                if ($result->msg_type == TalkMessageType::FILE_MESSAGE) {
-                    if (!TalkRecordsFile::create([
-                        'record_id'     => $res->id,
-                        'user_id'       => $fileInfo->user_id,
-                        'file_source'   => $fileInfo->file_source,
-                        'file_type'     => $fileInfo->file_type,
-                        'save_type'     => $fileInfo->save_type,
-                        'original_name' => $fileInfo->original_name,
-                        'file_suffix'   => $fileInfo->file_suffix,
-                        'file_size'     => $fileInfo->file_size,
-                        'save_dir'      => $fileInfo->save_dir,
-                        'created_at'    => date('Y-m-d H:i:s')
-                    ])) {
-                        throw new Exception('插入文件消息记录失败');
-                    }
-                } else if ($result->msg_type == TalkMessageType::CODE_MESSAGE) {
-                    if (!TalkRecordsCode::create([
-                        'record_id'  => $res->id,
-                        'user_id'    => $user_id,
-                        'code_lang'  => $codeBlock->code_lang,
-                        'code'       => $codeBlock->code,
-                        'created_at' => date('Y-m-d H:i:s')
-                    ])) {
-                        throw new Exception('插入代码消息记录失败');
-                    }
-                }
-            }
-
-            Db::commit();
-        } catch (Exception $e) {
-            Db::rollBack();
-            return [];
-        }
-
-        return $insRecordIds;
-    }
-
-    /**
-     * 转发消息（多条合并转发）
-     *
-     * @param int   $user_id     转发的用户ID
-     * @param int   $receiver_id 当前转发消息的所属者(好友ID或者群聊ID)
-     * @param int   $talk_type   消息来源  1:好友消息 2:群聊消息
-     * @param array $records_ids 转发消息的记录ID
-     * @param array $receive_ids 接受者数组  例如:[['talk_type' => 1,'id' => 3045]...] 二维数组
-     * @return array
-     */
-    public function mergeForwardRecords(int $user_id, int $receiver_id, int $talk_type, array $records_ids, array $receive_ids)
-    {
-        // 支持转发的消息类型
-        $msg_type = [
-            TalkMessageType::TEXT_MESSAGE,
-            TalkMessageType::FILE_MESSAGE,
-            TalkMessageType::CODE_MESSAGE
-        ];
-
-        $sqlObj = TalkRecords::whereIn('id', $records_ids);
-
-        if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            if (!di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) return [];
-
-            $sqlObj = $sqlObj->where(function ($query) use ($user_id, $receiver_id) {
-                $query->where([
-                    ['user_id', '=', $user_id],
-                    ['receiver_id', '=', $receiver_id]
-                ])->orWhere([
-                    ['user_id', '=', $receiver_id],
-                    ['receiver_id', '=', $user_id]
-                ]);
-            })->whereIn('msg_type', $msg_type)->where('talk_type', $talk_type)->where('is_revoke', 0);
-        } else {
-            if (!di()->get(GroupMemberService::class)->isMember($receiver_id, $user_id)) return [];
-
-            $sqlObj = $sqlObj->where('receiver_id', $receiver_id)->whereIn('msg_type', $msg_type)->where('talk_type', TalkModeConstant::GROUP_CHAT)->where('is_revoke', 0);
-        }
-
-        $result = $sqlObj->get();
-
-        // 判断消息记录是否存在
-        if (count($result) != count($records_ids)) {
-            return [];
-        }
-
-        $rows = TalkRecords::leftJoin('users', 'users.id', '=', 'talk_records.user_id')
-            ->whereIn('talk_records.id', array_slice($records_ids, 0, 3))
-            ->get(['talk_records.msg_type', 'talk_records.content', 'users.nickname']);
-
-        $jsonText = [];
-        foreach ($rows as $row) {
-            switch ($row->msg_type) {
-                case TalkMessageType::TEXT_MESSAGE:
-                    $jsonText[] = [
-                        'nickname' => $row->nickname,
-                        'text'     => mb_substr(str_replace(PHP_EOL, "", $row->content), 0, 30)
-                    ];
-                    break;
-                case TalkMessageType::FILE_MESSAGE:
-                    $jsonText[] = [
-                        'nickname' => $row->nickname,
-                        'text'     => '【文件消息】'
-                    ];
-                    break;
-                case TalkMessageType::CODE_MESSAGE:
-                    $jsonText[] = [
-                        'nickname' => $row->nickname,
-                        'text'     => '【代码消息】'
-                    ];
-                    break;
-            }
-        }
-
-        $insRecordIds = [];
-        Db::beginTransaction();
-        try {
-            foreach ($receive_ids as $item) {
-                $res = TalkRecords::create([
-                    'talk_type'   => $item['talk_type'],
-                    'user_id'     => $user_id,
-                    'receiver_id' => $item['id'],
-                    'msg_type'    => TalkMessageType::FORWARD_MESSAGE,
-                    'created_at'  => date('Y-m-d H:i:s'),
-                    'updated_at'  => date('Y-m-d H:i:s'),
-                ]);
-
-                if (!$res) {
-                    throw new Exception('插入消息失败');
-                }
-
-                $insRecordIds[] = [
-                    'record_id'   => $res->id,
-                    'receiver_id' => $res->receiver_id,
-                    'talk_type'   => $res->talk_type
-                ];
-
-                if (!TalkRecordsForward::create([
-                    'record_id'  => $res->id,
-                    'user_id'    => $user_id,
-                    'records_id' => implode(',', $records_ids),
-                    'text'       => json_encode($jsonText),
-                    'created_at' => date('Y-m-d H:i:s'),
-                ])) {
-                    throw new Exception('插入转发消息失败');
-                }
-            }
-
-            Db::commit();
-        } catch (Exception $e) {
-            Db::rollBack();
-            return [];
-        }
-
-        return $insRecordIds;
-    }
-
-    /**
      * 关键词搜索聊天记录
      *
      * @param int   $user_id     用户ID
@@ -446,7 +229,7 @@ class TalkService extends BaseService
      * @param array $params      查询参数
      * @return array
      */
-    public function searchRecords(int $user_id, int $receiver_id, int $talk_type, int $page, int $page_size, array $params)
+    public function searchRecords(int $user_id, int $receiver_id, int $talk_type, int $page, int $page_size, array $params): array
     {
         $fields = [
             'talk_records.id',
@@ -474,8 +257,9 @@ class TalkService extends BaseService
             });
         } else {
             $rowsSqlObj->where('talk_records.receiver_id', $receiver_id);
-            $rowsSqlObj->where('talk_records.talk_type', $talk_type);
         }
+
+        $rowsSqlObj->where('talk_records.talk_type', $talk_type);
 
         if (isset($params['keywords'])) {
             $rowsSqlObj->where('talk_records.content', 'like', "%{$params['keywords']}%");

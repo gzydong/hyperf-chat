@@ -9,6 +9,7 @@ use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
 use App\Model\EmoticonItem;
 use App\Model\FileSplitUpload;
+use App\Service\TalkForwardService;
 use App\Service\TalkMessageService;
 use App\Support\UserRelation;
 use App\Service\EmoticonService;
@@ -300,7 +301,7 @@ class TalkMessageController extends CController
      * 转发消息记录
      * @RequestMapping(path="forward", methods="post")
      */
-    public function forward()
+    public function forward(TalkForwardService $forwardService)
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'records_ids', 'forward_mode', 'receive_user_ids', 'receive_group_ids']);
         $this->validate($params, [
@@ -310,26 +311,36 @@ class TalkMessageController extends CController
             'forward_mode' => 'required|in:1,2',// 转发方方式[1:逐条转发;2:合并转发;]
         ]);
 
+        $user_id = $this->uid();
+
+        // 判断好友或者群关系
+        if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
+            return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
+        }
+
         $receive_user_ids = $receive_group_ids = [];
+
+        $func = function (array $ids, int $talk_type) {
+            return array_map(function ($id) use ($talk_type) {
+                return ['talk_type' => $talk_type, 'id' => (int)$id];
+            }, $ids);
+        };
+
         if (isset($params['receive_user_ids']) && !empty($params['receive_user_ids'])) {
-            $receive_user_ids = array_map(function ($friend_id) {
-                return ['talk_type' => TalkModeConstant::PRIVATE_CHAT, 'id' => (int)$friend_id];
-            }, $params['receive_user_ids']);
+            $receive_user_ids = $func($params['receive_user_ids'], TalkModeConstant::PRIVATE_CHAT);
         }
 
         if (isset($params['receive_group_ids']) && !empty($params['receive_group_ids'])) {
-            $receive_group_ids = array_map(function ($group_id) {
-                return ['talk_type' => TalkModeConstant::GROUP_CHAT, 'id' => (int)$group_id];
-            }, $params['receive_group_ids']);
+            $receive_group_ids = $func($params['receive_group_ids'], TalkModeConstant::GROUP_CHAT);
         }
 
+        // 需要转发的好友或者群组
         $items = array_merge($receive_user_ids, $receive_group_ids);
 
-        $user_id = $this->uid();
-        if ($params['forward_mode'] == 1) {// 单条转发
-            $ids = $this->talkService->forwardRecords($user_id, $params['receiver_id'], $params['records_ids']);
+        if ($params['forward_mode'] == 1) {// 逐条转发
+            $ids = $forwardService->multiSplitForward($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
         } else {// 合并转发
-            $ids = $this->talkService->mergeForwardRecords($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
+            $ids = $forwardService->multiMergeForward($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
         }
 
         if (!$ids) return $this->response->fail('转发失败！');
@@ -364,7 +375,7 @@ class TalkMessageController extends CController
             'record_id' => 'required|integer'
         ]);
 
-        [$isTrue, $data] = $service->collect($this->uid(), $params['record_id']);
+        [$isTrue, $data] = $service->collect($this->uid(), (int)$params['record_id']);
 
         if (!$isTrue) return $this->response->fail('添加表情失败！');
 
@@ -384,7 +395,7 @@ class TalkMessageController extends CController
             'record_id' => 'required|integer|min:1'
         ]);
 
-        [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), $params['record_id']);
+        [$isTrue, $message,] = $this->talkService->revokeRecord($this->uid(), (int)$params['record_id']);
         if (!$isTrue) return $this->response->fail($message);
 
         return $this->response->success([], $message);
@@ -405,8 +416,8 @@ class TalkMessageController extends CController
 
         $isTrue = $this->talkService->removeRecords(
             $this->uid(),
-            $params['talk_type'],
-            $params['receiver_id'],
+            (int)$params['talk_type'],
+            (int)$params['receiver_id'],
             parse_ids($params['record_id'])
         );
 

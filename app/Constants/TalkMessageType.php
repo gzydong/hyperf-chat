@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Constants;
 
@@ -19,4 +20,18 @@ class TalkMessageType
     const FRIEND_APPLY_MESSAGE = 7; //好友申请
     const USER_LOGIN_MESSAGE   = 8; //登录通知
     const GROUP_INVITE_MESSAGE = 9; //入群退群消息
+
+    /**
+     * 获取可转发的消息类型列表
+     *
+     * @return array
+     */
+    public static function getForwardTypes(): array
+    {
+        return [
+            self::TEXT_MESSAGE,
+            self::FILE_MESSAGE,
+            self::CODE_MESSAGE
+        ];
+    }
 }
