@@ -141,4 +141,21 @@ class SplitUploadService
             'file_size'     => $fileInfo->file_size
         ];
     }
+
+
+    /**
+     * 清理超过24小时的临时文件
+     */
+    public function clear()
+    {
+        // 24小时前
+        $time = time() - 60 * 60 * 24 * 1;
+
+        FileSplitUpload::where('file_type', 1)->where('upload_at', '<', $time)->select('hash_name')->chunk(100, function ($rows) {
+            foreach ($rows as $row) {
+                @di()->get(Filesystem::class)->deleteDir("tmp/{$row->hash_name}");
+                @FileSplitUpload::where('hash_name', $row->hash_name)->delete();
+            }
+        });
+    }
 }
