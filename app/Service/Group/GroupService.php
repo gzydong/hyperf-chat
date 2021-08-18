@@ -362,7 +362,7 @@ class GroupService extends BaseService
 
         event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $user_id,
-            'receiver_id' => (int)$params['group_id'],
+            'receiver_id' => $group_id,
             'talk_type'   => TalkModeConstant::GROUP_CHAT,
             'record_id'   => $result->id
         ]));
