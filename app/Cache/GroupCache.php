@@ -19,7 +19,7 @@ class GroupCache extends StringRedis
      * @param int $group_id
      * @return array
      */
-    public function updateCache(int $group_id)
+    public function updateCache(int $group_id): array
     {
         $group = Group::where('id', $group_id)->first();
 

@@ -19,7 +19,7 @@ class TalkModeConstant
      */
     const GROUP_CHAT = 2;
 
-    public static function getTypes()
+    public static function getTypes(): array
     {
         return [
             self::PRIVATE_CHAT,

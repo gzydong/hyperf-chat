@@ -53,9 +53,11 @@ class UnreadTalkCache extends HashRedis
     /**
      * 获取 Hash 成员 key
      *
+     * @param int $sender
+     * @param int $receive
      * @return string
      */
-    public function flag(int $sender, int $receive)
+    public function flag(int $sender, int $receive): string
     {
         return sprintf("%s_%s", $sender, $receive);
     }

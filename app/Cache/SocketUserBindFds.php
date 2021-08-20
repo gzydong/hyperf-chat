@@ -29,10 +29,11 @@ class SocketUserBindFds extends SetGroupRedis
 
     /**
      * @param int    $fd     客户端ID
+     * @param int    $user_id
      * @param string $run_id 服务运行ID（默认当前服务ID）
      * @return int
      */
-    public function unBind(int $fd, int $user_id, $run_id = SERVER_RUN_ID)
+    public function unBind(int $fd, int $user_id, $run_id = SERVER_RUN_ID): int
     {
         return $this->rem($this->filter([$run_id, $user_id]), $fd);
     }

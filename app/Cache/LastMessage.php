@@ -49,7 +49,7 @@ class LastMessage extends HashRedis
      *
      * @return string
      */
-    public function flag(int $type, int $sender, int $receive)
+    public function flag(int $type, int $sender, int $receive): string
     {
         // 群聊信息(非私信)，发送者ID重置为零
         if ($type == 2) $sender = 0;

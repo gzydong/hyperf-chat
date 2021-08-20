@@ -50,7 +50,15 @@ class SocketRoom extends SetGroupRedis
         return $this->add($room, ...$member);
     }
 
-    public function delRoomMember($room, string ...$member)
+    /**
+     *
+     * 删除房间成员
+     *
+     * @param string $room      房间名
+     * @param string ...$member 用户ID
+     * @return int
+     */
+    public function delRoomMember(string $room, string ...$member): int
     {
         return $this->rem($room, ...$member);
     }
@@ -61,7 +69,7 @@ class SocketRoom extends SetGroupRedis
      * @param string|int $room 房间名
      * @return int
      */
-    public function delRoom($room)
+    public function delRoom($room): int
     {
         return $this->delete($room);
     }
