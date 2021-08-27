@@ -6,7 +6,10 @@ namespace App\Command;
 
 use App\Cache\VoteStatisticsCache;
 use App\Model\Talk\TalkRecordsVote;
+use App\Model\User;
 use App\Model\UsersFriend;
+use App\Repository\ExampleRepository;
+use App\Repository\UserRepository;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\DbConnection\Db;
@@ -40,9 +43,11 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
+        $repository = di()->get(ExampleRepository::class)->get([
+            'id' => [1, 2, 3, 4]
+        ]);
 
-        $this->updateData();
-
+        // 3500
         //$api     = config('juhe_api.ip');
         //$options = [];
         //$client  = di()->get(ClientFactory::class)->create($options);
