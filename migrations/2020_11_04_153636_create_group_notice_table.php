@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateGroupNoticeTable extends Migration
 {
@@ -31,10 +30,8 @@ class CreateGroupNoticeTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->index(['group_id', 'is_delete', 'is_top', 'updated_at'], 'idx_group_id_is_delete_is_top_updated_at');
+            $table->comment('群组公告表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}group_notice` comment '群组公告表'");
     }
 
     /**

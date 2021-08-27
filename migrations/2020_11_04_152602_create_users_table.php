@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateUsersTable extends Migration
 {
@@ -30,10 +29,9 @@ class CreateUsersTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->unique(['mobile'], 'uk_mobile');
-        });
 
-        $prefix = config('databases.default.prefix');
-        Db::statement("ALTER TABLE `{$prefix}users` comment '用户信息表'");
+            $table->comment('用户信息表');
+        });
     }
 
     /**

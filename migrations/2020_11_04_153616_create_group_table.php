@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateGroupTable extends Migration
 {
@@ -28,10 +27,8 @@ class CreateGroupTable extends Migration
             $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
+            $table->comment('聊天群组表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}group` comment '聊天群组表'");
     }
 
     /**

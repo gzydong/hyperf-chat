@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateTalkRecordsFileTable extends Migration
 {
@@ -31,10 +30,8 @@ class CreateTalkRecordsFileTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->unique(['record_id'], 'uk_record_id');
+            $table->comment('用户聊天记录_文件消息表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}talk_records_file` comment '用户聊天记录_文件消息表'");
     }
 
     /**

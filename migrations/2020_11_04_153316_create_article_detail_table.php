@@ -3,7 +3,7 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
+
 class CreateArticleDetailTable extends Migration
 {
     /**
@@ -17,15 +17,14 @@ class CreateArticleDetailTable extends Migration
             $table->longtext('md_content')->charset('utf8mb4')->comment('Markdown 内容');
             $table->longtext('content')->charset('utf8mb4')->comment('Markdown 解析HTML内容');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
 
             $table->unique('article_id', 'unique_article_id');
-        });
 
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}article_detail` comment '笔记详情表'");
+            $table->comment('笔记详情表');
+        });
     }
 
     /**

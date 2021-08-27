@@ -28,18 +28,17 @@ class ArticleService extends BaseService
      */
     public function getUserClass(int $user_id)
     {
-        $subJoin = Article::select('class_id', Db::raw('count(class_id) as count'))->where('user_id', $user_id)->where('status', 1)->groupBy('class_id');
-
         $fields = [
             'article_class.id', 'article_class.class_name',
             'article_class.is_default',
-            Db::raw('ifnull(sub_join.count,0) as count')
+            'sub_join.count',
         ];
 
+        $subJoin = Article::select(['class_id', Db::raw('count(class_id) as count')])->where('user_id', $user_id)->where('status', 1)->groupBy(['class_id']);
         return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {
-            $join->on('article_class.id', '=', Db::raw('sub_join.class_id'));
+            $join->on('article_class.id', '=', 'sub_join.class_id');
         })->where('article_class.user_id', $user_id)
-            ->orderBy('article_class.sort', 'asc')
+            ->orderBy('article_class.sort')
             ->get($fields)
             ->toArray();
     }

@@ -43,9 +43,12 @@ class ArticleController extends CController
      */
     public function getArticleClass()
     {
-        return $this->response->success([
-            'rows' => $this->articleService->getUserClass($this->uid())
-        ]);
+        $rows = $this->articleService->getUserClass($this->uid());
+        foreach ($rows as &$row) {
+            $row['count'] = is_null($row['count']) ? 0 : $row['count'];
+        }
+
+        return $this->response->success(['rows' => $rows]);
     }
 
     /**

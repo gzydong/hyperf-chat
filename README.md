@@ -20,7 +20,7 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
 
 ## 3、环境要求
 
-- PHP >= 7.2
+- PHP >= 7.3
 - MySQL >= 5.7
 - Redis >= 5.0
 - Swoole  >= 4.5

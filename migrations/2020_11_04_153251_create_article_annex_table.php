@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateArticleAnnexTable extends Migration
 {
@@ -29,10 +28,9 @@ class CreateArticleAnnexTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->index(['user_id', 'article_id'], 'idx_user_id_article_id');
-        });
 
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}article_annex` comment '笔记附件信息表'");
+            $table->comment('笔记附件信息表');
+        });
     }
 
     /**

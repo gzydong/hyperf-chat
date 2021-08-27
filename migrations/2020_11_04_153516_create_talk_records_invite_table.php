@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateTalkRecordsInviteTable extends Migration
 {
@@ -24,10 +23,8 @@ class CreateTalkRecordsInviteTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->index(['record_id'], 'idx_record_id');
+            $table->comment('用户聊天记录_入群或退群消息表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}talk_records_invite` comment '用户聊天记录_入群或退群消息表'");
     }
 
     /**

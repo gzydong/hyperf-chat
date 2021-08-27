@@ -12,7 +12,7 @@ declare(strict_types=1);
  */
 
 use Hyperf\Server\Server;
-use Hyperf\Server\SwooleEvent;
+use Hyperf\Server\Event;
 
 return [
     'mode'      => SWOOLE_PROCESS,
@@ -24,7 +24,7 @@ return [
             'port'      => 9503,
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
-                SwooleEvent::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
+                Event::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
             ],
         ],
         [
@@ -35,9 +35,9 @@ return [
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
                 // 自定义握手处理
-                SwooleEvent::ON_HAND_SHAKE => [Hyperf\WebSocketServer\Server::class, 'onHandShake'],
-                SwooleEvent::ON_MESSAGE    => [Hyperf\WebSocketServer\Server::class, 'onMessage'],
-                SwooleEvent::ON_CLOSE      => [Hyperf\WebSocketServer\Server::class, 'onClose'],
+                Event::ON_HAND_SHAKE => [Hyperf\WebSocketServer\Server::class, 'onHandShake'],
+                Event::ON_MESSAGE    => [Hyperf\WebSocketServer\Server::class, 'onMessage'],
+                Event::ON_CLOSE      => [Hyperf\WebSocketServer\Server::class, 'onClose'],
             ],
             'settings'  => [
                 // 设置心跳检测
@@ -60,9 +60,9 @@ return [
     ],
     'callbacks' => [
         // 自定义启动前事件
-        SwooleEvent::ON_BEFORE_START => [App\Bootstrap\ServerStart::class, 'beforeStart'],
-        SwooleEvent::ON_WORKER_START => [Hyperf\Framework\Bootstrap\WorkerStartCallback::class, 'onWorkerStart'],
-        SwooleEvent::ON_PIPE_MESSAGE => [Hyperf\Framework\Bootstrap\PipeMessageCallback::class, 'onPipeMessage'],
-        SwooleEvent::ON_WORKER_EXIT  => [Hyperf\Framework\Bootstrap\WorkerExitCallback::class, 'onWorkerExit'],
+        Event::ON_BEFORE_START => [App\Bootstrap\ServerStart::class, 'beforeStart'],
+        Event::ON_WORKER_START => [Hyperf\Framework\Bootstrap\WorkerStartCallback::class, 'onWorkerStart'],
+        Event::ON_PIPE_MESSAGE => [Hyperf\Framework\Bootstrap\PipeMessageCallback::class, 'onPipeMessage'],
+        Event::ON_WORKER_EXIT  => [Hyperf\Framework\Bootstrap\WorkerExitCallback::class, 'onWorkerExit'],
     ],
 ];

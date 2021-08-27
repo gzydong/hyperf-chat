@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateTalkListTable extends Migration
 {
@@ -29,10 +28,8 @@ class CreateTalkListTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->index(['user_id', 'receiver_id', 'talk_type'], 'idx_user_id_receiver_id_talk_type');
+            $table->comment('用户聊天列表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}talk_list` comment '用户聊天列表'");
     }
 
     /**

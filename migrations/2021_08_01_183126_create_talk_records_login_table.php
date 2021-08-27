@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateTalkRecordsLoginTable extends Migration
 {
@@ -28,10 +27,8 @@ class CreateTalkRecordsLoginTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->unique(['record_id'], 'uk_record_id');
+            $table->comment('聊天对话记录（登录日志）');
         });
-
-        $prefix = config('databases.default.prefix');
-        Db::statement("ALTER TABLE `{$prefix}talk_records_login` comment '聊天对话记录（登录日志）'");
     }
 
     /**

@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateRobotsTable extends Migration
 {
@@ -26,10 +25,8 @@ class CreateRobotsTable extends Migration
             $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
+            $table->comment('聊天机器人表');
         });
-
-        $prefix = config('databases.default.prefix');
-        Db::statement("ALTER TABLE `{$prefix}robots` comment '聊天机器人表'");
     }
 
     /**

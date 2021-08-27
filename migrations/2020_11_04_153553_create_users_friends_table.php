@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateUsersFriendsTable extends Migration
 {
@@ -26,10 +25,8 @@ class CreateUsersFriendsTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->index(['user_id', 'friend_id'], 'idx_user_id_friend_id');
+            $table->comment('用户好友关系表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}users_friends` comment '用户好友关系表'");
     }
 
     /**

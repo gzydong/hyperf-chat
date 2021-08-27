@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateGroupMemberTable extends Migration
 {
@@ -29,10 +28,8 @@ class CreateGroupMemberTable extends Migration
 
             $table->unique(['group_id', 'user_id'], 'uk_group_id_user_id');
             $table->index(['user_id'], 'idx_user_id');
+            $table->comment('聊天群组成员表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}group_member` comment '聊天群组成员表'");
     }
 
     /**

@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateTalkRecordsVoteTable extends Migration
 {
@@ -30,10 +29,8 @@ class CreateTalkRecordsVoteTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->unique(['record_id'], 'uk_record_id');
+            $table->comment('聊天对话记录（投票消息表）');
         });
-
-        $prefix = config('databases.default.prefix');
-        Db::statement("ALTER TABLE `{$prefix}talk_records_vote` comment '聊天对话记录（投票消息表）'");
     }
 
     /**

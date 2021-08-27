@@ -3,7 +3,7 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
+
 class CreateFileSplitUploadTable extends Migration
 {
     /**
@@ -25,14 +25,12 @@ class CreateFileSplitUploadTable extends Migration
             $table->unsignedTinyInteger('is_delete')->default(0)->comment('文件是否已被删除[0:否;1:是]');
             $table->unsignedInteger('upload_at')->nullable(true)->comment('文件上传时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
 
             $table->index(['user_id', 'hash_name'], 'idx_user_id_hash_name');
+            $table->comment('文件拆分上传');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}file_split_upload` comment '文件拆分上传'");
     }
 
     /**

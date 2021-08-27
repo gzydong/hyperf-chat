@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateTalkRecordsDeleteTable extends Migration
 {
@@ -23,10 +22,8 @@ class CreateTalkRecordsDeleteTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->unique(['record_id', 'user_id'], 'uk_record_id_user_id');
+            $table->comment('用户聊天记录_删除记录表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}talk_records_delete` comment '用户聊天记录_删除记录表'");
     }
 
     /**

@@ -3,7 +3,7 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
+
 class CreateTalkRecordsForwardTable extends Migration
 {
     /**
@@ -19,15 +19,13 @@ class CreateTalkRecordsForwardTable extends Migration
             $table->json('text')->default(null)->comment('记录快照');
             $table->dateTime('created_at')->nullable(true)->comment('转发时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
 
             $table->index(['user_id', 'records_id'], 'idx_user_id_records_id');
+            $table->comment('用户聊天记录_转发信息表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}talk_records_forward` comment '用户聊天记录_转发信息表'");
     }
 
     /**

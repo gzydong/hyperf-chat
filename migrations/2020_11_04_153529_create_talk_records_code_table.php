@@ -24,11 +24,9 @@ class CreateTalkRecordsCodeTable extends Migration
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
 
-            $table->index(['record_id'], 'idx_recordid');
+            $table->index(['record_id'], 'idx_record_id');
+            $table->comment('用户聊天记录_代码块消息表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}talk_records_code` comment '用户聊天记录_代码块消息表'");
     }
 
     /**

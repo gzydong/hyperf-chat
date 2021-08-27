@@ -3,7 +3,7 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
+
 class CreateArticleTagsTable extends Migration
 {
     /**
@@ -18,14 +18,12 @@ class CreateArticleTagsTable extends Migration
             $table->unsignedTinyInteger('sort')->default(0)->comment('排序');
             $table->unsignedInteger('created_at')->nullable(true)->default(0)->comment('创建时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
             $table->index(['user_id'], 'idx_user_id');
+            $table->comment('笔记标签表');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}article_tags` comment '笔记标签表'");
     }
 
     /**

@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateArticleTable extends Migration
 {
@@ -26,16 +25,15 @@ class CreateArticleTable extends Migration
             $table->dateTime('updated_at')->nullable(true)->comment('最后一次更新时间');
             $table->dateTime('deleted_at')->nullable(true)->comment('笔记删除时间');
 
-            $table->charset = 'utf8';
+            $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->engine = 'InnoDB';
+            $table->engine    = 'InnoDB';
 
             //创建索引
             $table->index(['user_id', 'class_id', 'title'], 'idx_user_id_class_id_title');
-        });
 
-        $prefix = config('databases.default.prefix');
-        Db::statement("ALTER TABLE `{$prefix}article` comment '用户笔记表'");
+            $table->comment('用户笔记表');
+        });
     }
 
     /**

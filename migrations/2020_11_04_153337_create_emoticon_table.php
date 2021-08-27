@@ -3,7 +3,6 @@
 use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
-use Hyperf\DbConnection\Db;
 
 class CreateEmoticonTable extends Migration
 {
@@ -24,10 +23,8 @@ class CreateEmoticonTable extends Migration
             $table->collation = 'utf8_general_ci';
 
             $table->unique(['name'], 'uk_name');
+            $table->comment('表情包');
         });
-
-        $prefix = config('databases.default.prefix');
-        DB::statement("ALTER TABLE `{$prefix}emoticon` comment '表情包'");
     }
 
     /**
