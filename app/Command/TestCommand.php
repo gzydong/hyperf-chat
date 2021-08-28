@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Cache\VoteStatisticsCache;
-use App\Model\Talk\TalkRecordsVote;
-use App\Model\User;
 use App\Model\UsersFriend;
 use App\Repository\ExampleRepository;
-use App\Repository\UserRepository;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
-use Hyperf\DbConnection\Db;
-use Hyperf\Utils\Arr;
 use Psr\Container\ContainerInterface;
-use Hyperf\Guzzle\ClientFactory;
-use function _HumbugBox39a196d4601e\RingCentral\Psr7\build_query;
 
 /**
  * @Command
@@ -43,9 +35,11 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
-        $repository = di()->get(ExampleRepository::class)->get([
-            'id' => [1, 2, 3, 4]
-        ]);
+        $repository = di()->get(ExampleRepository::class);
+
+        $repository->case2();
+
+
 
         // 3500
         //$api     = config('juhe_api.ip');

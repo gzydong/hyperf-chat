@@ -3,7 +3,6 @@
 namespace App\Cache;
 
 use App\Cache\Repository\SetGroupRedis;
-use App\Traits\StaticInstance;
 
 /**
  * 注:用户ID与客户端ID绑定(一对多关系)
@@ -12,8 +11,6 @@ use App\Traits\StaticInstance;
  */
 class SocketUserBindFds extends SetGroupRedis
 {
-    use StaticInstance;
-
     protected $name = 'ws:user-fds';
 
     /**

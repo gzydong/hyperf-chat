@@ -19,5 +19,13 @@ namespace App\Helper;
  */
 class StringHelper
 {
-    
+    public function jsonEncode()
+    {
+
+    }
+
+    public function jsonDecode()
+    {
+
+    }
 }

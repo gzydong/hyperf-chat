@@ -1,9 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
 use Closure;
-use App\Traits\StaticInstance;
 use App\Cache\Contracts\StreamRedisInterface;
 
 class StreamRedis extends AbstractRedis implements StreamRedisInterface
@@ -20,7 +20,7 @@ class StreamRedis extends AbstractRedis implements StreamRedisInterface
      * @param false $isApproximate
      * @return string
      */
-    public function add(array $messages, $maxLen = 0, $isApproximate = false)
+    public function add(array $messages, $maxLen = 0, $isApproximate = false): string
     {
         return $this->redis()->xAdd($this->getCacheKey(), '*', $messages, $maxLen, $isApproximate);
     }
@@ -43,7 +43,7 @@ class StreamRedis extends AbstractRedis implements StreamRedisInterface
      * @param string $id    消息ID
      * @return int
      */
-    public function ack(string $group, string $id)
+    public function ack(string $group, string $id): int
     {
         return $this->redis()->xAck($this->getCacheKey(), $group, [$id]);
     }
@@ -53,7 +53,7 @@ class StreamRedis extends AbstractRedis implements StreamRedisInterface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->redis()->xLen($this->getCacheKey());
     }
@@ -63,7 +63,7 @@ class StreamRedis extends AbstractRedis implements StreamRedisInterface
      *
      * @return array
      */
-    public function all()
+    public function all(): array
     {
         return $this->redis()->xRange($this->getCacheKey(), '-', '+');
     }
@@ -73,7 +73,7 @@ class StreamRedis extends AbstractRedis implements StreamRedisInterface
      *
      * @return bool
      */
-    public function clear()
+    public function clear(): bool
     {
         foreach ($this->all() as $k => $v) {
             $this->rem($k);
@@ -87,7 +87,7 @@ class StreamRedis extends AbstractRedis implements StreamRedisInterface
      *
      * @return int
      */
-    public function delete()
+    public function delete(): int
     {
         return $this->redis()->del($this->getCacheKey());
     }
@@ -99,7 +99,7 @@ class StreamRedis extends AbstractRedis implements StreamRedisInterface
      * @param bool $isApproximate
      * @return int
      */
-    public function trim(int $maxLen, bool $isApproximate = false)
+    public function trim(int $maxLen, bool $isApproximate = false): int
     {
         return $this->redis()->xTrim($this->getCacheKey(), $maxLen, $isApproximate);
     }

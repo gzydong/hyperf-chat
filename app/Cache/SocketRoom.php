@@ -3,7 +3,6 @@
 namespace App\Cache;
 
 use App\Cache\Repository\SetGroupRedis;
-use App\Traits\StaticInstance;
 
 /**
  * 聊天室 - 缓存助手
@@ -12,8 +11,6 @@ use App\Traits\StaticInstance;
  */
 class SocketRoom extends SetGroupRedis
 {
-    use StaticInstance;
-
     protected $name = 'ws:room';
 
     /**

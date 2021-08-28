@@ -1,9 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
 use App\Cache\Contracts\LockRedisInterface;
-use App\Traits\StaticInstance;
 use Swoole\Coroutine;
 use Exception;
 
@@ -18,8 +18,6 @@ final class LockRedis extends AbstractRedis implements LockRedisInterface
 
     protected $value = 1;
 
-    use StaticInstance;
-
     /**
      * 获取 Redis 锁
      *
@@ -28,7 +26,7 @@ final class LockRedis extends AbstractRedis implements LockRedisInterface
      * @param int    $timeout 获取超时/秒，默认每隔 0.1 秒获取一次锁
      * @return bool
      */
-    public function lock(string $key, $expired = 1, int $timeout = 0)
+    public function lock(string $key, $expired = 1, int $timeout = 0): bool
     {
         $lockName = $this->getCacheKey($key);
 
@@ -78,7 +76,7 @@ LAU;
      * @return bool
      * @throws Exception
      */
-    public function try(\Closure $closure, string $lock_name, int $expired = 1, int $timeout = 0)
+    public function try(\Closure $closure, string $lock_name, int $expired = 1, int $timeout = 0): bool
     {
         if (!$this->lock($lock_name, $expired, $timeout)) return false;
 

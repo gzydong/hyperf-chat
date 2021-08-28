@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
@@ -41,7 +42,7 @@ class ListRedis extends AbstractRedis implements ListRedisInterface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return (int)$this->redis()->lLen($this->getCacheKey());
     }
@@ -51,7 +52,7 @@ class ListRedis extends AbstractRedis implements ListRedisInterface
      *
      * @return boolean
      */
-    public function clear()
+    public function clear(): bool
     {
         return $this->redis()->lTrim($this->getCacheKey(), 1, 0);
     }
@@ -61,7 +62,7 @@ class ListRedis extends AbstractRedis implements ListRedisInterface
      *
      * @return array
      */
-    public function all()
+    public function all(): array
     {
         return $this->redis()->lRange($this->getCacheKey(), 0, -1);
     }
@@ -71,7 +72,7 @@ class ListRedis extends AbstractRedis implements ListRedisInterface
      *
      * @return bool
      */
-    public function delete()
+    public function delete(): bool
     {
         return (bool)$this->redis()->del($this->getCacheKey());
     }

@@ -6,12 +6,9 @@ namespace App\Cache;
 use App\Cache\Repository\StringRedis;
 use App\Model\Talk\TalkRecordsVote;
 use App\Model\Talk\TalkRecordsVoteAnswer;
-use App\Traits\StaticInstance;
 
 class VoteStatisticsCache extends StringRedis
 {
-    use StaticInstance;
-
     protected $name = 'vote-statistic-cache';
 
     /**

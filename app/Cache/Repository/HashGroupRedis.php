@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
@@ -33,7 +34,7 @@ class HashGroupRedis extends AbstractRedis
      * @param string $name
      * @return array
      */
-    public function getAll(string $name)
+    public function getAll(string $name): array
     {
         return $this->redis()->hGetAll($this->getCacheKey($name));
     }
@@ -54,7 +55,7 @@ class HashGroupRedis extends AbstractRedis
      * @param int    $value
      * @return int
      */
-    public function incr(string $name, string $key, int $value = 1)
+    public function incr(string $name, string $key, int $value = 1): int
     {
         return $this->redis()->hIncrBy($this->getCacheKey($name), $key, $value);
     }
@@ -64,7 +65,7 @@ class HashGroupRedis extends AbstractRedis
      * @param string $key
      * @return bool
      */
-    public function isMember(string $name, string $key)
+    public function isMember(string $name, string $key): bool
     {
         return $this->redis()->hExists($this->getCacheKey($name), $key);
     }
@@ -78,7 +79,7 @@ class HashGroupRedis extends AbstractRedis
         return $this->redis()->hLen($this->getCacheKey($name));
     }
 
-    public function delete(string $name)
+    public function delete(string $name): int
     {
         return $this->redis()->del($this->getCacheKey($name));
     }

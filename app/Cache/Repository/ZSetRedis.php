@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
@@ -22,7 +23,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      * @param float  $score
      * @return int
      */
-    public function add(string $member, float $score)
+    public function add(string $member, float $score): int
     {
         return $this->redis()->zAdd($this->getCacheKey(), $score, $member);
     }
@@ -33,7 +34,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      * @param string ...$member
      * @return int
      */
-    public function rem(string ...$member)
+    public function rem(string ...$member): int
     {
         return $this->redis()->zRem($this->getCacheKey(), ...$member);
     }
@@ -45,7 +46,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      * @param float  $score
      * @return float
      */
-    public function incr(string $member, float $score)
+    public function incr(string $member, float $score): float
     {
         return $this->redis()->zIncrBy($this->getCacheKey(), $score, $member);
     }
@@ -55,7 +56,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->redis()->zCard($this->getCacheKey());
     }
@@ -67,7 +68,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      * @param bool $is_score 是否需要分数值
      * @return array
      */
-    public function all($asc = true, $is_score = true)
+    public function all($asc = true, $is_score = true): array
     {
         return $this->redis()->{$asc ? 'zRevRange' : 'zRange'}($this->getCacheKey(), 0, -1, $is_score);
     }
@@ -80,7 +81,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      * @param bool $asc  [true:从高到低排序，false:从低到高排序]
      * @return array
      */
-    public function rank($page = 1, $size = 10, $asc = true)
+    public function rank($page = 1, $size = 10, $asc = true): array
     {
         $count = $this->count();
 
@@ -116,7 +117,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      * @param array  $options
      * @return array
      */
-    public function range(string $start, string $end, array $options = [])
+    public function range(string $start, string $end, array $options = []): array
     {
         return $this->redis()->zRangeByScore($this->getCacheKey(), $start, $end, $options);
     }
@@ -150,7 +151,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      * @param string $member
      * @return bool
      */
-    public function isMember(string $member)
+    public function isMember(string $member): bool
     {
         return $this->redis()->zScore($this->getCacheKey($this->name), $member);
     }
@@ -160,7 +161,7 @@ class ZSetRedis extends AbstractRedis implements ZSetRedisInterface
      *
      * @return bool
      */
-    public function delete()
+    public function delete(): bool
     {
         return (bool)$this->redis()->del($this->getCacheKey());
     }

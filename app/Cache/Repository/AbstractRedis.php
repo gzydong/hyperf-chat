@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
@@ -10,6 +11,11 @@ abstract class AbstractRedis
 
     protected $name = '';
 
+    /**
+     * 静态方法调用(获取子类实例)
+     *
+     * @return static
+     */
     public static function getInstance()
     {
         return di()->get(static::class);
@@ -31,7 +37,7 @@ abstract class AbstractRedis
      * @param string|array $key
      * @return string
      */
-    protected function getCacheKey($key = '')
+    protected function getCacheKey($key = ''): string
     {
         $params = [$this->prefix, $this->name];
         if (is_array($key)) {
@@ -43,7 +49,7 @@ abstract class AbstractRedis
         return $this->filter($params);
     }
 
-    protected function filter(array $params = [])
+    protected function filter(array $params = []): string
     {
         foreach ($params as $k => $param) {
             $params[$k] = trim($param, ':');

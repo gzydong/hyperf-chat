@@ -3,7 +3,6 @@
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
-use App\Traits\StaticInstance;
 
 /**
  * 私信消息未读数 - 缓存助手
@@ -12,8 +11,6 @@ use App\Traits\StaticInstance;
  */
 class UnreadTalkCache extends HashRedis
 {
-    use StaticInstance;
-
     public $name = 'unread-talk';
 
     /**

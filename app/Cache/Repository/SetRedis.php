@@ -1,8 +1,8 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
-use App\Traits\StaticInstance;
 use App\Cache\Contracts\SetRedisInterface;
 
 /**
@@ -33,7 +33,7 @@ class SetRedis extends AbstractRedis implements SetRedisInterface
      * @param string ...$member
      * @return int
      */
-    public function rem(string ...$member)
+    public function rem(string ...$member): int
     {
         return $this->redis()->sRem($this->getCacheKey(), ...$member);
     }
@@ -44,7 +44,7 @@ class SetRedis extends AbstractRedis implements SetRedisInterface
      * @param string $member
      * @return bool
      */
-    public function isMember(string $member)
+    public function isMember(string $member): bool
     {
         return $this->redis()->sIsMember($this->getCacheKey(), $member);
     }
@@ -54,7 +54,7 @@ class SetRedis extends AbstractRedis implements SetRedisInterface
      *
      * @return array
      */
-    public function all()
+    public function all(): array
     {
         return $this->redis()->sMembers($this->getCacheKey());
     }
@@ -64,7 +64,7 @@ class SetRedis extends AbstractRedis implements SetRedisInterface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->redis()->scard($this->getCacheKey());
     }
@@ -85,7 +85,7 @@ class SetRedis extends AbstractRedis implements SetRedisInterface
      *
      * @return bool
      */
-    public function delete()
+    public function delete(): bool
     {
         return (bool)$this->redis()->del($this->getCacheKey());
     }

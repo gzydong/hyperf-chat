@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
@@ -27,7 +28,7 @@ class SetGroupRedis extends AbstractRedis
      * @param string|int ...$member 分组成员
      * @return int
      */
-    public function rem(string $name, ...$member)
+    public function rem(string $name, ...$member): int
     {
         return $this->redis()->sRem($this->getCacheKey($name), ...$member);
     }
@@ -39,7 +40,7 @@ class SetGroupRedis extends AbstractRedis
      * @param string $key  分组成员
      * @return bool
      */
-    public function isMember(string $name, string $key)
+    public function isMember(string $name, string $key): bool
     {
         return $this->redis()->sIsMember($this->getCacheKey($name), $key);
     }
@@ -50,7 +51,7 @@ class SetGroupRedis extends AbstractRedis
      * @param string $name 分组名
      * @return array
      */
-    public function all(string $name)
+    public function all(string $name): array
     {
         return $this->redis()->sMembers($this->getCacheKey($name));
     }
@@ -61,7 +62,7 @@ class SetGroupRedis extends AbstractRedis
      * @param string $name 分组名
      * @return int
      */
-    public function count(string $name)
+    public function count(string $name): int
     {
         return $this->redis()->sCard($this->getCacheKey($name));
     }
@@ -72,7 +73,7 @@ class SetGroupRedis extends AbstractRedis
      * @param string $name 分组名
      * @return int
      */
-    public function delete(string $name)
+    public function delete(string $name): int
     {
         return $this->redis()->del($this->getCacheKey($name));
     }

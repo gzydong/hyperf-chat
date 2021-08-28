@@ -5,12 +5,9 @@ namespace App\Cache;
 
 use App\Cache\Repository\StringRedis;
 use App\Model\Group\Group;
-use App\Traits\StaticInstance;
 
 class GroupCache extends StringRedis
 {
-    use StaticInstance;
-
     protected $name = 'group-cache';
 
     /**

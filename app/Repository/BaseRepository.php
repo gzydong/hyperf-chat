@@ -3,25 +3,41 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Helper\ArrayHelper;
 use App\Traits\PagingTrait;
 use Hyperf\Database\Model\Model;
 use Hyperf\Database\Model\Builder;
 use Hyperf\DbConnection\Db;
 use Hyperf\Utils\Arr;
+use Hyperf\Utils\Collection;
 
 /**
  * Class BaseRepository
  *
- * @method boolean insert(array $values) 新增数据
  * @method Model create(array $values) 新增数据
+ * @method boolean insert(array $values) 新增数据
  * @method int|mixed insertGetId(array $values, $sequence = null) 新增数据获取新增ID
  * @method Model firstOrCreate(array $attributes, array $value = []) 查询数据没有就创建
  * @method Model firstOrNew(array $attributes, array $value = []) 查询数据没有就实例化
  * @method Model updateOrCreate(array $attributes, array $value = []) 查询修改没有就创建
  * @method Model updateOrInsert(array $attributes, array $values = []) 查询修改没有就实例化
- * @method Model find($id, $columns = ['*']) 主键查询
- * @method Model findOrFail($id, $columns = ['*']) 主键查询没有就抛出错误
- * @method Model findOrNew($id, $columns = ['*']) 主键查询没有就实例化
+ * @method Model find(int $id, array $fields = ['*']) 主键查询
+ * @method Model findOrFail(int $id, array $fields = ['*']) 主键查询没有就抛出错误
+ * @method Model findOrNew(int $id, array $fields = ['*']) 主键查询没有就实例化
+ *
+ * @method int count(array $where = [], string $field = '*') 统计数量
+ * @method int|mixed max(array $where, string $field) 统计求最大值
+ * @method int|mixed min(array $where, string $field) 统计求最小值
+ * @method int|mixed avg(array $where, string $field) 统计求平均值
+ * @method int|mixed sum(array $where, string $field) 统计求和
+ *
+ * @method int increment(array $where, string $field, $amount = 1, array $extra = []) 按查询条件指定字段递增指定值(默认递增1)
+ * @method int decrement(array $where, string $field, $amount = 1, array $extra = []) 按查询条件指定字段递减指定值(默认递减1)
+ *
+ * @method string|int|null value(array $where, string $field)
+ * @method Collection pluck(array $where, string $field)
+ * @method bool exists(array $where) 判断是否存在相关数据
+ * @method bool doesntExist() 判断是否不存在相关数据
  *
  * @package App\Repository
  */
@@ -100,11 +116,31 @@ abstract class BaseRepository
     ];
 
     /**
-     * @var array 不需要查询条件的方法
+     * 不需要查询条件的方法
+     *
+     * @var string[]
      */
     private $originFunction = [
         'create', 'insert', 'insertGetId', 'getConnection', 'firstOrCreate', 'firstOrNew',
         'updateOrCreate', 'findOrFail', 'findOrNew', 'updateOrInsert', 'find'
+    ];
+
+    /**
+     * 聚合查询方法
+     *
+     * @var string[]
+     */
+    private $aggregation = [
+        'count', 'max', 'min', 'avg', 'sum'
+    ];
+
+    private $base = [
+        'increment',
+        'decrement',
+        'value',
+        'pluck',
+        'exists',
+        'doesntExist',
     ];
 
     /**
@@ -132,47 +168,30 @@ abstract class BaseRepository
             return (new $this->model)->{$method}(...$arguments);
         }
 
+        // 判断是否是聚合查询
+        if (in_array($method, $this->aggregation)) {
+            $where = Arr::pull($arguments, '0', []);
+            $field = Arr::pull($arguments, '1', '*'); // 查询的字段信息
+            return $this->buildWhere($where)->{$method}($field);
+        }
+
+        // 调用 model 原生方法
+        if (in_array($method, $this->base)) {
+            $where = Arr::pull($arguments, '0', []);
+            return $this->buildWhere($where)->{$method}(...$arguments);
+        }
+
         throw new \Exception("Uncaught Error: Call to undefined method {$method}");
     }
 
     /**
+     * 获取新的查询 Model
+     *
      * @return Builder
      */
     protected function getNewModel(): Builder
     {
         return $this->model->newQuery();
-    }
-
-    /**
-     * 获取单条数据
-     *
-     * @param array    $where  查询条件
-     * @param string[] $fields 查询字段
-     * @return array|Model|null
-     */
-    public function first(array $where = [], array $fields = ['*'], $isArray = false)
-    {
-        $this->handleFindField($fields);
-
-        $result = $this->buildWhere($where)->first($fields);
-
-        if ($isArray) return $result ? $result->toArray() : [];
-
-        return $result;
-    }
-
-    /**
-     * 获取多条数据
-     *
-     * @param array    $where  查询条件
-     * @param string[] $fields 查询字段
-     * @return array
-     */
-    public function get(array $where = [], array $fields = ['*']): array
-    {
-        $this->handleFindField($fields);
-
-        return $this->buildWhere($where)->get($fields)->toArray();
     }
 
     /**
@@ -188,15 +207,31 @@ abstract class BaseRepository
     }
 
     /**
-     * 获取数据总数
+     * 获取单条数据
      *
-     * @param array $where 查询条件
-     *
-     * @return int
+     * @param array    $where  查询条件
+     * @param string[] $fields 查询字段
+     * @return Builder|Model|object|null
      */
-    public function count(array $where = []): int
+    public function first(array $where = [], array $fields = ['*'])
     {
-        return $this->buildWhere($where)->count();
+        $this->handleFindField($fields);
+
+        return $this->buildWhere($where)->first($fields);
+    }
+
+    /**
+     * 获取多条数据
+     *
+     * @param array    $where  查询条件
+     * @param string[] $fields 查询字段
+     * @return array
+     */
+    public function get(array $where = [], array $fields = ['*']): array
+    {
+        $this->handleFindField($fields);
+
+        return $this->buildWhere($where)->get($fields);
     }
 
     /**
@@ -206,6 +241,7 @@ abstract class BaseRepository
      * @param array $fields 查询字段
      * @param int   $page   当前页
      * @param int   $size   每页条数
+     * @return array|null
      */
     public function paginate(array $where, $fields = ['*'], $page = 1, $size = 10): ?array
     {
@@ -255,8 +291,10 @@ abstract class BaseRepository
     }
 
     /**
-     * @param \Hyperf\Database\Model\Builder $model
-     * @param array                          $where
+     * @param Builder $model
+     * @param array   $where
+     * @param bool    $or
+     * @throws \Exception
      */
     private function bindWhere(Builder $model, array $where, $or = false)
     {
@@ -284,9 +322,11 @@ abstract class BaseRepository
     /**
      * 添加 where 条件分组
      *
-     * @param \Hyperf\Database\Model\Builder $model
-     * @param array                          $where
-     * @param bool                           $or
+     * @param Builder $model
+     * @param array   $where
+     * @param bool    $or
+     * @param string  $field
+     * @throws \Exception
      */
     private function addNewWhere(Builder $model, array $where, $or = false, $field = '')
     {
@@ -300,14 +340,14 @@ abstract class BaseRepository
     /**
      * 添加排序信息
      *
-     * @param \Hyperf\Database\Model\Builder $model
-     * @param array                          $orders
+     * @param Builder $model
+     * @param array   $orders
      */
     private function addOrderBy(Builder $model, array $orders)
     {
         foreach ($orders as $field => $sort) {
             if ($this->isBackQuote($field)) {
-                $model->orderByRaw(trim($field, '`') . ' ' . $sort);
+                $model->orderByRaw($this->trimBackQuote($field) . ' ' . $sort);
             } else {
                 $model->orderBy($field, $sort);
             }
@@ -328,9 +368,10 @@ abstract class BaseRepository
     /**
      * 设置条件查询
      *
-     * @param \Hyperf\Database\Model\Builder $model
-     * @param string                         $field
-     * @param string|int|array               $value
+     * @param Builder          $model
+     * @param string           $field
+     * @param string|int|array $value
+     * @param bool             $or
      * @return void
      * @throws \Exception
      */
@@ -398,7 +439,7 @@ abstract class BaseRepository
         // 匹配使用反引号的字段
         if (!$this->isBackQuote($field)) return $field;
 
-        return Db::raw(substr($field, 1, strlen($field) - 2));
+        return Db::raw($this->trimBackQuote($field));
     }
 
     /**
@@ -413,21 +454,14 @@ abstract class BaseRepository
     }
 
     /**
-     * 判断是否为关联数组
+     * 去除字符串两端的反引号
      *
-     * @param array $items
-     * @return bool
+     * @param string $field
+     * @return string
      */
-    private function isRelationArray(array $items): bool
+    private function trimBackQuote(string $field): string
     {
-        $i = 0;
-        foreach (array_keys($items) as $value) {
-            if (!is_int($value) || $value !== $i) return true;
-
-            $i++;
-        }
-
-        return false;
+        return substr($field, 1, strlen($field) - 2);
     }
 
     /**
@@ -443,7 +477,7 @@ abstract class BaseRepository
         }
 
         // 判断是否是关联数组
-        if ($this->isRelationArray($items)) {
+        if (ArrayHelper::isRelationArray($items)) {
             return false;
         }
 

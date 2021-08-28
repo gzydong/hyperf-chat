@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Cache\Repository;
 
@@ -59,7 +60,7 @@ class HashRedis extends AbstractRedis implements HashRedisInterface
      * @param int    $score
      * @return float
      */
-    public function incr(string $member, int $score)
+    public function incr(string $member, int $score): float
     {
         return $this->redis()->hincrby($this->getCacheKey(), $member, $score);
     }
@@ -69,7 +70,7 @@ class HashRedis extends AbstractRedis implements HashRedisInterface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return (int)$this->redis()->hLen($this->getCacheKey());
     }
@@ -79,7 +80,7 @@ class HashRedis extends AbstractRedis implements HashRedisInterface
      *
      * @return array
      */
-    public function all()
+    public function all(): array
     {
         return $this->redis()->hGetAll($this->getCacheKey());
     }
@@ -90,7 +91,7 @@ class HashRedis extends AbstractRedis implements HashRedisInterface
      * @param string $key
      * @return bool
      */
-    public function isMember(string $key)
+    public function isMember(string $key): bool
     {
         return $this->redis()->hExists($this->getCacheKey(), $key);
     }
@@ -100,7 +101,7 @@ class HashRedis extends AbstractRedis implements HashRedisInterface
      *
      * @return bool
      */
-    public function delete()
+    public function delete(): bool
     {
         return (bool)$this->redis()->del($this->getCacheKey());
     }
