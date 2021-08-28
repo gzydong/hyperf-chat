@@ -12,7 +12,8 @@ class ExampleRepository extends BaseRepository
         parent::__construct($model);
     }
 
-    public function insert(){
+    public function insert()
+    {
 
     }
 
@@ -33,7 +34,7 @@ class ExampleRepository extends BaseRepository
 
 
         var_dump($this->doesntExist([
-            'id'=>2054
+            'id' => 2054
         ]));
     }
 
@@ -95,9 +96,8 @@ class ExampleRepository extends BaseRepository
     // get 查询案例
     public function get_case()
     {
-        $model = $this->getNewModel();
         // $result = $this->first([
-        //     'id' => 2054,
+        //     // 'id' => 2054,
         //     'or' => [
         //         'gender' => [1, 2, 3],
         //         [

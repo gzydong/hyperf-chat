@@ -37,7 +37,7 @@ class TestCommand extends HyperfCommand
     {
         $repository = di()->get(ExampleRepository::class);
 
-        $repository->case2();
+        $repository->get_case();
 
 
 

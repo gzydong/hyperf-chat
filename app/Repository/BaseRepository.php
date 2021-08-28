@@ -10,6 +10,7 @@ use Hyperf\Database\Model\Builder;
 use Hyperf\DbConnection\Db;
 use Hyperf\Utils\Arr;
 use Hyperf\Utils\Collection;
+use Exception;
 
 /**
  * Class BaseRepository
@@ -38,6 +39,8 @@ use Hyperf\Utils\Collection;
  * @method Collection pluck(array $where, string $field)
  * @method bool exists(array $where) 判断是否存在相关数据
  * @method bool doesntExist() 判断是否不存在相关数据
+ *
+ * @todo    待完善，请勿使用
  *
  * @package App\Repository
  */
@@ -116,31 +119,25 @@ abstract class BaseRepository
     ];
 
     /**
-     * 不需要查询条件的方法
+     * Model 不需要查询条件的方法
      *
      * @var string[]
      */
-    private $originFunction = [
+    private $origin = [
         'create', 'insert', 'insertGetId', 'getConnection', 'firstOrCreate', 'firstOrNew',
         'updateOrCreate', 'findOrFail', 'findOrNew', 'updateOrInsert', 'find'
     ];
 
     /**
-     * 聚合查询方法
+     * 父类需要查询条件的相关方法
      *
      * @var string[]
      */
-    private $aggregation = [
-        'count', 'max', 'min', 'avg', 'sum'
-    ];
-
-    private $base = [
-        'increment',
-        'decrement',
-        'value',
-        'pluck',
-        'exists',
-        'doesntExist',
+    private $parent = [
+        'count', 'max', 'min', 'avg', 'sum',
+        'increment', 'decrement',
+        'value', 'pluck',
+        'exists', 'doesntExist'
     ];
 
     /**
@@ -164,19 +161,12 @@ abstract class BaseRepository
     public function __call(string $method, array $arguments)
     {
         // 直接使用 model, 不需要查询条件的数据
-        if (in_array($method, $this->originFunction)) {
+        if (in_array($method, $this->origin)) {
             return (new $this->model)->{$method}(...$arguments);
         }
 
-        // 判断是否是聚合查询
-        if (in_array($method, $this->aggregation)) {
-            $where = Arr::pull($arguments, '0', []);
-            $field = Arr::pull($arguments, '1', '*'); // 查询的字段信息
-            return $this->buildWhere($where)->{$method}($field);
-        }
-
         // 调用 model 原生方法
-        if (in_array($method, $this->base)) {
+        if (in_array($method, $this->parent)) {
             $where = Arr::pull($arguments, '0', []);
             return $this->buildWhere($where)->{$method}(...$arguments);
         }
@@ -192,6 +182,86 @@ abstract class BaseRepository
     protected function getNewModel(): Builder
     {
         return $this->model->newQuery();
+    }
+
+    /**
+     * 处理 where 条件
+     *
+     * @param array $where
+     * @return Builder
+     */
+    public function buildWhere(array $where = []): Builder
+    {
+        $model = $this->getNewModel();
+
+        // 处理排序数据
+        if ($order = Arr::pull($where, 'order by')) {
+            $this->addOrderBy($model, (array)$order);
+        }
+
+        // 处理分组数据
+        if ($group = Arr::pull($where, 'group by')) {
+            $this->addGroupBy($model, (array)$group);
+        }
+
+        // 处理分组数据
+        if ($having = Arr::pull($where, 'having by')) {
+            $this->addHaving($model, (array)$having);
+        }
+
+        // 判断是否存在查询条件
+        if (!empty($where)) {
+            $this->bindWhere($model, $where);
+        }
+
+        return $model;
+    }
+
+    /**
+     * @param Builder $model
+     * @param array   $where
+     * @param bool    $or
+     * @throws Exception
+     */
+    private function bindWhere(Builder $model, array $where, $or = false)
+    {
+        foreach ($where as $field => $item) {
+            if ($field === 'or' || $field === 'and') {
+                $this->addNewWhere($model, $item, $or, $field);
+                continue;
+            }
+
+            if (is_int($field)) {
+                if ($this->isModelQueryArray($item)) {
+                    $model->{$or ? 'orWhere' : 'where'}(...$item);
+                    continue;
+                }
+
+                $this->addNewWhere($model, $item, $or, $field);
+                continue;
+            }
+
+            // 字段查询
+            $this->setFieldWhere($model, $field, $item, $or);
+        }
+    }
+
+    /**
+     * 添加 where 条件分组
+     *
+     * @param Builder $model
+     * @param array   $where
+     * @param bool    $or
+     * @param string  $field
+     * @throws Exception
+     */
+    private function addNewWhere(Builder $model, array $where, $or = false, $field = '')
+    {
+        $method = $or ? 'orWhere' : 'where';
+
+        $model->{$method}(function ($query) use ($where, $or, $field) {
+            $this->bindWhere($query, $where, $field === 'or');
+        });
     }
 
     /**
@@ -265,77 +335,6 @@ abstract class BaseRepository
         return $this->buildWhere($where)->toSql();
     }
 
-    /**
-     * 处理 where 条件
-     *
-     * @param array $where
-     * @return Builder
-     */
-    public function buildWhere(array $where = []): Builder
-    {
-        $model = $this->getNewModel();
-
-        if ($order = Arr::pull($where, 'order by')) {
-            $this->addOrderBy($model, (array)$order);
-        }
-
-        if ($group = Arr::pull($where, 'group by')) {
-            $this->addGroupBy($model, (array)$group);
-        }
-
-        if (!empty($where)) {
-            $this->bindWhere($model, $where);
-        }
-
-        return $model;
-    }
-
-    /**
-     * @param Builder $model
-     * @param array   $where
-     * @param bool    $or
-     * @throws \Exception
-     */
-    private function bindWhere(Builder $model, array $where, $or = false)
-    {
-        foreach ($where as $field => $item) {
-            if ($field === 'or' || $field === 'and') {
-                $this->addNewWhere($model, $item, $or, $field);
-                continue;
-            }
-
-            if (is_int($field)) {
-                if ($this->isModelQueryArray($item)) {
-                    $model->{$or ? 'orWhere' : 'where'}(...$item);
-                    continue;
-                }
-
-                $this->addNewWhere($model, $item, $or, $field);
-                continue;
-            }
-
-            // 字段查询
-            $this->setFieldWhere($model, $field, $item, $or);
-        }
-    }
-
-    /**
-     * 添加 where 条件分组
-     *
-     * @param Builder $model
-     * @param array   $where
-     * @param bool    $or
-     * @param string  $field
-     * @throws \Exception
-     */
-    private function addNewWhere(Builder $model, array $where, $or = false, $field = '')
-    {
-        $method = $or ? 'orWhere' : 'where';
-
-        $model->{$method}(function ($query) use ($where, $or, $field) {
-            $this->bindWhere($query, $where, $field === 'or');
-        });
-    }
 
     /**
      * 添加排序信息
@@ -357,12 +356,23 @@ abstract class BaseRepository
     /**
      * 添加分组信息
      *
-     * @param \Hyperf\Database\Model\Builder $model
-     * @param array                          $groups
+     * @param Builder $model
+     * @param array   $groups
      */
     private function addGroupBy(Builder $model, array $groups)
     {
         $model->groupBy(...$groups);
+    }
+
+    /**
+     * @param Builder $model
+     * @param array   $items
+     */
+    private function addHaving(Builder $model, array $items = [])
+    {
+        foreach ($items as $having) {
+            $model->{count($having) == 2 ? 'havingRaw' : 'having'}(...$having);
+        }
     }
 
     /**
