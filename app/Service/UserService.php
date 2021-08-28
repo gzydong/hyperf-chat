@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Helper\Hash;
+use App\Helper\HashHelper;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
 use App\Model\UsersFriend;
@@ -53,7 +53,7 @@ class UserService extends BaseService
     {
         Db::beginTransaction();
         try {
-            $data['password']   = Hash::make($data['password']);
+            $data['password']   = HashHelper::make($data['password']);
             $data['created_at'] = date('Y-m-d H:i:s');
             $data['updated_at'] = date('Y-m-d H:i:s');
 
@@ -86,7 +86,7 @@ class UserService extends BaseService
      */
     public function resetPassword(string $mobile, string $password)
     {
-        return (bool)User::where('mobile', $mobile)->update(['password' => Hash::make($password)]);
+        return (bool)User::where('mobile', $mobile)->update(['password' => HashHelper::make($password)]);
     }
 
     /**

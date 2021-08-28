@@ -17,7 +17,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Model\User;
 use App\Support\SendEmailCode;
-use App\Helper\Hash;
+use App\Helper\HashHelper;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
 use Psr\Http\Message\ResponseInterface;
@@ -163,7 +163,7 @@ class UsersController extends CController
         $userInfo = $this->userService->findById($this->uid(), ['id', 'password', 'mobile']);
 
         // 验证密码是否正确
-        if (!Hash::check($this->request->post('old_password'), $userInfo->password)) {
+        if (!HashHelper::check($this->request->post('old_password'), $userInfo->password)) {
             return $this->response->fail('旧密码验证失败！');
         }
 
@@ -194,7 +194,7 @@ class UsersController extends CController
         }
 
         $user_id = $this->uid();
-        if (!Hash::check($params['password'], User::where('id', $user_id)->value('password'))) {
+        if (!HashHelper::check($params['password'], User::where('id', $user_id)->value('password'))) {
             return $this->response->fail('账号密码验证失败！');
         }
 
@@ -231,7 +231,7 @@ class UsersController extends CController
 
         $uid           = $this->uid();
         $user_password = User::where('id', $uid)->value('password');
-        if (!Hash::check($params['password'], $user_password)) {
+        if (!HashHelper::check($params['password'], $user_password)) {
             return $this->response->fail('账号密码验证失败！');
         }
 

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * This is my open source code, please do not use it for commercial applications.
  * For the full copyright and license information,
@@ -15,7 +16,7 @@ namespace App\Helper;
  *
  * @package App\Helper
  */
-class Hash
+class HashHelper
 {
     /**
      * Hash the given value.
@@ -23,7 +24,7 @@ class Hash
      * @param string $value
      * @return string
      */
-    public static function make(string $value)
+    public static function make(string $value): string
     {
         return password_hash($value, PASSWORD_DEFAULT);
     }
@@ -35,7 +36,7 @@ class Hash
      * @param string $hashedValue
      * @return bool
      */
-    public static function check(string $value, string $hashedValue)
+    public static function check(string $value, string $hashedValue): bool
     {
         return password_verify($value, $hashedValue);
     }

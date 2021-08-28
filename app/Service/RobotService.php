@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Helper\Hash;
+use App\Helper\HashHelper;
 use App\Model\Robot;
 use App\Model\User;
 use Hyperf\DbConnection\Db;
@@ -20,7 +20,7 @@ class RobotService
         try {
             $user = User::create([
                 'mobile'   => '100' . mt_rand(1000, 9999) . mt_rand(1000, 9999),
-                'password' => Hash::make(Str::random(10)),
+                'password' => HashHelper::make(Str::random(10)),
                 'is_robot' => 1
             ]);
 

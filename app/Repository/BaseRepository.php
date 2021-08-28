@@ -35,10 +35,10 @@ use Exception;
  * @method int increment(array $where, string $field, $amount = 1, array $extra = []) 按查询条件指定字段递增指定值(默认递增1)
  * @method int decrement(array $where, string $field, $amount = 1, array $extra = []) 按查询条件指定字段递减指定值(默认递减1)
  *
- * @method string|int|null value(array $where, string $field)
- * @method Collection pluck(array $where, string $field)
+ * @method string|int|null value(array $where, string $field) 按查询条件获取一行指定字段的数据
+ * @method Collection pluck(array $where, string $field) 按查询条件获取多行指定字段
  * @method bool exists(array $where) 判断是否存在相关数据
- * @method bool doesntExist() 判断是否不存在相关数据
+ * @method bool doesntExist(array $where) 判断是否不存在相关数据
  *
  * @todo    待完善，请勿使用
  *
@@ -190,7 +190,7 @@ abstract class BaseRepository
      * @param array $where
      * @return Builder
      */
-    public function buildWhere(array $where = []): Builder
+    final public function buildWhere(array $where = []): Builder
     {
         $model = $this->getNewModel();
 
@@ -223,7 +223,7 @@ abstract class BaseRepository
      * @param bool    $or
      * @throws Exception
      */
-    private function bindWhere(Builder $model, array $where, $or = false)
+    final private function bindWhere(Builder $model, array $where, $or = false)
     {
         foreach ($where as $field => $item) {
             if ($field === 'or' || $field === 'and') {
@@ -255,7 +255,7 @@ abstract class BaseRepository
      * @param string  $field
      * @throws Exception
      */
-    private function addNewWhere(Builder $model, array $where, $or = false, $field = '')
+    final private function addNewWhere(Builder $model, array $where, $or = false, $field = '')
     {
         $method = $or ? 'orWhere' : 'where';
 
@@ -271,7 +271,7 @@ abstract class BaseRepository
      * @param array $values
      * @return int
      */
-    public function update(array $where, array $values): int
+    final public function update(array $where, array $values): int
     {
         return $this->buildWhere($where)->update($values);
     }
@@ -279,29 +279,41 @@ abstract class BaseRepository
     /**
      * 获取单条数据
      *
-     * @param array    $where  查询条件
-     * @param string[] $fields 查询字段
-     * @return Builder|Model|object|null
+     * @param array    $where    查询条件
+     * @param string[] $fields   查询字段
+     * @param bool     $is_array 是否返回数组格式
+     * @return Builder|Model|object|array|null
      */
-    public function first(array $where = [], array $fields = ['*'])
+    public function first(array $where = [], array $fields = ['*'], bool $is_array = false)
     {
         $this->handleFindField($fields);
 
-        return $this->buildWhere($where)->first($fields);
+        $data = $this->buildWhere($where)->first($fields);
+
+        if ($is_array) {
+            return $data ? $data->toArray() : [];
+        }
+
+        return $data;
     }
 
     /**
      * 获取多条数据
      *
-     * @param array    $where  查询条件
-     * @param string[] $fields 查询字段
-     * @return array
+     * @param array    $where    查询条件
+     * @param string[] $fields   查询字段
+     * @param bool     $is_array 是否返回数组格式
+     * @return Collection|array
      */
-    public function get(array $where = [], array $fields = ['*']): array
+    public function get(array $where = [], array $fields = ['*'], bool $is_array = false)
     {
         $this->handleFindField($fields);
 
-        return $this->buildWhere($where)->get($fields);
+        $data = $this->buildWhere($where)->get($fields);
+
+        $is_array && $data = $data->toArray();
+
+        return $data;
     }
 
     /**
@@ -311,21 +323,23 @@ abstract class BaseRepository
      * @param array $fields 查询字段
      * @param int   $page   当前页
      * @param int   $size   每页条数
-     * @return array|null
+     * @return array
      */
-    public function paginate(array $where, $fields = ['*'], $page = 1, $size = 10): ?array
+    public function paginate(array $where, $fields = ['*'], $page = 1, $size = 10): array
     {
         $this->handleFindField($fields);
 
         $result = $this->buildWhere($where)->paginate($size, $fields, 'page', $page);
 
-        if (empty($result)) return null;
+        if (empty($result)) {
+            return $this->getPagingRows([], 0, $page, $size);
+        }
 
         return $this->getPagingRows(collect($result->items())->toArray(), $result->total(), $page, $size);
     }
 
     /**
-     * 根据 where 条件打印 sql
+     * 打印查询 sql
      *
      * @param array $where
      * @return string
@@ -334,7 +348,6 @@ abstract class BaseRepository
     {
         return $this->buildWhere($where)->toSql();
     }
-
 
     /**
      * 添加排序信息
@@ -456,11 +469,11 @@ abstract class BaseRepository
      * 判断字符串是否被反引号包含
      *
      * @param string $string
-     * @return false|int
+     * @return bool
      */
-    private function isBackQuote(string $string)
+    private function isBackQuote(string $string): bool
     {
-        return preg_match("/^`.*?`$/", $string);
+        return (bool)preg_match("/^`.*?`$/", $string);
     }
 
     /**
