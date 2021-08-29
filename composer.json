@@ -37,8 +37,7 @@
         "hyperf/view-engine": "2.1.*",
         "phpmailer/phpmailer": "^6.2",
         "96qbhy/hyperf-auth": "^2.3",
-        "hyperf/event": "2.1.*",
-        "hyperf/paginator": "2.1.*"
+        "hyperf/event": "2.1.*"
     },
     "require-dev": {
         "swoole/ide-helper": "^4.5",

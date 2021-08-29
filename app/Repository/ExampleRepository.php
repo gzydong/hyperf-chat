@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Helper\HashHelper;
+use App\Model\Talk\TalkRecords;
 use App\Model\User;
 use Hyperf\Utils\Str;
 
@@ -131,6 +132,7 @@ class ExampleRepository extends BaseRepository
         // 根据主键ID查询数据
         // $this->find(2054, ['id', 'mobile']);
 
+
         // 主键查询没有就抛出错误
         // $this->findOrFail(20540000, ['id', 'mobile']);
 
@@ -157,10 +159,11 @@ class ExampleRepository extends BaseRepository
         // ], ['id', 'mobile'],true);
 
         // 分页获取数据
-        // $this->paginate([
-        //     'id:gt'  => 20540000,
-        //     'gender' => 2
-        // ], ['*'], 1, 15);
+        // $data = $this->paginate([
+        //     'id:gt' => 2054,
+        // ], ['id', 'mobile'], 1, 5);
+        //
+        // var_dump($data);
 
         // 打印查询 sql 语句
         // $this->toSql([
@@ -180,6 +183,24 @@ class ExampleRepository extends BaseRepository
         //             ]
         //         ],
         //     ]
+        // ]);
+
+        // 原生 SQL 查询
+        // $this->sql('SELECT * FROM `lar_users` WHERE id = ?', [2054]);
+
+        // 批量更新数据
+        // $this->batchUpdate([
+        //     'id:gt' => 2054
+        // ], [
+        //     'email'  => '',       // 不使用条件判断，默认更新
+        //     'gender' => [
+        //         'field'   => 'id',//判断的字段，可选（不设置默认使用当前字段）
+        //         'default' => 0,   // 默认字段值
+        //         'filter'  => [    // 数据判断
+        //             '2054' => 1,
+        //             '2055' => 2,
+        //         ]
+        //     ],
         // ]);
     }
 
