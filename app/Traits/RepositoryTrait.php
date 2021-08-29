@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Traits;
 
 use App\Helper\ArrayHelper;
 use Hyperf\Database\Model\Builder;
@@ -109,6 +109,7 @@ trait RepositoryTrait
 
     /**
      * BaseRepository constructor.
+     *
      * @param Model $model
      */
     public function __construct(Model $model)
@@ -117,7 +118,7 @@ trait RepositoryTrait
     }
 
     /**
-     * 获取 Model 类
+     * 获取 Model 实例类
      *
      * @return Model
      */
@@ -214,7 +215,7 @@ trait RepositoryTrait
                     continue;
                 }
 
-                $this->addNewWhere($model, $item, $or, $field);
+                $this->addNewWhere($model, $item, $or);
                 continue;
             }
 
@@ -229,15 +230,15 @@ trait RepositoryTrait
      * @param Builder $model
      * @param array   $where
      * @param bool    $or
-     * @param string  $field
+     * @param string  $type
      * @throws Exception
      */
-    private function addNewWhere(Builder $model, array $where, $or = false, $field = '')
+    private function addNewWhere(Builder $model, array $where, $or = false, string $type = 'and')
     {
         $method = $or ? 'orWhere' : 'where';
 
-        $model->{$method}(function ($query) use ($where, $or, $field) {
-            $this->bindWhere($query, $where, $field === 'or');
+        $model->{$method}(function ($query) use ($where, $or, $type) {
+            $this->bindWhere($query, $where, $type === 'or');
         });
     }
 
@@ -287,10 +288,9 @@ trait RepositoryTrait
      * @param string           $field
      * @param string|int|array $value
      * @param bool             $or
-     * @return void
      * @throws \Exception
      */
-    private function setFieldWhere(Builder $model, string $field, $value, $or = false): void
+    private function setFieldWhere(Builder $model, string $field, $value, $or = false)
     {
         [$field, $operator] = $this->formatField($field);
 

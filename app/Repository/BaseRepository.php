@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Traits\RepositoryTrait;
 use Hyperf\Database\Model\Model;
 use Hyperf\Database\Model\Builder;
 use Hyperf\DbConnection\Db;
@@ -183,7 +184,7 @@ abstract class BaseRepository
     /**
      * 通过 Model 读取分页数据
      *
-     * @param Builder $model  查询 Model
+     * @param Builder $model  查询构造器
      * @param array   $fields 查询字段
      * @param int     $page   当前分页
      * @param int     $size   分页大小
