@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Helper\Hash;
+use App\Helper\HashHelper;
 use Hyperf\Database\Seeders\Seeder;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
@@ -27,7 +27,7 @@ class Initialize extends Seeder
         for ($i = 0; $i < 9; $i++) {
             $users[] = [
                 'mobile'     => '1879827205' . $i,
-                'password'   => Hash::make('admin123'),
+                'password'   => HashHelper::make('admin123'),
                 'nickname'   => 'test' . $i,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')

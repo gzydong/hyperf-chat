@@ -103,35 +103,6 @@ abstract class BaseRepository
     }
 
     /**
-     * 通过 model 读取分页信息
-     *
-     * @param Builder $model  查询 Model
-     * @param array   $fields 查询字段
-     * @param int     $page   当前分页
-     * @param int     $size   分页大小
-     * @return array
-     */
-    public function toPaginate(Builder $model, array $fields = ['*'], int $page = 1, int $size = 15): array
-    {
-        $total = $model->count();
-
-        $data = [
-            'rows'     => [],
-            'paginate' => [
-                'page'  => $page,
-                'size'  => $size,
-                'total' => $total,
-            ]
-        ];
-
-        if ($total > 0) {
-            $data['rows'] = $model->forPage($page, $size)->get($fields)->toArray();
-        }
-
-        return $data;
-    }
-
-    /**
      * 根据条件更新数据
      *
      * @param array $where  查询条件
@@ -177,6 +148,17 @@ abstract class BaseRepository
     }
 
     /**
+     * 删除数据
+     *
+     * @param array $where 删除的条件
+     * @return array
+     */
+    final public function delete(array $where): array
+    {
+        return $this->buildWhere($where)->delete();
+    }
+
+    /**
      * 打印查询 sql
      *
      * @param array $where 查询条件
@@ -198,5 +180,34 @@ abstract class BaseRepository
     final public function sql(string $query, array $bindings = [], bool $useReadPdo = true): array
     {
         return Db::select($query, $bindings, $useReadPdo);
+    }
+
+    /**
+     * 通过 model 读取分页信息
+     *
+     * @param Builder $model  查询 Model
+     * @param array   $fields 查询字段
+     * @param int     $page   当前分页
+     * @param int     $size   分页大小
+     * @return array
+     */
+    public function toPaginate(Builder $model, array $fields = ['*'], int $page = 1, int $size = 15): array
+    {
+        $total = $model->count();
+
+        $data = [
+            'rows'     => [],
+            'paginate' => [
+                'page'  => $page,
+                'size'  => $size,
+                'total' => $total,
+            ]
+        ];
+
+        if ($total > 0) {
+            $data['rows'] = $model->forPage($page, $size)->get($fields)->toArray();
+        }
+
+        return $data;
     }
 }

@@ -64,7 +64,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         // 若开启单点登录，则主动关闭之前登录的连接
         if ($isOnline) {
-            // TODO 预留
+            // todo 预留
         }
 
         // 绑定fd与用户关系

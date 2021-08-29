@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
@@ -14,12 +15,13 @@ class TalkListService
     /**
      * 创建聊天列表记录
      *
-     * @param int $user_id     用户ID
-     * @param int $receiver_id 接收者ID
-     * @param int $talk_type   创建类型[1:私聊;2:群聊;]
+     * @param int  $user_id     用户ID
+     * @param int  $receiver_id 接收者ID
+     * @param int  $talk_type   创建类型[1:私聊;2:群聊;]
+     * @param bool $is_robot
      * @return array
      */
-    public function create(int $user_id, int $receiver_id, int $talk_type, bool $is_robot = false)
+    public function create(int $user_id, int $receiver_id, int $talk_type, bool $is_robot = false): array
     {
         $result = TalkList::updateOrCreate([
             'talk_type'   => $talk_type,
@@ -49,7 +51,7 @@ class TalkListService
      * @param bool $is_top  是否置顶（true:是 false:否）
      * @return bool
      */
-    public function top(int $user_id, int $list_id, $is_top = true)
+    public function top(int $user_id, int $list_id, $is_top = true): bool
     {
         return (bool)TalkList::query()->where([
             ['id', '=', $list_id],
@@ -67,7 +69,7 @@ class TalkListService
      * @param int $list_id 会话列表ID
      * @return bool
      */
-    public function delete(int $user_id, int $list_id)
+    public function delete(int $user_id, int $list_id): bool
     {
         return (bool)TalkList::query()->where([
             ['id', '=', $list_id],
@@ -86,7 +88,7 @@ class TalkListService
      * @param int $talk_type   对话类型
      * @return bool
      */
-    public function deleteByType(int $user_id, int $receiver_id, int $talk_type)
+    public function deleteByType(int $user_id, int $receiver_id, int $talk_type): bool
     {
         return (bool)TalkList::query()->where([
             ['user_id', '=', $user_id],
@@ -104,7 +106,7 @@ class TalkListService
      * @param int $user_id 用户ID
      * @return array
      */
-    public function getTalkList(int $user_id)
+    public function getTalkList(int $user_id): array
     {
         $filed = [
             'list.id', 'list.talk_type', 'list.receiver_id', 'list.updated_at', 'list.is_disturb', 'list.is_top',
@@ -168,7 +170,7 @@ class TalkListService
      * @param int $is_disturb  是否免打扰[0:否;1:是;]
      * @return boolean
      */
-    public function disturb(int $user_id, int $receiver_id, int $talk_type, int $is_disturb)
+    public function disturb(int $user_id, int $receiver_id, int $talk_type, int $is_disturb): bool
     {
         $result = TalkList::query()->where([
             ['user_id', '=', $user_id],
@@ -194,7 +196,7 @@ class TalkListService
      * @param int $talk_type   对话类型[1:私信;2:群聊;]
      * @return bool
      */
-    public function isDisturb(int $user_id, int $receiver_id, int $talk_type)
+    public function isDisturb(int $user_id, int $receiver_id, int $talk_type): bool
     {
         return (bool)TalkList::query()->where([
             ['user_id', '=', $user_id],
