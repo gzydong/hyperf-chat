@@ -45,7 +45,7 @@ abstract class BaseRepository
     use RepositoryTrait;
 
     /**
-     * 获取单条数据
+     * 查询单条数据
      *
      * @param array    $where    查询条件
      * @param string[] $fields   查询字段
@@ -66,7 +66,7 @@ abstract class BaseRepository
     }
 
     /**
-     * 获取多条数据
+     * 查询多条数据
      *
      * @param array    $where    查询条件
      * @param string[] $fields   查询字段
@@ -85,7 +85,7 @@ abstract class BaseRepository
     }
 
     /**
-     * 分页查询数据
+     * 查询分页数据
      *
      * @param array $where  查询条件
      * @param array $fields 查询字段
@@ -115,7 +115,7 @@ abstract class BaseRepository
     }
 
     /**
-     * 批量更新数据
+     * 根据条件批量更新数据
      *
      * @param array $where  查询条件
      * @param array $values 更新字段
@@ -132,14 +132,12 @@ abstract class BaseRepository
 
             $when = '';
             foreach ($item['filter'] as $k => $v) {
-                $when .= sprintf(" when '%s' then '%s'", $k, $v);
+                $when .= sprintf("when '%s' then '%s' ", $k, $v);
             }
 
             $key = $item['field'] ?? $field;
 
-            $string = "case $key {$when} else '{$item['default']}' end";
-
-            $data[$field] = Db::raw($string);
+            $data[$field] = Db::raw("case $key {$when} else '{$item['default']}' end");
         }
 
         if (empty($data)) return 0;
@@ -151,15 +149,15 @@ abstract class BaseRepository
      * 删除数据
      *
      * @param array $where 删除的条件
-     * @return array
+     * @return int
      */
-    final public function delete(array $where): array
+    final public function delete(array $where): int
     {
         return $this->buildWhere($where)->delete();
     }
 
     /**
-     * 打印查询 sql
+     * 打印查询 SQL
      *
      * @param array $where 查询条件
      * @return string
@@ -170,7 +168,7 @@ abstract class BaseRepository
     }
 
     /**
-     * 原生 sql 查询
+     * 原生 SQL 查询
      *
      * @param string $query
      * @param array  $bindings
@@ -183,7 +181,7 @@ abstract class BaseRepository
     }
 
     /**
-     * 通过 model 读取分页信息
+     * 通过 Model 读取分页数据
      *
      * @param Builder $model  查询 Model
      * @param array   $fields 查询字段

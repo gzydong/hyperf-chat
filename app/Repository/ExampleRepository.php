@@ -143,6 +143,26 @@ class ExampleRepository extends BaseRepository
         //     'gender'     => 2,
         //     'updated_at' => date('Y-m-d H:i:s'),
         // ]);
+
+        // 批量更新数据
+        // $this->batchUpdate([
+        //     'id:gt' => 2054
+        // ], [
+        //     'email'  => '',       // 不使用条件判断，默认更新
+        //     'gender' => [
+        //         'field'   => 'id',//判断的字段，可选（不设置默认使用当前字段）
+        //         'default' => 0,   // 默认字段值
+        //         'filter'  => [    // 数据判断
+        //             '2054' => 1,
+        //             '2055' => 2,
+        //         ]
+        //     ],
+        // ]);
+
+        // 批量删除数据
+        // $this->delete([
+        //     'id' => 4241
+        // ]);
     }
 
     public function case5()
@@ -187,21 +207,11 @@ class ExampleRepository extends BaseRepository
 
         // 原生 SQL 查询
         // $this->sql('SELECT * FROM `lar_users` WHERE id = ?', [2054]);
+    }
 
-        // 批量更新数据
-        // $this->batchUpdate([
-        //     'id:gt' => 2054
-        // ], [
-        //     'email'  => '',       // 不使用条件判断，默认更新
-        //     'gender' => [
-        //         'field'   => 'id',//判断的字段，可选（不设置默认使用当前字段）
-        //         'default' => 0,   // 默认字段值
-        //         'filter'  => [    // 数据判断
-        //             '2054' => 1,
-        //             '2055' => 2,
-        //         ]
-        //     ],
-        // ]);
+    public function other()
+    {
+        $model = $this->getModel();
     }
 
     // where 条件查询案例

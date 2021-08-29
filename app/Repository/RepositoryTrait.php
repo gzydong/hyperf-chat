@@ -117,6 +117,16 @@ trait RepositoryTrait
     }
 
     /**
+     * 获取 Model 类
+     *
+     * @return Model
+     */
+    final public function getModel(): Model
+    {
+        return $this->model;
+    }
+
+    /**
      * 调用 model 的方法
      *
      * @param string $method 调用model 自己的方法
@@ -142,11 +152,11 @@ trait RepositoryTrait
     }
 
     /**
-     * 获取新的查询 Model
+     * 获取新的查询构造器
      *
      * @return Builder
      */
-    protected function getNewModel(): Builder
+    protected function getQuery(): Builder
     {
         return $this->model->newQuery();
     }
@@ -159,7 +169,7 @@ trait RepositoryTrait
      */
     final public function buildWhere(array $where = []): Builder
     {
-        $model = $this->getNewModel();
+        $model = $this->getQuery();
 
         // 处理排序数据
         if ($order = Arr::pull($where, 'order by')) {
