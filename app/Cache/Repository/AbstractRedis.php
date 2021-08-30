@@ -28,7 +28,7 @@ abstract class AbstractRedis
      */
     protected function redis()
     {
-        return redis();
+        return di()->get(Redis::class);
     }
 
     /**
@@ -52,7 +52,7 @@ abstract class AbstractRedis
     protected function filter(array $params = []): string
     {
         foreach ($params as $k => $param) {
-            $params[$k] = trim($param, ':');
+            $params[$k] = trim((string)$param, ':');
         }
 
         return implode(':', array_filter($params));
