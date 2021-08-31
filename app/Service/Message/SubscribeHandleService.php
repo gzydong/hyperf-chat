@@ -95,6 +95,8 @@ class SubscribeHandleService
             $groupInfo = GroupCache::getInstance()->getOrSetCache($receiver_id);
         }
 
+        if (empty($fds)) return;
+
         $fds = array_unique(array_merge(...$fds));
 
         // 客户端ID去重
@@ -154,6 +156,9 @@ class SubscribeHandleService
         $status  = (int)$data['data']['status'];
 
         $ids = di()->get(UserService::class)->getFriendIds($user_id);
+
+        if (empty($ids)) return;
+
         $fds = [];
         foreach ($ids as $friend_id) {
             $fds[] = $this->clientService->findUserFds(intval($friend_id));
@@ -187,6 +192,8 @@ class SubscribeHandleService
                 $fds[] = $this->clientService->findUserFds((int)$uid);
             }
         }
+
+        if (empty($fds)) return;
 
         $fds = array_unique(array_merge(...$fds));
 
