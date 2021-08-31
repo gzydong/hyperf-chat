@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @link   https://github.com/gzydong/hyperf-chat
  */
 
-namespace App\Helper;
+namespace App\Helpers;
 
 /**
  * 字符串助手类

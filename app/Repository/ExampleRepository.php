@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Helper\HashHelper;
+use App\Helpers\HashHelper;
 use App\Model\Talk\TalkRecords;
 use App\Model\User;
 use Hyperf\Utils\Str;

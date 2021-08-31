@@ -6,7 +6,7 @@ namespace App\Exception\Handler;
 
 use App\Cache\Repository\LockRedis;
 use App\Constants\ResponseCode;
-use App\Support\MailerTemplate;
+use App\Templates\MailerTemplate;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\ExceptionHandler\ExceptionHandler;
 use Hyperf\HttpMessage\Stream\SwooleStream;

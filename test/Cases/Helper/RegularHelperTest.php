@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace HyperfTest\Cases\Helper;
 
-use App\Helper\RegularHelper;
+use App\Helpers\RegularHelper;
 use HyperfTest\HttpTestCase;
 
 class RegularHelperTest extends HttpTestCase

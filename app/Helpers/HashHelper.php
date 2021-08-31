@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @link   https://github.com/gzydong/hyperf-chat
  */
 
-namespace App\Helper;
+namespace App\Helpers;
 
 /**
  * Hash 密码加密辅助类

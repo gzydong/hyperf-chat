@@ -1,29 +1,17 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Support;
+namespace App\Templates;
 
 use Throwable;
 
 /**
- * 邮件视图模板
+ * 邮件视图模板库
  *
- * @package App\Support
+ * @package App\Templates
  */
-class MailerTemplate
+class MailerTemplate extends BaseTemplate
 {
-    /**
-     * 获取模板信息
-     *
-     * @param string $engine   模板引擎
-     * @param string $template 模板名称
-     * @param array  $params   模板参数
-     * @return string
-     */
-    private function view(string $engine, string $template, $params = []): string
-    {
-        return di()->get($engine)->render($template, $params, config('view.config', []));
-    }
-
     /**
      * 验证码通知 - 邮件模板
      *
@@ -31,7 +19,7 @@ class MailerTemplate
      * @param array  $params   模板参数
      * @return string
      */
-    public function emailCode(string $sms_code, array $params = [])
+    public function emailCode(string $sms_code, array $params = []): string
     {
         return $this->view(config('view.engine'), 'emails.verify-code', [
             'service_name' => $params['service_name'] ?? "邮箱绑定",
@@ -46,7 +34,7 @@ class MailerTemplate
      * @param Throwable $throwable
      * @return string
      */
-    public function errorNotice(Throwable $throwable)
+    public function errorNotice(Throwable $throwable): string
     {
         return $this->view(config('view.engine'), 'emails.error-notice', [
             'throwable' => $throwable->getTraceAsString(),

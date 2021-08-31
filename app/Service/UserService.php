@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Helper\HashHelper;
+use App\Helpers\HashHelper;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
 use App\Model\UsersFriend;

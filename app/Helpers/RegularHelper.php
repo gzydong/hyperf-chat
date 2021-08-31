@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Helper;
+namespace App\Helpers;
 
 /**
  * 正则验证助手

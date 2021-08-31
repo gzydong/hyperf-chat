@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Support;
 
@@ -21,7 +22,7 @@ class Response
      * @param $data
      * @return PsrResponseInterface
      */
-    public function json($data)
+    public function json($data): PsrResponseInterface
     {
         return $this->response->json($data);
     }
@@ -33,7 +34,7 @@ class Response
      * @param string $message 响应提示
      * @return PsrResponseInterface
      */
-    public function success(array $data = [], $message = 'success')
+    public function success(array $data = [], $message = 'success'): PsrResponseInterface
     {
         $code = ResponseCode::SUCCESS;
         return $this->response->json(compact('code', 'message', 'data'));
@@ -47,7 +48,7 @@ class Response
      * @param int    $code    错误码
      * @return PsrResponseInterface
      */
-    public function fail($message = 'fail', $data = [], $code = ResponseCode::FAIL)
+    public function fail($message = 'fail', $data = [], $code = ResponseCode::FAIL): PsrResponseInterface
     {
         return $this->response->json(compact('code', 'message', 'data'));
     }
@@ -59,7 +60,7 @@ class Response
      * @param int    $code    错误码
      * @return PsrResponseInterface
      */
-    public function error($message = '', $code = ResponseCode::SERVER_ERROR)
+    public function error($message = '', $code = ResponseCode::SERVER_ERROR): PsrResponseInterface
     {
         return $this->response->withStatus(500)->json([
             'code'    => $code,

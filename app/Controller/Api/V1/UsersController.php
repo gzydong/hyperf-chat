@@ -17,7 +17,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Model\User;
 use App\Support\SendEmailCode;
-use App\Helper\HashHelper;
+use App\Helpers\HashHelper;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
 use Psr\Http\Message\ResponseInterface;

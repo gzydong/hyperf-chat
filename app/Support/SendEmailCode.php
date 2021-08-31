@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Templates\MailerTemplate;
+
 class SendEmailCode
 {
     const FORGET_PASSWORD = 'forget_password';
@@ -16,7 +18,7 @@ class SendEmailCode
      * @param string $mobile
      * @return string
      */
-    private function getKey(string $type, string $mobile)
+    private function getKey(string $type, string $mobile): string
     {
         return "email_code:{$type}:{$mobile}";
     }
@@ -29,7 +31,7 @@ class SendEmailCode
      * @param string $code  验证码
      * @return bool
      */
-    public function check(string $type, string $email, string $code)
+    public function check(string $type, string $email, string $code): bool
     {
         $sms_code = redis()->get($this->getKey($type, $email));
         if (!$sms_code) {
@@ -84,7 +86,7 @@ class SendEmailCode
      * @param float|int $exp      过期时间
      * @return bool
      */
-    public function setCode(string $key, string $sms_code, $exp = 60 * 15)
+    public function setCode(string $key, string $sms_code, $exp = 60 * 15): bool
     {
         return redis()->setex($key, $exp, $sms_code);
     }
@@ -96,7 +98,7 @@ class SendEmailCode
      * @param string $email 邮箱地址
      * @return int
      */
-    public function delCode(string $type, string $email)
+    public function delCode(string $type, string $email): int
     {
         return redis()->del($this->getKey($type, $email));
     }

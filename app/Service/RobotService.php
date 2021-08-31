@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Helper\HashHelper;
+use App\Helpers\HashHelper;
 use App\Model\Robot;
 use App\Model\User;
 use Hyperf\DbConnection\Db;

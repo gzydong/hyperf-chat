@@ -8,7 +8,7 @@
  * @link   https://github.com/gzydong/hyperf-chat
  */
 
-namespace App\Helper;
+namespace App\Helpers;
 
 use Hashids\Hashids;
 
