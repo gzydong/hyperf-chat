@@ -2,7 +2,7 @@
 
 namespace App\Listener;
 
-use App\Helper\RegularHelper;
+use App\Helpers\RegularHelper;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 use Hyperf\Validation\Event\ValidatorFactoryResolved;

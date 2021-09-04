@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Helper\HashHelper;
+use App\Helpers\HashHelper;
 use Hyperf\Database\Seeders\Seeder;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
@@ -50,7 +50,8 @@ class Initialize extends Seeder
 
         ArticleClass::insert($defaultArticleClass);
 
-        $list = Db::select('SELECT u1.id as user_id,u2.id as friend_id FROM im_users as u1,im_users as u2 where u1.id != u2.id');
+        $prefix = config('databases.default.prefix');
+        $list   = Db::select("SELECT u1.id as user_id,u2.id as friend_id FROM {$prefix}users as u1,lar_users as u2 where u1.id != u2.id");
 
         $friends = [];
 

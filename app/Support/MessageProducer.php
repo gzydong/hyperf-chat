@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Support;
 
@@ -12,7 +13,7 @@ class MessageProducer
      * @param array  $options
      * @return array
      */
-    public static function create(string $event, array $data, array $options = [])
+    public static function create(string $event, array $data, array $options = []): array
     {
         return [
             'uuid'    => uniqid((strval(mt_rand(0, 1000)))),

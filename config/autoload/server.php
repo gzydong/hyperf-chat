@@ -47,16 +47,20 @@ return [
         ],
     ],
     'settings'  => [
-        'enable_coroutine'    => true,
-        'worker_num'          => env('SWOOLE_CPU_NUM', swoole_cpu_num() * 2),
-        'pid_file'            => BASE_PATH . '/runtime/hyperf.pid',
-        'open_tcp_nodelay'    => true,
-        'max_coroutine'       => 100000,
-        'open_http2_protocol' => true,
-        'max_request'         => 10000,
-        'socket_buffer_size'  => 3 * 1024 * 1024,
-        'buffer_output_size'  => 3 * 1024 * 1024,
-        'package_max_length'  => 10 * 1024 * 1024,
+        'enable_coroutine'      => true,
+        'worker_num'            => env('SWOOLE_CPU_NUM', swoole_cpu_num() * 2),
+        'pid_file'              => BASE_PATH . '/runtime/hyperf.pid',
+        'open_tcp_nodelay'      => true,
+        'max_coroutine'         => 100000,
+        'open_http2_protocol'   => true,
+        'max_request'           => 10000,
+        'socket_buffer_size'    => 3 * 1024 * 1024,
+        'buffer_output_size'    => 3 * 1024 * 1024,
+        'package_max_length'    => 10 * 1024 * 1024,
+
+        // 静态资源配置
+        'document_root'         => env('UPLOAD_PATH', BASE_PATH . '/public'),
+        'enable_static_handler' => true,
     ],
     'callbacks' => [
         // 自定义启动前事件
