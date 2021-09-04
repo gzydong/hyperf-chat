@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Support;
 
@@ -16,7 +17,7 @@ class UserRelation
      * @param int $talk_type   对话类型
      * @return bool
      */
-    public static function isFriendOrGroupMember(int $user_id, int $receiver_id, int $talk_type)
+    public static function isFriendOrGroupMember(int $user_id, int $receiver_id, int $talk_type): bool
     {
         if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
             return di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true);

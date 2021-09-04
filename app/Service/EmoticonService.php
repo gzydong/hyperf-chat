@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
@@ -25,7 +26,7 @@ class EmoticonService extends BaseService
      * @param int $emoticon_id 表情包ID
      * @return bool
      */
-    public function installSysEmoticon(int $user_id, int $emoticon_id)
+    public function installSysEmoticon(int $user_id, int $emoticon_id): bool
     {
         $info = UsersEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
         if (!$info) {
@@ -51,7 +52,7 @@ class EmoticonService extends BaseService
      * @param int $emoticon_id 表情包ID
      * @return bool
      */
-    public function removeSysEmoticon(int $user_id, int $emoticon_id)
+    public function removeSysEmoticon(int $user_id, int $emoticon_id): bool
     {
         $info = UsersEmoticon::select(['id', 'user_id', 'emoticon_ids'])->where('user_id', $user_id)->first();
         if (!$info || !in_array($emoticon_id, $info->emoticon_ids)) {
@@ -78,9 +79,10 @@ class EmoticonService extends BaseService
      * @param int $user_id 用户ID
      * @return array
      */
-    public function getInstallIds(int $user_id)
+    public function getInstallIds(int $user_id): array
     {
         $result = UsersEmoticon::where('user_id', $user_id)->value('emoticon_ids');
+
         return $result ? array_filter($result) : [];
     }
 
@@ -91,7 +93,7 @@ class EmoticonService extends BaseService
      * @param int $record_id 聊天消息ID
      * @return array
      */
-    public function collect(int $user_id, int $record_id)
+    public function collect(int $user_id, int $record_id): array
     {
         $result = TalkRecords::where([
             ['id', '=', $record_id],
@@ -153,7 +155,7 @@ class EmoticonService extends BaseService
      * @param array $where
      * @return array
      */
-    public function getDetailsAll(array $where = [])
+    public function getDetailsAll(array $where = []): array
     {
         $items = EmoticonItem::where($where)->get(['id as media_id', 'url as src'])->toArray();
         foreach ($items as $k => $item) {

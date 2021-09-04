@@ -10,7 +10,7 @@ use PHPMailer\PHPMailer\PHPMailer;
  *
  * @package App\Support
  */
-class Mail
+class Mailer
 {
     /**
      * @param string $address

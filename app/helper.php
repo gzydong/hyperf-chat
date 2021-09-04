@@ -132,11 +132,11 @@ function response()
 /**
  * 获取邮件助手
  *
- * @return \App\Support\Mail|mixed
+ * @return \App\Support\Mailer|mixed
  */
 function email()
 {
-    return di()->get(App\Support\Mail::class);
+    return di()->get(App\Support\Mailer::class);
 }
 
 /**

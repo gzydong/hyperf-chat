@@ -181,7 +181,7 @@ class FormatMessageService
                         ];
 
                         if ($rows[$k]['invite']['type'] == 1 || $rows[$k]['invite']['type'] == 3) {
-                            $rows[$k]['invite']['users'] = User::select('id', 'nickname')->whereIn('id', parse_ids($invites[$row['id']]['user_ids']))->get()->toArray();
+                            $rows[$k]['invite']['users'] = User::select(['id', 'nickname'])->whereIn('id', parse_ids($invites[$row['id']]['user_ids']))->get()->toArray();
                         } else {
                             $rows[$k]['invite']['users'] = $rows[$k]['invite']['operate_user'];
                         }

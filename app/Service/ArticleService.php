@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
@@ -26,7 +27,7 @@ class ArticleService extends BaseService
      * @param int $user_id 用户ID
      * @return array
      */
-    public function getUserClass(int $user_id)
+    public function getUserClass(int $user_id): array
     {
         $fields = [
             'article_class.id', 'article_class.class_name',
@@ -35,12 +36,10 @@ class ArticleService extends BaseService
         ];
 
         $subJoin = Article::select(['class_id', Db::raw('count(class_id) as count')])->where('user_id', $user_id)->where('status', 1)->groupBy(['class_id']);
+
         return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {
             $join->on('article_class.id', '=', 'sub_join.class_id');
-        })->where('article_class.user_id', $user_id)
-            ->orderBy('article_class.sort')
-            ->get($fields)
-            ->toArray();
+        })->where('article_class.user_id', $user_id)->orderBy('article_class.sort')->get($fields)->toArray();
     }
 
     /**
@@ -49,7 +48,7 @@ class ArticleService extends BaseService
      * @param int $user_id 用户ID
      * @return array
      */
-    public function getUserTags(int $user_id)
+    public function getUserTags(int $user_id): array
     {
         $items = ArticleTag::where('user_id', $user_id)->orderBy('id', 'desc')->get(['id', 'tag_name', Db::raw('0 as count')])->toArray();
         foreach ($items as $k => $item) {
@@ -68,47 +67,40 @@ class ArticleService extends BaseService
      * @param array $params    查询参数
      * @return array
      */
-    public function getUserArticleList(int $user_id, int $page, int $page_size, $params = [])
+    public function getUserArticleList(int $user_id, int $page, int $page_size, $params = []): array
     {
         $filed = ['article.id', 'article.class_id', 'article.title', 'article.image', 'article.abstract', 'article.updated_at', 'article_class.class_name', 'article.status'];
 
-        $countSqlObj = Article::select();
-        $rowsSqlObj  = Article::select($filed)
+        $model = Article::select($filed)
             ->leftJoin('article_class', 'article_class.id', '=', 'article.class_id');
 
-        $countSqlObj->where('article.user_id', $user_id);
-        $rowsSqlObj->where('article.user_id', $user_id);
+        $model->where('article.user_id', $user_id);
 
         if ($params['find_type'] == 3) {
-            $countSqlObj->where('article.class_id', $params['class_id']);
-            $rowsSqlObj->where('article.class_id', $params['class_id']);
+            $model->where('article.class_id', $params['class_id']);
         } else if ($params['find_type'] == 4) {
-            $countSqlObj->whereRaw("FIND_IN_SET({$params['class_id']},tags_id)");
-            $rowsSqlObj->whereRaw("FIND_IN_SET({$params['class_id']},tags_id)");
+            $model->whereRaw("FIND_IN_SET({$params['class_id']},tags_id)");
         } else if ($params['find_type'] == 2) {
-            $countSqlObj->where('article.is_asterisk', 1);
-            $rowsSqlObj->where('article.is_asterisk', 1);
+            $model->where('article.is_asterisk', 1);
         }
 
-        $countSqlObj->where('article.status', $params['find_type'] == 5 ? 2 : 1);
-        $rowsSqlObj->where('article.status', $params['find_type'] == 5 ? 2 : 1);
+        $model->where('article.status', $params['find_type'] == 5 ? 2 : 1);
 
-        if (isset($params['keyword'])) {
-            $countSqlObj->where('article.title', 'like', "%{$params['keyword']}%");
-            $rowsSqlObj->where('article.title', 'like', "%{$params['keyword']}%");
+        if (isset($params['keyword']) && !empty($params['keyword'])) {
+            $model->where('article.title', 'like', "%{$params['keyword']}%");
         }
 
-        $count = $countSqlObj->count();
+        $count = $model->count();
         $rows  = [];
         if ($count > 0) {
             if ($params['find_type'] == 1) {
-                $rowsSqlObj->orderBy('updated_at', 'desc');
+                $model->orderBy('updated_at', 'desc');
                 $page_size = 20;
             } else {
-                $rowsSqlObj->orderBy('id', 'desc');
+                $model->orderBy('id', 'desc');
             }
 
-            $rows = $rowsSqlObj->forPage($page, $page_size)->get()->toArray();
+            $rows = $model->forPage($page, $page_size)->get()->toArray();
         }
 
         return $this->getPagingRows($rows, $count, $page, $page_size);
@@ -121,18 +113,15 @@ class ArticleService extends BaseService
      * @param int $user_id    用户ID
      * @return array
      */
-    public function getArticleDetail(int $article_id, $user_id = 0)
+    public function getArticleDetail(int $article_id, $user_id = 0): array
     {
         $info = Article::where('id', $article_id)->where('user_id', $user_id)->first(['id', 'class_id', 'tags_id', 'title', 'status', 'is_asterisk', 'created_at', 'updated_at']);
-        if (!$info) {
-            return [];
-        }
+
+        if (!$info) return [];
 
         // 关联文章详情
         $detail = $info->detail;
-        if (!$detail) {
-            return [];
-        }
+        if (!$detail) return [];
 
         $tags = [];
         if ($info->tags_id) {
@@ -159,9 +148,9 @@ class ArticleService extends BaseService
      *
      * @param int $user_id    用户ID
      * @param int $article_id 笔记ID
-     * @return mixed
+     * @return array
      */
-    public function findArticleAnnexAll(int $user_id, int $article_id)
+    public function findArticleAnnexAll(int $user_id, int $article_id): array
     {
         return ArticleAnnex::where([
             ['user_id', '=', $user_id],
@@ -220,7 +209,7 @@ class ArticleService extends BaseService
      * @return bool
      * @throws Exception
      */
-    public function delArticleClass(int $user_id, int $class_id)
+    public function delArticleClass(int $user_id, int $class_id): bool
     {
         $result = ArticleClass::where('id', $class_id)->where('user_id', $user_id)->first(['id', 'sort']);
         if (!$result) return false;
@@ -244,7 +233,7 @@ class ArticleService extends BaseService
      * @param int $sort_type 排序方式
      * @return bool
      */
-    public function articleClassSort(int $user_id, int $class_id, int $sort_type)
+    public function articleClassSort(int $user_id, int $class_id, int $sort_type): bool
     {
         if (!$info = ArticleClass::select(['id', 'sort'])->where('id', $class_id)->where('user_id', $user_id)->first()) {
             return false;
@@ -308,7 +297,7 @@ class ArticleService extends BaseService
      * @param int $to_class_id 笔记分类ID
      * @return bool
      */
-    public function mergeArticleClass(int $user_id, int $class_id, int $to_class_id)
+    public function mergeArticleClass(int $user_id, int $class_id, int $to_class_id): bool
     {
         $count = ArticleClass::whereIn('id', [$class_id, $to_class_id])->where('user_id', $user_id)->count();
         if ($count < 2) {
@@ -316,7 +305,8 @@ class ArticleService extends BaseService
         }
 
         return (bool)Article::where('class_id', $class_id)->where('user_id', $user_id)->update([
-            'class_id' => $to_class_id
+            'class_id'   => $to_class_id,
+            'updated_at' => date('Y-m-d H:i:s')
         ]);
     }
 
@@ -357,7 +347,7 @@ class ArticleService extends BaseService
      * @param int $tag_id 标签ID
      * @return bool
      */
-    public function delArticleTags(int $uid, int $tag_id)
+    public function delArticleTags(int $uid, int $tag_id): bool
     {
         if (!ArticleTag::where('id', $tag_id)->where('user_id', $uid)->exists()) {
             return false;
@@ -446,14 +436,18 @@ class ArticleService extends BaseService
      * @param int $status     笔记状态 1:正常 2:已删除
      * @return bool
      */
-    public function updateArticleStatus(int $user_id, int $article_id, int $status)
+    public function updateArticleStatus(int $user_id, int $article_id, int $status): bool
     {
-        $data = ['status' => $status];
+        $data = [
+            'status'     => $status,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
         if ($status == 2) {
             $data['deleted_at'] = date('Y-m-d H:i:s');
         }
 
-        return Article::where('id', $article_id)->where('user_id', $user_id)->update($data);
+        return (bool)Article::where('id', $article_id)->where('user_id', $user_id)->update($data);
     }
 
     /**
@@ -464,9 +458,12 @@ class ArticleService extends BaseService
      * @param int $class_id   笔记分类ID
      * @return bool
      */
-    public function moveArticle(int $user_id, int $article_id, int $class_id)
+    public function moveArticle(int $user_id, int $article_id, int $class_id): bool
     {
-        return (bool)Article::where('id', $article_id)->where('user_id', $user_id)->update(['class_id' => $class_id]);
+        return (bool)Article::where('id', $article_id)->where('user_id', $user_id)->update([
+            'class_id'   => $class_id,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
     }
 
     /**
@@ -477,10 +474,11 @@ class ArticleService extends BaseService
      * @param int $type       1:标记星号 2:取消星号标记
      * @return bool
      */
-    public function setAsteriskArticle(int $user_id, int $article_id, int $type)
+    public function setAsteriskArticle(int $user_id, int $article_id, int $type): bool
     {
         return (bool)Article::where('id', $article_id)->where('user_id', $user_id)->update([
-            'is_asterisk' => $type == 1 ? 1 : 0
+            'is_asterisk' => $type == 1 ? 1 : 0,
+            'updated_at'  => date('Y-m-d H:i:s')
         ]);
     }
 
@@ -492,9 +490,12 @@ class ArticleService extends BaseService
      * @param array $tags       关联标签ID
      * @return bool
      */
-    public function updateArticleTag(int $uid, int $article_id, array $tags)
+    public function updateArticleTag(int $uid, int $article_id, array $tags): bool
     {
-        return (bool)Article::where('id', $article_id)->where('user_id', $uid)->update(['tags_id' => implode(',', $tags), 'updated_at' => date('Y-m-d H:i:s')]);
+        return (bool)Article::where('id', $article_id)->where('user_id', $uid)->update([
+            'tags_id'    => implode(',', $tags),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
     }
 
     /**
@@ -553,7 +554,7 @@ class ArticleService extends BaseService
      * @param int $status   附件状态 1:正常 2:已删除
      * @return bool
      */
-    public function updateArticleAnnexStatus(int $user_id, int $annex_id, int $status)
+    public function updateArticleAnnexStatus(int $user_id, int $annex_id, int $status): bool
     {
         $data = ['status' => $status];
         if ($status == 2) {
@@ -569,7 +570,7 @@ class ArticleService extends BaseService
      * @param int $uid 用户ID
      * @return array
      */
-    public function recoverAnnexList(int $uid)
+    public function recoverAnnexList(int $uid): array
     {
         return ArticleAnnex::join('article', 'article.id', '=', 'article_annex.article_id')
             ->where('article_annex.user_id', $uid)
@@ -598,11 +599,6 @@ class ArticleService extends BaseService
             return false;
         }
 
-        // 将文件从磁盘中删除
-        //if (!Storage::disk('uploads')->delete($info->save_dir)) {
-        //    return false;
-        //}
-
         return $info->delete();
     }
 
@@ -612,7 +608,7 @@ class ArticleService extends BaseService
      * @param int   $user_id    用户id
      * @param int   $article_id 笔记ID
      * @param array $annex      笔记附件信息
-     * @return bool
+     * @return bool|int
      */
     public function insertArticleAnnex(int $user_id, int $article_id, array $annex)
     {
