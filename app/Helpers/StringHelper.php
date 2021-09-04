@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * This is my open source code, please do not use it for commercial applications.
  * For the full copyright and license information,
@@ -19,13 +20,5 @@ namespace App\Helpers;
  */
 class StringHelper
 {
-    public function jsonEncode()
-    {
 
-    }
-
-    public function jsonDecode()
-    {
-
-    }
 }

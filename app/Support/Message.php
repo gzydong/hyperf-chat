@@ -5,7 +5,7 @@ namespace App\Support;
 
 use App\Constants\RedisSubscribeChan;
 
-class MessageProducer
+class Message
 {
     /**
      * @param string $event

@@ -44,7 +44,7 @@ class HashIdsHelper
      * @param mixed ...$numbers
      * @return string
      */
-    public static function encode(...$numbers)
+    public static function encode(...$numbers): string
     {
         return self::getHashIds()->encode(...$numbers);
     }
@@ -71,7 +71,7 @@ class HashIdsHelper
      *
      * @return Hashids
      */
-    private static function getHashIds()
+    private static function getHashIds(): Hashids
     {
         if (!self::$hashIds instanceof Hashids) {
             self::$hashIds = new Hashids(self::$secretKey, self::$length);

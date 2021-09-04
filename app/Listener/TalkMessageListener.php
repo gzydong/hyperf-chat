@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Listener;
 
 use App\Event\TalkEvent;
-use App\Support\MessageProducer;
+use App\Support\Message;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Event\Annotation\Listener;
 
@@ -28,6 +28,6 @@ class TalkMessageListener implements ListenerInterface
      */
     public function process(object $event)
     {
-        MessageProducer::publish(MessageProducer::create($event->event_name, $event->data));
+        Message::publish(Message::create($event->event_name, $event->data));
     }
 }

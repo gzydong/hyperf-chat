@@ -1,9 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Support;
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 /**
  * Class Mail
@@ -20,19 +20,34 @@ class Mail
      */
     public function send(string $address, string $subject, string $view): bool
     {
+        $config = config('mail');
         try {
-            $config        = config('mail');
-            $mail          = new PHPMailer();                                                  // PHPMailer对象
-            $mail->CharSet = 'UTF-8';                                                          // 设定邮件编码，默认ISO-8859-1，如果发中文此项必须设置，否则乱码
-            $mail->IsSMTP();                                                                   // 设定使用SMTP服务
-            $mail->SMTPDebug  = 0;                                                              // 关闭SMTP调试功能
-            $mail->SMTPAuth  = true;                                                           // 启用 SMTP 验证功能
-            $mail->SMTPSecure = 'ssl';                                                         // 使用安全协议
-            $mail->Host       = $config['host'];                                               // SMTP 服务器
-            $mail->Port       = $config['port'];                                               // SMTP服务器的端口号
-            $mail->Username   = $config['username'];                                           // SMTP服务器用户名
-            $mail->Password   = $config['password'];                                           // SMTP服务器密码
-            $mail->SetFrom($config['from'], $config['name']);                                  // 邮箱，昵称
+            // PHPMailer对象
+            $mail = new PHPMailer();
+
+            // 设定邮件编码，默认ISO-8859-1，如果发中文此项必须设置，否则乱码
+            $mail->CharSet = 'UTF-8';
+
+            // 设定使用SMTP服务
+            $mail->IsSMTP();
+
+            // 关闭SMTP调试功能
+            $mail->SMTPDebug = 0;
+
+            // 启用 SMTP 验证功能
+            $mail->SMTPAuth = true;
+
+            // 使用安全协议
+            $mail->SMTPSecure = 'ssl';
+
+            // SMTP 服务器
+            $mail->Host     = $config['host'];
+            $mail->Port     = $config['port'];
+            $mail->Username = $config['username'];
+            $mail->Password = $config['password'];
+
+            // 邮箱，昵称
+            $mail->SetFrom($config['from'], $config['name']);
             $mail->Subject = $subject;
             $mail->MsgHTML($view);
             $mail->AddAddress($address); // 收件人
