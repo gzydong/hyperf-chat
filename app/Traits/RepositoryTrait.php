@@ -392,7 +392,7 @@ trait RepositoryTrait
         }
 
         // 判断是否是关联数组
-        if (ArrayHelper::isRelationArray($items)) {
+        if (ArrayHelper::isAssociativeArray($items)) {
             return false;
         }
 

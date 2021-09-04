@@ -10,6 +10,8 @@
 
 namespace App\Controller\Api\V1;
 
+use App\Helpers\DateHelper;
+use App\Helpers\StringHelper;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -273,7 +275,7 @@ class ArticleController extends CController
             'title'      => $params['title'],
             'abstract'   => mb_substr(strip_tags($params['content']), 0, 200),
             'class_id'   => $params['class_id'],
-            'image'      => get_html_images($params['content']),
+            'image'      => StringHelper::getHtmlImage($params['content']),
             'md_content' => htmlspecialchars($params['md_content']),
             'content'    => htmlspecialchars($params['content'])
         ]);
@@ -540,8 +542,7 @@ class ArticleController extends CController
         if ($rows) {
             $getDay = function ($delete_at) {
                 $last_time = strtotime('+30 days', strtotime($delete_at));
-
-                return (time() > $last_time) ? 0 : diff_date(date('Y-m-d', $last_time), date('Y-m-d'));
+                return (time() > $last_time) ? 0 : DateHelper::diff(date('Y-m-d', $last_time), date('Y-m-d'));
             };
 
             array_walk($rows, function (&$item) use ($getDay) {

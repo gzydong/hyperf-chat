@@ -56,7 +56,15 @@ class DbQueryExecutedListener implements ListenerInterface
                 }
             }
 
-            $this->logger->info(sprintf('[%s] %s', $event->time, $sql));
+            if (env('SQL_QUERY_LOG', false)) {
+                $this->logger->info(sprintf('[%s] %s', $event->time, $sql));
+                return;
+            }
+
+            // SQL 监控,通知管理员(大于两秒)
+            if ($event->time >= 2000) {
+                $this->logger->info(sprintf('[%s] %s', $event->time, $sql));
+            }
         }
     }
 }

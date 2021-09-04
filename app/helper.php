@@ -80,10 +80,12 @@ function cache()
 
 /**
  * Dispatch an event and call the listeners.
+ *
+ * @return mixed|\Psr\EventDispatcher\EventDispatcherInterface
  */
 function event()
 {
-    return di()->get(\Psr\EventDispatcher\EventDispatcherInterface::class);
+    return di()->get(Psr\EventDispatcher\EventDispatcherInterface::class);
 }
 
 /**
@@ -127,51 +129,14 @@ function response()
     return di()->get(ResponseInterface::class);
 }
 
-
+/**
+ * 获取邮件助手
+ *
+ * @return \App\Support\Mail|mixed
+ */
 function email()
 {
-    return di()->get(\App\Support\Mail::class);
-}
-
-
-/**
- * 从HTML文本中提取所有图片
- *
- * @param string $content HTML文本
- * @return array
- */
-function get_html_images(string $content)
-{
-    $pattern = "/<img.*?src=[\'|\"](.*?)[\'|\"].*?[\/]?>/";
-    preg_match_all($pattern, htmlspecialchars_decode($content), $match);
-    $data = [];
-    if (!empty($match[1])) {
-        foreach ($match[1] as $img) {
-            if (!empty($img)) $data[] = $img;
-        }
-        return $data;
-    }
-
-    return $data;
-}
-
-/**
- * 获取两个日期相差多少天
- *
- * @param string $day1 日期1
- * @param string $day2 日期2
- * @return float|int
- */
-function diff_date(string $day1, string $day2)
-{
-    $second1 = strtotime($day1);
-    $second2 = strtotime($day2);
-
-    if ($second1 < $second2) {
-        [$second1, $second2] = [$second2, $second1];
-    }
-
-    return ceil(($second1 - $second2) / 86400);
+    return di()->get(App\Support\Mail::class);
 }
 
 /**
@@ -180,7 +145,7 @@ function diff_date(string $day1, string $day2)
  * @param string $path 文件相对路径
  * @return string
  */
-function get_media_url(string $path)
+function get_media_url(string $path): string
 {
     return sprintf('%s/%s', rtrim(config('domain.img_url'), '/'), ltrim($path, '/'));
 }
@@ -198,41 +163,13 @@ function create_image_name(string $ext, array $filesize): string
 }
 
 /**
- * 替换文本中的url 为 a标签
- *
- * @param string $str 字符串
- * @return null|string|string[]
- */
-function replace_url_link(string $str)
-{
-    $re = '@((https|http)?://([-\w\.]+)+(:\d+)?(/([\w/_\-.#%]*(\?\S+)?)?)?)@';
-    return preg_replace_callback($re, function ($matches) {
-        return sprintf('<a href="%s" target="_blank">%s</a>', trim($matches[0], '&quot;'), $matches[0]);
-    }, $str);
-}
-
-/**
- * 二维数组排序
- *
- * @param array  $array 数组
- * @param string $field 排序字段
- * @param int    $sort  排序方式
- * @return array
- */
-function arraysSort(array $array, string $field, $sort = SORT_DESC)
-{
-    array_multisort(array_column($array, $field), $sort, $array);
-    return $array;
-}
-
-/**
  * 判断0或正整数
  *
  * @param string|int $value  验证字符串
  * @param bool       $isZero 判断是否可为0
  * @return bool
  */
-function check_int($value, $isZero = false)
+function check_int($value, $isZero = false): bool
 {
     $reg = $isZero ? '/^[+]{0,1}(\d+)$/' : '/^[1-9]\d*$/';
     return is_numeric($value) && preg_match($reg, $value);
@@ -244,22 +181,9 @@ function check_int($value, $isZero = false)
  * @param string|int $ids 字符串(例如; "1,2,3,4,5,6")
  * @return array
  */
-function parse_ids($ids)
+function parse_ids($ids): array
 {
     return array_unique(explode(',', trim($ids)));
-}
-
-/**
- * 推送消息至 RabbitMQ 队列
- *
- * @param \Hyperf\Amqp\Message\ProducerMessage $message
- * @param bool                                 $confirm
- * @param int                                  $timeout
- * @return mixed
- */
-function push_amqp(\Hyperf\Amqp\Message\ProducerMessage $message, bool $confirm = false, int $timeout = 5)
-{
-    return di()->get(\Hyperf\Amqp\Producer::class)->produce($message, $confirm, $timeout);
 }
 
 /**

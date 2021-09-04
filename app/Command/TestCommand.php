@@ -37,8 +37,7 @@ class TestCommand extends HyperfCommand
     {
         $repository = di()->get(ExampleRepository::class);
 
-        $repository->case4();
-
+        // $repository->case4();
         //$api     = config('juhe_api.ip');
         //$options = [];
         //$client  = di()->get(ClientFactory::class)->create($options);
