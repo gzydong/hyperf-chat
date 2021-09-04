@@ -153,11 +153,11 @@ trait RepositoryTrait
     }
 
     /**
-     * 获取新的查询构造器
+     * 获取新的 Model 查询构造器
      *
      * @return Builder
      */
-    protected function getQuery(): Builder
+    protected function getBuilder(): Builder
     {
         return $this->model->newQuery();
     }
@@ -170,7 +170,12 @@ trait RepositoryTrait
      */
     final public function buildWhere(array $where = []): Builder
     {
-        $model = $this->getQuery();
+        $model = $this->getBuilder();
+
+        // Join 关联处理
+        if ($joins = Arr::pull($where, 'join table')) {
+            $this->addJoinTable($model, (array)$joins);
+        }
 
         // 处理排序数据
         if ($order = Arr::pull($where, 'order by')) {
@@ -189,6 +194,10 @@ trait RepositoryTrait
 
         // 判断是否存在查询条件
         if (!empty($where)) {
+            if (count($where) === 1 && isset($where['or'])) {
+                $where = $where['or'];
+            }
+
             $this->bindWhere($model, $where);
         }
 
@@ -240,6 +249,19 @@ trait RepositoryTrait
         $model->{$method}(function ($query) use ($where, $or, $type) {
             $this->bindWhere($query, $where, $type === 'or');
         });
+    }
+
+    /**
+     * Join 关联查询
+     *
+     * @param \Hyperf\Database\Model\Builder $model
+     * @param array                          $joins
+     */
+    private function addJoinTable(Builder $model, array $joins)
+    {
+        foreach ($joins as $join) {
+            $model->join(...$join);
+        }
     }
 
     /**

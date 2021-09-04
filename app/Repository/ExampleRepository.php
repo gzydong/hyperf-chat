@@ -23,10 +23,12 @@ class ExampleRepository extends BaseRepository
     // 自增自减案例 increment decrement
     public function case1()
     {
+        // 数据自增
         // $this->increment(['id' => 1017], 'is_robot', 4, [
         //     'updated_at' => date('Y-m-d H:i:s')
         // ]);
 
+        // 数据自减
         // $this->decrement(['id:gt' => 1017], 'is_robot', 1, [
         //     'updated_at' => date('Y-m-d H:i:s')
         // ]);
@@ -35,25 +37,20 @@ class ExampleRepository extends BaseRepository
     // 聚合查询相关案例 count, max, min, avg, sum
     public function case2()
     {
-        // $this->count([
-        //     'id:gt' => 3000
-        // ]);
+        // 统计总数
+        // $this->count(['id:gt' => 3000]);
 
-        // $this->max([
-        //     'id:gt' => 3000
-        // ], 'id');
+        // 最大值
+        // $this->max(['id:gt' => 3000], 'id');
 
-        // $this->min([
-        //     'id:gt' => 3000
-        // ], 'id');
+        // 最小值
+        // $this->min(['id:gt' => 3000], 'id');
 
-        // $this->avg([
-        //     'id:gt' => 3000
-        // ], 'id');
+        // 平均值
+        // $this->avg(['id:gt' => 3000], 'id');
 
-        // $this->sum([
-        //     'id:gt' => 3000
-        // ], 'id');
+        // 求和
+        // $this->sum(['id:gt' => 3000], 'id');
     }
 
     // model value pluck exists doesntExist
@@ -132,7 +129,6 @@ class ExampleRepository extends BaseRepository
         // 根据主键ID查询数据
         // $this->find(2054, ['id', 'mobile']);
 
-
         // 主键查询没有就抛出错误
         // $this->findOrFail(20540000, ['id', 'mobile']);
 
@@ -176,7 +172,7 @@ class ExampleRepository extends BaseRepository
         // $this->get([
         //     'id'     => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         //     'gender' => 2
-        // ], ['id', 'mobile'],true);
+        // ], ['id', 'mobile'],[0,10]);
 
         // 分页获取数据
         // $data = $this->paginate([
@@ -211,7 +207,9 @@ class ExampleRepository extends BaseRepository
 
     public function other()
     {
-        $model = $this->getModel();
+        // 获取 Model 实例
+        $model = $this->buildWhere();
+
     }
 
     // where 条件查询案例
@@ -219,8 +217,8 @@ class ExampleRepository extends BaseRepository
     {
         $where = [
             // 等值查询
-            'mobile'    => "18798271234",
-            'mobile:eq' => "18798271234",
+            'mobile'          => "18798271234",
+            'mobile:eq'       => "18798271234",
 
             // model 自带操作符查询
             ['id', '=', 12],
@@ -228,20 +226,85 @@ class ExampleRepository extends BaseRepository
             ['id', '>=', 12],// ...
 
             // in 或者  not in 查询
-            'id:in'     => [1, 2, 3],
-            'id'        => [1, 2, 3],
-            'id:not in' => [5, 6, 7],
-            'id:gt'     => 10,
-            'id:lt'     => 100,
+            'id:in'           => [1, 2, 3],
+            'id:not in'       => [5, 6, 7],
+            'id:gt'           => 10,
+            'id:lt'           => 100,
+            'mobile:like'     => "138%",
+            'mobile:not like' => "1381%",
 
-            'or' => [
+            // or 查询（可嵌套使用）
+            'or'              => [
                 'field' => '',
+                ['field', '>', ''],
+                'or'    => [
+                    ['field', '>', ''],
+                ],
                 ['field', '>', ''],
             ],
-            [
-                'field' => '',
-                ['field', '>', ''],
+
+            // 排序
+            'order by'        => [
+                'created_at'                => 'desc',
+                'updated_at'                => 'asc',
+                '`updated_at - created_at`' => 'desc'
+            ],
+
+            // 分组
+            'group by'        => [
+                'gender', 'is_robot',
+            ],
+            'having by'       => [
+                ['account_id', '>', 100],
+            ],
+
+            // 关联查询
+            'join table'      => [
+                // orm 自带条件
+                // [$table, $first, $operator = null, $second = null, $type = 'inner']
+
+                // 数组方式
+                [
+                    'users_emoticon', 'users_emoticon.user_id', '=', 'users.id', 'left'
+                ],
+
+                // 闭包方法
+                ['users_emoticon', function ($join) {
+                    $join->on('users.id', '=', 'users_emoticon.user_id');
+                }, null, null, 'left']
             ]
         ];
+
+        echo $this->buildWhere($where)->toSql();
+    }
+
+    public function where_case2()
+    {
+        $rows = $this->get([
+            'id:gt' => 2000,
+        ], ['*'], [0, 2]);
+
+        var_dump($rows);
+
+        return;
+        $this->get([
+            'id:gt'      => 3000,
+            'id:lt'      => 4000,
+            'id:between' => [3000, 4000],
+            'or'         => [
+                ['mobile', 'like', '138%'],
+                ['mobile', 'like', '139%'],
+                [
+                    ['id', '=', 12],
+                    ['id', '=', 13],
+                    'or' => [
+                        ['id', '=', 12],
+                        ['id', '=', 13],
+                    ]
+                ]
+            ],
+            'is_robot'   => 1,
+        ]);
+        // select * from `lar_users` where `id` > '3000' and `id` < '4000' and `id` between '3000' and '4000' and (`mobile` like '138%' or `mobile` like '139%' or (`id` = '12' and `id` = '13')) and `is_robot` = '1'
     }
 }

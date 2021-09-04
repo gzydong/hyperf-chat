@@ -69,20 +69,22 @@ abstract class BaseRepository
     /**
      * 查询多条数据
      *
-     * @param array    $where    查询条件
-     * @param string[] $fields   查询字段
-     * @param bool     $is_array 是否返回数组格式
-     * @return Collection|array
+     * @param array    $where  查询条件
+     * @param string[] $fields 查询字段
+     * @param array    $limit  limit 条件 [offset,limit]
+     * @return array
      */
-    final public function get(array $where = [], array $fields = ['*'], bool $is_array = false)
+    final public function get(array $where = [], array $fields = ['*'], array $limit = []): array
     {
         $this->handleField($fields);
 
-        $data = $this->buildWhere($where)->get($fields);
+        $model = $this->buildWhere($where);
 
-        $is_array && $data = $data->toArray();
+        if ($limit && count($limit) == 2) {
+            $model->offset($limit[0] ?? 0)->limit($limit[1] ?? 0);
+        }
 
-        return $data;
+        return $model->get($fields)->toArray();
     }
 
     /**
@@ -147,7 +149,7 @@ abstract class BaseRepository
     }
 
     /**
-     * 删除数据
+     * 根据条件批量删除数据
      *
      * @param array $where 删除的条件
      * @return int
@@ -171,8 +173,8 @@ abstract class BaseRepository
     /**
      * 原生 SQL 查询
      *
-     * @param string $query
-     * @param array  $bindings
+     * @param string $query    查询 SQL
+     * @param array  $bindings 绑定数据
      * @param bool   $useReadPdo
      * @return array
      */
@@ -203,9 +205,7 @@ abstract class BaseRepository
             ]
         ];
 
-        if ($total > 0) {
-            $data['rows'] = $model->forPage($page, $size)->get($fields)->toArray();
-        }
+        if ($total > 0) $data['rows'] = $model->forPage($page, $size)->get($fields)->toArray();
 
         return $data;
     }
