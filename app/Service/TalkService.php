@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
@@ -43,15 +44,14 @@ class TalkService extends BaseService
             'users.avatar as avatar',
         ];
 
-        $rowsSqlObj = TalkRecords::select($fields);
-
-        $rowsSqlObj->leftJoin('users', 'users.id', '=', 'talk_records.user_id');
+        $model = TalkRecords::select($fields);
+        $model->leftJoin('users', 'users.id', '=', 'talk_records.user_id');
         if ($record_id) {
-            $rowsSqlObj->where('talk_records.id', '<', $record_id);
+            $model->where('talk_records.id', '<', $record_id);
         }
 
         if ($talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            $rowsSqlObj->where(function ($query) use ($user_id, $receiver_id) {
+            $model->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([
                     ['talk_records.user_id', '=', $user_id],
                     ['talk_records.receiver_id', '=', $receiver_id]
@@ -61,24 +61,24 @@ class TalkService extends BaseService
                 ]);
             });
         } else {
-            $rowsSqlObj->where('talk_records.receiver_id', $receiver_id);
+            $model->where('talk_records.receiver_id', $receiver_id);
         }
 
-        $rowsSqlObj->where('talk_records.talk_type', $talk_type);
+        $model->where('talk_records.talk_type', $talk_type);
 
         if ($msg_type) {
-            $rowsSqlObj->whereIn('talk_records.msg_type', $msg_type);
+            $model->whereIn('talk_records.msg_type', $msg_type);
         }
 
         // 过滤用户删除记录
-        $rowsSqlObj->whereNotExists(function ($query) use ($user_id) {
+        $model->whereNotExists(function ($query) use ($user_id) {
             $prefix = config('databases.default.prefix');
             $query->select(Db::raw(1))->from('talk_records_delete');
             $query->whereRaw("{$prefix}talk_records_delete.record_id = {$prefix}talk_records.id and {$prefix}talk_records_delete.user_id = {$user_id}");
             $query->limit(1);
         });
 
-        $rows = $rowsSqlObj->orderBy('talk_records.id', 'desc')->limit($limit)->get()->toArray();
+        $rows = $model->orderBy('talk_records.id', 'desc')->limit($limit)->get()->toArray();
 
         if ($record_id === 0 && $talk_type == TalkModeConstant::PRIVATE_CHAT && empty($msg_type)) {
             if (!di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) {
@@ -244,9 +244,9 @@ class TalkService extends BaseService
             'users.avatar as avatar',
         ];
 
-        $rowsSqlObj = TalkRecords::select($fields)->leftJoin('users', 'users.id', '=', 'talk_records.user_id');
+        $model = TalkRecords::select($fields)->leftJoin('users', 'users.id', '=', 'talk_records.user_id');
         if ($talk_type == 1) {
-            $rowsSqlObj->where(function ($query) use ($user_id, $receiver_id) {
+            $model->where(function ($query) use ($user_id, $receiver_id) {
                 $query->where([
                     ['talk_records.user_id', '=', $user_id],
                     ['talk_records.receiver_id', '=', $receiver_id]
@@ -256,25 +256,26 @@ class TalkService extends BaseService
                 ]);
             });
         } else {
-            $rowsSqlObj->where('talk_records.receiver_id', $receiver_id);
+            $model->where('talk_records.receiver_id', $receiver_id);
         }
 
-        $rowsSqlObj->where('talk_records.talk_type', $talk_type);
+        $model->where('talk_records.talk_type', $talk_type);
 
-        if (isset($params['keywords'])) {
-            $rowsSqlObj->where('talk_records.content', 'like', "%{$params['keywords']}%");
+        if (isset($params['keywords']) && !empty($params['keywords'])) {
+            $model->where('talk_records.content', 'like', "%{$params['keywords']}%");
         }
 
         if (isset($params['date'])) {
-            $rowsSqlObj->whereDate('talk_records.created_at', $params['date']);
+            $model->whereDate('talk_records.created_at', $params['date']);
         }
 
-        $count = $rowsSqlObj->count();
+        $count = $model->count();
         if ($count == 0) {
             return $this->getPagingRows([], 0, $page, $page_size);
         }
 
-        $rows = $rowsSqlObj->orderBy('talk_records.id', 'desc')->forPage($page, $page_size)->get()->toArray();
+        $rows = $model->orderBy('talk_records.id', 'desc')->forPage($page, $page_size)->get()->toArray();
+
         $rows = di()->get(FormatMessageService::class)->handleChatRecords($rows);
 
         return $this->getPagingRows($rows, $count, $page, $page_size);

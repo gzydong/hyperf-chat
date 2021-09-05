@@ -48,7 +48,7 @@ class SubscribeHandleService
     }
 
     /**
-     * @param array $data
+     * @param array $data 数据
      * <pre>
      * [
      * 'uuid'    => '',
@@ -61,7 +61,7 @@ class SubscribeHandleService
     public function handle(array $data)
     {
         if (!isset($data['uuid'], $data['event'], $data['data'], $data['options'])) {
-            return false;
+            return;
         }
 
         if (isset(self::EVENTS[$data['event']])) {
@@ -120,7 +120,7 @@ class SubscribeHandleService
         if (!$result) return;
 
         $message = di()->get(FormatMessageService::class)->handleChatRecords([$result->toArray()])[0];
-        $notify  = [
+        $push    = [
             'sender_id'   => $sender_id,
             'receiver_id' => $receiver_id,
             'talk_type'   => $talk_type,
@@ -130,7 +130,7 @@ class SubscribeHandleService
             ])
         ];
 
-        $this->socketPushNotify($fds, json_encode([TalkEventConstant::EVENT_TALK, $notify]));
+        $this->push($fds, json_encode([TalkEventConstant::EVENT_TALK, $push]));
     }
 
     /**
@@ -142,7 +142,7 @@ class SubscribeHandleService
     {
         $fds = $this->clientService->findUserFds($data['data']['receiver_id']);
 
-        $this->socketPushNotify($fds, json_encode([TalkEventConstant::EVENT_KEYBOARD, $data['data']]));
+        $this->push($fds, json_encode([TalkEventConstant::EVENT_KEYBOARD, $data['data']]));
     }
 
     /**
@@ -166,7 +166,7 @@ class SubscribeHandleService
 
         $fds = array_unique(array_merge(...$fds));
 
-        $this->socketPushNotify($fds, json_encode([
+        $this->push($fds, json_encode([
             TalkEventConstant::EVENT_ONLINE_STATUS, [
                 'user_id' => $user_id,
                 'status'  => $status
@@ -199,7 +199,7 @@ class SubscribeHandleService
 
         if (!$fds) return;
 
-        $this->socketPushNotify($fds, json_encode([TalkEventConstant::EVENT_REVOKE_TALK, [
+        $this->push($fds, json_encode([TalkEventConstant::EVENT_REVOKE_TALK, [
             'talk_type'   => $record->talk_type,
             'sender_id'   => $record->user_id,
             'receiver_id' => $record->receiver_id,
@@ -245,16 +245,16 @@ class SubscribeHandleService
             'mobile'   => $friendInfo->mobile,
         ];
 
-        $this->socketPushNotify(array_unique($fds), json_encode([TalkEventConstant::EVENT_FRIEND_APPLY, $msg]));
+        $this->push(array_unique($fds), json_encode([TalkEventConstant::EVENT_FRIEND_APPLY, $msg]));
     }
 
     /**
      * WebSocket 消息推送
      *
-     * @param $fds
-     * @param $message
+     * @param array  $fds
+     * @param string $message
      */
-    private function socketPushNotify($fds, $message)
+    private function push(array $fds, string $message): void
     {
         $server = server();
         foreach ($fds as $fd) {

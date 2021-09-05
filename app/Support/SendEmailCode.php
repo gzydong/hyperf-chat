@@ -50,7 +50,7 @@ class SendEmailCode
      * @param string $email 邮箱地址
      * @return bool
      */
-    public function send(string $type, string $title, string $email)
+    public function send(string $type, string $title, string $email): bool
     {
         $key = $this->getKey($type, $email);
         if (!$sms_code = $this->getCode($key)) {
