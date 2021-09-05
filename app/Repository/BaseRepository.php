@@ -46,6 +46,16 @@ abstract class BaseRepository
     use RepositoryTrait;
 
     /**
+     * 获取单例
+     *
+     * @return static
+     */
+    public static function getInstance()
+    {
+        return di()->get(static::class);
+    }
+
+    /**
      * 查询单条数据
      *
      * @param array    $where    查询条件
@@ -96,7 +106,7 @@ abstract class BaseRepository
      * @param int   $size   每页条数
      * @return array
      */
-    final public function paginate(array $where, $fields = ['*'], $page = 1, $size = 15): array
+    final public function paginate(array $where, array $fields = ['*'], int $page = 1, int $size = 15): array
     {
         $this->handleField($fields);
 

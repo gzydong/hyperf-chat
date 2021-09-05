@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * This is my open source code, please do not use it for commercial applications.
  * For the full copyright and license information,
@@ -43,9 +45,9 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function getUserDetail()
+    public function getUserDetail(): ResponseInterface
     {
-        $userInfo = $this->userService->findById($this->uid(), ['mobile', 'nickname', 'avatar', 'motto', 'email', 'gender']);
+        $userInfo = $this->user();
 
         return $this->response->success([
             'mobile'   => $userInfo->mobile,
@@ -53,7 +55,7 @@ class UsersController extends CController
             'avatar'   => $userInfo->avatar,
             'motto'    => $userInfo->motto,
             'email'    => $userInfo->email,
-            'gender'   => $userInfo->gender
+            'gender'   => $userInfo->gender,
         ]);
     }
 
@@ -63,9 +65,9 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function getUserSetting()
+    public function getUserSetting(): ResponseInterface
     {
-        $userInfo = $this->userService->findById($this->uid(), ['id', 'nickname', 'avatar', 'motto', 'gender']);
+        $userInfo = $this->user();
 
         return $this->response->success([
             'user_info' => [
@@ -73,7 +75,7 @@ class UsersController extends CController
                 'nickname' => $userInfo->nickname,
                 'avatar'   => $userInfo->avatar,
                 'motto'    => $userInfo->motto,
-                'gender'   => $userInfo->gender
+                'gender'   => $userInfo->gender,
             ],
             'setting'   => [
                 'theme_mode'            => '',
@@ -91,7 +93,7 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function editUserDetail()
+    public function editUserDetail(): ResponseInterface
     {
         $params = $this->request->inputs(['nickname', 'avatar', 'motto', 'gender']);
         $this->validate($params, [
@@ -114,7 +116,7 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function editAvatar()
+    public function editAvatar(): ResponseInterface
     {
         $params = $this->request->inputs(['avatar']);
         $this->validate($params, [
@@ -134,7 +136,7 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function search()
+    public function search(): ResponseInterface
     {
         $params = $this->request->inputs(['user_id']);
         $this->validate($params, ['user_id' => 'required|integer']);
@@ -152,7 +154,7 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function editUserPassword()
+    public function editUserPassword(): ResponseInterface
     {
         $params = $this->request->inputs(['old_password', 'new_password']);
         $this->validate($params, [
@@ -160,7 +162,7 @@ class UsersController extends CController
             'new_password' => 'required|min:6|max:16'
         ]);
 
-        $userInfo = $this->userService->findById($this->uid(), ['id', 'password', 'mobile']);
+        $userInfo = $this->user();
 
         // 验证密码是否正确
         if (!HashHelper::check($this->request->post('old_password'), $userInfo->password)) {
@@ -180,7 +182,7 @@ class UsersController extends CController
      * @param SmsCodeService $smsCodeService
      * @return ResponseInterface
      */
-    public function editUserMobile(SmsCodeService $smsCodeService)
+    public function editUserMobile(SmsCodeService $smsCodeService): ResponseInterface
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
         $this->validate($params, [
@@ -193,12 +195,11 @@ class UsersController extends CController
             return $this->response->fail('验证码填写错误！');
         }
 
-        $user_id = $this->uid();
-        if (!HashHelper::check($params['password'], User::where('id', $user_id)->value('password'))) {
+        if (!HashHelper::check($params['password'], $this->user()->password)) {
             return $this->response->fail('账号密码验证失败！');
         }
 
-        [$isTrue,] = $this->userService->changeMobile($user_id, $params['mobile']);
+        [$isTrue,] = $this->userService->changeMobile($this->uid(), $params['mobile']);
         if (!$isTrue) {
             return $this->response->fail('手机号更换失败！');
         }
@@ -215,7 +216,7 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function editUserEmail()
+    public function editUserEmail(): ResponseInterface
     {
         $params = $this->request->inputs(['email', 'password', 'email_code']);
         $this->validate($params, [
@@ -229,13 +230,11 @@ class UsersController extends CController
             return $this->response->fail('验证码填写错误！');
         }
 
-        $uid           = $this->uid();
-        $user_password = User::where('id', $uid)->value('password');
-        if (!HashHelper::check($params['password'], $user_password)) {
+        if (!HashHelper::check($params['password'], $this->user()->password)) {
             return $this->response->fail('账号密码验证失败！');
         }
 
-        $isTrue = User::where('id', $uid)->update(['email' => $params['email']]);
+        $isTrue = User::where('id', $this->uid())->update(['email' => $params['email']]);
         if (!$isTrue) {
             return $this->response->fail('邮箱设置失败！');
         }
@@ -252,7 +251,7 @@ class UsersController extends CController
      * @param SmsCodeService $smsCodeService
      * @return ResponseInterface
      */
-    public function sendMobileCode(SmsCodeService $smsCodeService)
+    public function sendMobileCode(SmsCodeService $smsCodeService): ResponseInterface
     {
         $params = $this->request->inputs(['mobile']);
         $this->validate($params, [
@@ -288,7 +287,7 @@ class UsersController extends CController
      * @param SendEmailCode $sendEmailCode
      * @return ResponseInterface
      */
-    public function sendChangeEmailCode(SendEmailCode $sendEmailCode)
+    public function sendChangeEmailCode(SendEmailCode $sendEmailCode): ResponseInterface
     {
         $params = $this->request->inputs(['email']);
         $this->validate($params, [

@@ -280,13 +280,6 @@ class ExampleRepository extends BaseRepository
 
     public function where_case2()
     {
-        $rows = $this->get([
-            'id:gt' => 2000,
-        ], ['*'], [0, 2]);
-
-        var_dump($rows);
-
-        return;
         $this->get([
             'id:gt'      => 3000,
             'id:lt'      => 4000,

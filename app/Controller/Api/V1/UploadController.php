@@ -41,7 +41,7 @@ class UploadController extends CController
      *
      * @return ResponseInterface
      */
-    public function fileStream(Filesystem $filesystem)
+    public function fileStream(Filesystem $filesystem): ResponseInterface
     {
         $fileStream = $this->request->post('fileStream', '');
         if (empty($fileStream)) {
@@ -64,7 +64,7 @@ class UploadController extends CController
      *
      * @return ResponseInterface
      */
-    public function getFileSplitInfo()
+    public function getFileSplitInfo(): ResponseInterface
     {
         $params = $this->request->inputs(['file_name', 'file_size']);
         $this->validate($params, [
@@ -83,7 +83,7 @@ class UploadController extends CController
      *
      * @return ResponseInterface
      */
-    public function fileSubareaUpload()
+    public function fileSubareaUpload(): ResponseInterface
     {
         $file   = $this->request->file('file');
         $params = $this->request->inputs(['name', 'hash', 'ext', 'size', 'split_index', 'split_num']);

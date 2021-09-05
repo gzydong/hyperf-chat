@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * This is my open source code, please do not use it for commercial applications.
  * For the full copyright and license information,
@@ -17,6 +19,7 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use App\Model\User;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * 授权相关控制器
@@ -38,9 +41,10 @@ class AuthController extends CController
 
     /**
      * 授权登录接口
+     *
      * @RequestMapping(path="login", methods="post")
      */
-    public function login()
+    public function login(): ResponseInterface
     {
         $params = $this->request->inputs(['mobile', 'password', 'platform']);
         $this->validate($params, [
@@ -80,9 +84,10 @@ class AuthController extends CController
 
     /**
      * 退出登录接口
+     *
      * @RequestMapping(path="logout", methods="post")
      */
-    public function logout()
+    public function logout(): ResponseInterface
     {
         $this->guard()->check() && $this->guard()->logout();
 
@@ -91,9 +96,10 @@ class AuthController extends CController
 
     /**
      * 账号注册接口
+     *
      * @RequestMapping(path="register", methods="post")
      */
-    public function register()
+    public function register(): ResponseInterface
     {
         $params = $this->request->all();
         $this->validate($params, [
@@ -126,9 +132,10 @@ class AuthController extends CController
 
     /**
      * 账号找回接口
+     *
      * @RequestMapping(path="forget", methods="post")
      */
-    public function forget()
+    public function forget(): ResponseInterface
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
         $this->validate($params, [
@@ -156,7 +163,7 @@ class AuthController extends CController
      * 授权刷新接口
      * @RequestMapping(path="refresh", methods="post")
      */
-    public function refresh()
+    public function refresh(): ResponseInterface
     {
         if ($this->guard()->guest()) {
             return $this->response->fail('token 刷新失败！');
@@ -173,9 +180,10 @@ class AuthController extends CController
 
     /**
      * 发送验证码
+     *
      * @RequestMapping(path="send-verify-code", methods="post")
      */
-    public function sendVerifyCode()
+    public function sendVerifyCode(): ResponseInterface
     {
         $params = $this->request->inputs(['type', 'mobile']);
         $this->validate($params, [

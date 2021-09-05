@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
@@ -33,7 +34,7 @@ class ContactsApplyController extends CController
      * @param UserService $userService
      * @return ResponseInterface
      */
-    public function create(UserService $userService)
+    public function create(UserService $userService): ResponseInterface
     {
         $params = $this->request->inputs(['friend_id', 'remark']);
         $this->validate($params, [
@@ -62,10 +63,11 @@ class ContactsApplyController extends CController
     }
 
     /**
+     * 好友同意接口
+     *
      * @RequestMapping(path="accept", methods="post")
-     * @return ResponseInterface
      */
-    public function accept()
+    public function accept(): ResponseInterface
     {
         $params = $this->request->inputs(['apply_id', 'remark']);
         $this->validate($params, [
@@ -74,7 +76,7 @@ class ContactsApplyController extends CController
         ]);
 
         $user_id = $this->uid();
-        $isTrue  = $this->service->accept($user_id, intval($params['apply_id']), $params['remark']);
+        $isTrue  = $this->service->accept($user_id, (int)$params['apply_id'], $params['remark']);
         if (!$isTrue) {
             return $this->response->fail('处理失败！');
         }
@@ -83,10 +85,11 @@ class ContactsApplyController extends CController
     }
 
     /**
+     * 好友拒绝接口
+     *
      * @RequestMapping(path="decline", methods="post")
-     * @return ResponseInterface
      */
-    public function decline()
+    public function decline(): ResponseInterface
     {
         $params = $this->request->inputs(['apply_id', 'remark']);
         $this->validate($params, [
@@ -94,7 +97,7 @@ class ContactsApplyController extends CController
             'remark'   => 'present|max:20'
         ]);
 
-        $isTrue = $this->service->decline($this->uid(), intval($params['apply_id']), $params['remark']);
+        $isTrue = $this->service->decline($this->uid(), (int)$params['apply_id'], $params['remark']);
         if (!$isTrue) {
             return $this->response->fail('处理失败！');
         }
@@ -102,14 +105,12 @@ class ContactsApplyController extends CController
         return $this->response->success([], '处理成功...');
     }
 
-
     /**
      * 获取联系人申请未读数
-     * @RequestMapping(path="records", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="records", methods="get")
      */
-    public function records()
+    public function records(): ResponseInterface
     {
         $params = $this->request->inputs(['page', 'page_size']);
         $this->validate($params, [
@@ -117,8 +118,8 @@ class ContactsApplyController extends CController
             'page_size' => 'present|integer'
         ]);
 
-        $page      = $this->request->input('page', 1);
-        $page_size = $this->request->input('page_size', 10);
+        $page      = (int)$this->request->input('page', 1);
+        $page_size = (int)$this->request->input('page_size', 10);
         $user_id   = $this->uid();
 
         FriendApply::getInstance()->rem(strval($user_id));

@@ -54,10 +54,10 @@ class SendEmailCode
     {
         $key = $this->getKey($type, $email);
         if (!$sms_code = $this->getCode($key)) {
-            $sms_code = mt_rand(100000, 999999);
+            $sms_code = (string)mt_rand(100000, 999999);
         }
 
-        $this->setCode($key, $sms_code);;
+        $this->setCode($key, $sms_code);
 
         // ...执行发送(后期使用队列)
         email()->send(
