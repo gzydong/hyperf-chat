@@ -110,7 +110,7 @@ class AuthController extends CController
             'platform' => 'required|in:h5,ios,windows,mac,web',
         ]);
 
-        if (!$this->smsCodeService->check('user_register', $params['mobile'], $params['sms_code'])) {
+        if (!$this->smsCodeService->check('user_register', (string)$params['mobile'], (string)$params['sms_code'])) {
             return $this->response->fail('验证码填写错误！');
         }
 
@@ -144,7 +144,7 @@ class AuthController extends CController
             'sms_code' => 'required|digits:6',
         ]);
 
-        if (!$this->smsCodeService->check('forget_password', $params['mobile'], $params['sms_code'])) {
+        if (!$this->smsCodeService->check('forget_password', (string)$params['mobile'], (string)$params['sms_code'])) {
             return $this->response->fail('验证码填写错误！');
         }
 
