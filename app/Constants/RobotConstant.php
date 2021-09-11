@@ -1,8 +1,7 @@
 <?php
-
+declare(strict_types=1);
 
 namespace App\Constants;
-
 
 /**
  * 定义系统机器人ID

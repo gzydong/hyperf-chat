@@ -1,12 +1,4 @@
 <?php
-/**
- * This is my open source code, please do not use it for commercial applications.
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
 
 namespace App\Controller\Api\V1;
 
@@ -39,11 +31,10 @@ class ArticleController extends CController
 
     /**
      * 获取笔记分类列表
-     * @RequestMapping(path="classifys", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="classifys", methods="get")
      */
-    public function getArticleClass()
+    public function getArticleClass(): ResponseInterface
     {
         $rows = $this->articleService->getUserClass($this->uid());
         foreach ($rows as &$row) {
@@ -55,11 +46,10 @@ class ArticleController extends CController
 
     /**
      * 获取笔记标签列表
-     * @RequestMapping(path="tags", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="tags", methods="get")
      */
-    public function getArticleTags()
+    public function getArticleTags(): ResponseInterface
     {
         return $this->response->success([
             'tags' => $this->articleService->getUserTags($this->uid())
@@ -68,11 +58,10 @@ class ArticleController extends CController
 
     /**
      * 获取笔记列表
-     * @RequestMapping(path="search", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="search", methods="get")
      */
-    public function getArticleList()
+    public function getArticleList(): ResponseInterface
     {
         $params1 = $this->request->inputs(['keyword', 'find_type', 'cid', 'page']);
         $this->validate($params1, [
@@ -102,11 +91,10 @@ class ArticleController extends CController
 
     /**
      * 获取笔记详情
-     * @RequestMapping(path="detail", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="detail", methods="get")
      */
-    public function getArticleDetail()
+    public function getArticleDetail(): ResponseInterface
     {
         $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
@@ -120,11 +108,10 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记分类
-     * @RequestMapping(path="classify/editor", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="classify/editor", methods="post")
      */
-    public function editArticleClass()
+    public function editArticleClass(): ResponseInterface
     {
         $params = $this->request->inputs(['class_id', 'class_name']);
         $this->validate($params, [
@@ -142,12 +129,12 @@ class ArticleController extends CController
 
     /**
      * 删除笔记分类
-     * @RequestMapping(path="classify/delete", methods="post")
      *
+     * @RequestMapping(path="classify/delete", methods="post")
      * @return ResponseInterface
      * @throws \Exception
      */
-    public function delArticleClass()
+    public function delArticleClass(): ResponseInterface
     {
         $params = $this->request->inputs(['class_id']);
         $this->validate($params, [
@@ -163,12 +150,12 @@ class ArticleController extends CController
 
     /**
      * 笔记分类列表排序接口
-     * @RequestMapping(path="classify/sort", methods="post")
      *
+     * @RequestMapping(path="classify/sort", methods="post")
      * @return ResponseInterface
      * @throws \Exception
      */
-    public function articleClassSort()
+    public function articleClassSort(): ResponseInterface
     {
         $params = $this->request->inputs(['class_id', 'sort_type']);
         $this->validate($params, [
@@ -194,11 +181,10 @@ class ArticleController extends CController
 
     /**
      * 笔记分类合并接口
-     * @RequestMapping(path="classify/merge", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="classify/merge", methods="post")
      */
-    public function mergeArticleClass()
+    public function mergeArticleClass(): ResponseInterface
     {
         $params = $this->request->inputs(['class_id', 'toid']);
         $this->validate($params, [
@@ -215,11 +201,10 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记标签
-     * @RequestMapping(path="tag/editor", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="tag/editor", methods="post")
      */
-    public function editArticleTags()
+    public function editArticleTags(): ResponseInterface
     {
         $params = $this->request->inputs(['tag_id', 'tag_name']);
         $this->validate($params, [
@@ -236,11 +221,10 @@ class ArticleController extends CController
 
     /**
      * 删除笔记标签
-     * @RequestMapping(path="del-article-tag", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="del-article-tag", methods="post")
      */
-    public function delArticleTags()
+    public function delArticleTags(): ResponseInterface
     {
         $params = $this->request->inputs(['tag_id']);
         $this->validate($params, [
@@ -256,11 +240,10 @@ class ArticleController extends CController
 
     /**
      * 添加或编辑笔记
-     * @RequestMapping(path="editor", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="editor", methods="post")
      */
-    public function editArticle()
+    public function editArticle(): ResponseInterface
     {
         $params = $this->request->all();
         $this->validate($params, [
@@ -287,11 +270,10 @@ class ArticleController extends CController
 
     /**
      * 删除笔记
-     * @RequestMapping(path="delete", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="delete", methods="post")
      */
-    public function deleteArticle()
+    public function deleteArticle(): ResponseInterface
     {
         $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
@@ -307,11 +289,10 @@ class ArticleController extends CController
 
     /**
      * 恢复删除笔记
-     * @RequestMapping(path="recover", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="recover", methods="post")
      */
-    public function recoverArticle()
+    public function recoverArticle(): ResponseInterface
     {
         $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
@@ -327,12 +308,12 @@ class ArticleController extends CController
 
     /**
      * 笔记图片上传接口
-     * @RequestMapping(path="upload-image", methods="post")
      *
+     * @RequestMapping(path="upload-image", methods="post")
      * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function uploadArticleImage(Filesystem $filesystem)
+    public function uploadArticleImage(Filesystem $filesystem): ResponseInterface
     {
         $file = $this->request->file('image');
         if (!$file || !$file->isValid()) {
@@ -358,11 +339,10 @@ class ArticleController extends CController
 
     /**
      * 移动笔记至指定分类
-     * @RequestMapping(path="move", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="move", methods="post")
      */
-    public function moveArticle()
+    public function moveArticle(): ResponseInterface
     {
         $params = $this->request->inputs(['article_id', 'class_id']);
         $this->validate($params, [
@@ -383,11 +363,10 @@ class ArticleController extends CController
 
     /**
      * 笔记标记星号接口
-     * @RequestMapping(path="asterisk", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="asterisk", methods="post")
      */
-    public function setAsterisk()
+    public function setAsterisk(): ResponseInterface
     {
         $params = $this->request->inputs(['article_id', 'type']);
         $this->validate($params, [
@@ -408,11 +387,10 @@ class ArticleController extends CController
 
     /**
      * 更新笔记关联标签ID
-     * @RequestMapping(path="update-tag", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="update-tag", methods="post")
      */
-    public function updateArticleTag()
+    public function updateArticleTag(): ResponseInterface
     {
         $params = $this->request->inputs(['article_id', 'tags']);
         $this->validate($params, [
@@ -429,12 +407,12 @@ class ArticleController extends CController
 
     /**
      * 永久删除笔记文章
-     * @RequestMapping(path="forever-delete", methods="post")
      *
+     * @RequestMapping(path="forever-delete", methods="post")
      * @return ResponseInterface
      * @throws \Exception
      */
-    public function foreverDelArticle()
+    public function foreverDelArticle(): ResponseInterface
     {
         $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
@@ -450,11 +428,12 @@ class ArticleController extends CController
 
     /**
      * 上传笔记附件
-     * @RequestMapping(path="annex/upload", methods="post")
      *
+     * @RequestMapping(path="annex/upload", methods="post")
+     * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function uploadArticleAnnex(Filesystem $filesystem)
+    public function uploadArticleAnnex(Filesystem $filesystem): ResponseInterface
     {
         $params = $this->request->inputs(['article_id']);
         $this->validate($params, [
@@ -492,11 +471,10 @@ class ArticleController extends CController
 
     /**
      * 删除笔记附件
-     * @RequestMapping(path="annex/delete", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="annex/delete", methods="post")
      */
-    public function deleteArticleAnnex()
+    public function deleteArticleAnnex(): ResponseInterface
     {
         $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [
@@ -512,11 +490,10 @@ class ArticleController extends CController
 
     /**
      * 恢复笔记附件
-     * @RequestMapping(path="annex/recover", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="annex/recover", methods="post")
      */
-    public function recoverArticleAnnex()
+    public function recoverArticleAnnex(): ResponseInterface
     {
         $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [
@@ -532,11 +509,10 @@ class ArticleController extends CController
 
     /**
      * 获取附件回收站列表
-     * @RequestMapping(path="annex/recover-list", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="annex/recover-list", methods="get")
      */
-    public function recoverAnnexList()
+    public function recoverAnnexList(): ResponseInterface
     {
         $rows = $this->articleService->recoverAnnexList($this->uid());
         if ($rows) {
@@ -556,12 +532,12 @@ class ArticleController extends CController
 
     /**
      * 永久删除笔记附件(从已删除附件中永久删除)
-     * @RequestMapping(path="annex/forever-delete", methods="post")
      *
+     * @RequestMapping(path="annex/forever-delete", methods="post")
      * @return ResponseInterface
      * @throws \Exception
      */
-    public function foreverDelAnnex()
+    public function foreverDelAnnex(): ResponseInterface
     {
         $params = $this->request->inputs(['annex_id']);
         $this->validate($params, [

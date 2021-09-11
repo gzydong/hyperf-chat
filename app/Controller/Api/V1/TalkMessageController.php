@@ -20,6 +20,7 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use League\Flysystem\Filesystem;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class TalkController
@@ -44,9 +45,10 @@ class TalkMessageController extends CController
 
     /**
      * 发送文本消息
+     *
      * @RequestMapping(path="text", methods="post")
      */
-    public function text()
+    public function text(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'text']);
         $this->validate($params, [
@@ -55,7 +57,7 @@ class TalkMessageController extends CController
             'text'        => 'required|max:65535',
         ]);
 
-        di()->get(TalkMessageService::class)->insertTextMessage([
+        di()->get(TalkMessageService::class)->insertText([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $this->uid(),
             'receiver_id' => $params['receiver_id'],
@@ -67,9 +69,10 @@ class TalkMessageController extends CController
 
     /**
      * 发送代码块消息
+     *
      * @RequestMapping(path="code", methods="post")
      */
-    public function code()
+    public function code(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'lang', 'code']);
         $this->validate($params, [
@@ -84,7 +87,7 @@ class TalkMessageController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
-        $isTrue = $this->talkMessageService->insertCodeMessage([
+        $isTrue = $this->talkMessageService->insertCode([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
@@ -101,9 +104,10 @@ class TalkMessageController extends CController
 
     /**
      * 发送图片消息
+     *
      * @RequestMapping(path="image", methods="post")
      */
-    public function image(Filesystem $filesystem)
+    public function image(Filesystem $filesystem): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id']);
         $this->validate($params, [
@@ -134,7 +138,7 @@ class TalkMessageController extends CController
         }
 
         // 创建图片消息记录
-        $isTrue = $this->talkMessageService->insertFileMessage([
+        $isTrue = $this->talkMessageService->insertFile([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
@@ -153,9 +157,10 @@ class TalkMessageController extends CController
 
     /**
      * 发送文件消息
+     *
      * @RequestMapping(path="file", methods="post")
      */
-    public function file(Filesystem $filesystem)
+    public function file(Filesystem $filesystem): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'hash_name']);
         $this->validate($params, [
@@ -181,7 +186,7 @@ class TalkMessageController extends CController
             return $this->response->fail('文件不存在...');
         }
 
-        $isTrue = $this->talkMessageService->insertFileMessage([
+        $isTrue = $this->talkMessageService->insertFile([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id']
@@ -201,9 +206,10 @@ class TalkMessageController extends CController
 
     /**
      * 发送投票消息
+     *
      * @RequestMapping(path="vote", methods="post")
      */
-    public function vote()
+    public function vote(): ResponseInterface
     {
         $params = $this->request->all();
         $this->validate($params, [
@@ -218,7 +224,7 @@ class TalkMessageController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
-        $isTrue = $this->talkMessageService->insertVoteMessage([
+        $isTrue = $this->talkMessageService->insertVote([
             'talk_type'   => TalkModeConstant::GROUP_CHAT,
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
@@ -236,9 +242,10 @@ class TalkMessageController extends CController
 
     /**
      * 投票处理
+     *
      * @RequestMapping(path="vote/handle", methods="post")
      */
-    public function handleVote()
+    public function handleVote(): ResponseInterface
     {
         $params = $this->request->inputs(['record_id', 'options']);
         $this->validate($params, [
@@ -260,9 +267,10 @@ class TalkMessageController extends CController
 
     /**
      * 发送表情包消息
+     *
      * @RequestMapping(path="emoticon", methods="post")
      */
-    public function emoticon()
+    public function emoticon(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'emoticon_id']);
         $this->validate($params, [
@@ -280,7 +288,7 @@ class TalkMessageController extends CController
 
         if (!$emoticon) return $this->response->fail('表情不存在！');
 
-        $isTrue = $this->talkMessageService->insertFileMessage([
+        $isTrue = $this->talkMessageService->insertFile([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
@@ -299,11 +307,15 @@ class TalkMessageController extends CController
 
     /**
      * 转发消息记录
+     *
      * @RequestMapping(path="forward", methods="post")
      */
-    public function forward(TalkForwardService $forwardService)
+    public function forward(TalkForwardService $forwardService): ResponseInterface
     {
-        $params = $this->request->inputs(['talk_type', 'receiver_id', 'records_ids', 'forward_mode', 'receive_user_ids', 'receive_group_ids']);
+        $params = $this->request->inputs([
+            'talk_type', 'receiver_id', 'records_ids', 'forward_mode', 'receive_user_ids', 'receive_group_ids'
+        ]);
+
         $this->validate($params, [
             'talk_type'    => 'required|in:1,2',
             'receiver_id'  => 'required|integer|min:1',
@@ -366,9 +378,10 @@ class TalkMessageController extends CController
 
     /**
      * 收藏聊天图片
+     *
      * @RequestMapping(path="collect", methods="post")
      */
-    public function collect(EmoticonService $service)
+    public function collect(EmoticonService $service): ResponseInterface
     {
         $params = $this->request->inputs(['record_id']);
         $this->validate($params, [
@@ -386,9 +399,10 @@ class TalkMessageController extends CController
 
     /**
      * 撤销聊天记录
+     *
      * @RequestMapping(path="revoke", methods="post")
      */
-    public function revoke()
+    public function revoke(): ResponseInterface
     {
         $params = $this->request->inputs(['record_id']);
         $this->validate($params, [
@@ -403,9 +417,10 @@ class TalkMessageController extends CController
 
     /**
      * 删除聊天记录
+     *
      * @RequestMapping(path="delete", methods="post")
      */
-    public function delete()
+    public function delete(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'record_id']);
         $this->validate($params, [

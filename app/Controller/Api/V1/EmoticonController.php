@@ -1,12 +1,4 @@
 <?php
-/**
- * This is my open source code, please do not use it for commercial applications.
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
 
 namespace App\Controller\Api\V1;
 
@@ -39,11 +31,10 @@ class EmoticonController extends CController
 
     /**
      * 获取用户表情包列表
-     * @RequestMapping(path="list", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="list", methods="get")
      */
-    public function list()
+    public function list(): ResponseInterface
     {
         $emoticonList = [];
         $user_id      = $this->uid();
@@ -74,11 +65,10 @@ class EmoticonController extends CController
 
     /**
      * 获取系统表情包
-     * @RequestMapping(path="system", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="system", methods="get")
      */
-    public function system()
+    public function system(): ResponseInterface
     {
         $items = Emoticon::get(['id', 'name', 'icon'])->toArray();
         if ($items) {
@@ -94,11 +84,10 @@ class EmoticonController extends CController
 
     /**
      * 安装或移除系统表情包
-     * @RequestMapping(path="set-user-emoticon", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="set-user-emoticon", methods="post")
      */
-    public function setUserEmoticon()
+    public function setUserEmoticon(): ResponseInterface
     {
         $params = $this->request->all();
         $this->validate($params, [
@@ -142,12 +131,12 @@ class EmoticonController extends CController
 
     /**
      * 自定义上传表情包
-     * @RequestMapping(path="upload", methods="post")
      *
+     * @RequestMapping(path="upload", methods="post")
      * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function upload(Filesystem $filesystem)
+    public function upload(Filesystem $filesystem): ResponseInterface
     {
         $file = $this->request->file('emoticon');
         if (!$file->isValid()) {
@@ -192,12 +181,10 @@ class EmoticonController extends CController
 
     /**
      * 移除收藏的表情包
-     * @RequestMapping(path="del-collect-emoticon", methods="post")
      *
-     * @return ResponseInterface
-     * @throws \Exception
+     * @RequestMapping(path="del-collect-emoticon", methods="post")
      */
-    public function delCollectEmoticon()
+    public function delCollectEmoticon(): ResponseInterface
     {
         $params = $this->request->inputs(['ids']);
         $this->validate($params, [

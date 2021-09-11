@@ -1,12 +1,4 @@
 <?php
-/**
- * This is my open source code, please do not use it for commercial applications.
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
 
 namespace App\Controller\Api\V1;
 
@@ -51,10 +43,8 @@ class GroupController extends CController
     /**
      * 创建群组
      * @RequestMapping(path="create", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function create()
+    public function create(): ResponseInterface
     {
         $params = $this->request->inputs(['group_name', 'uids']);
         $this->validate($params, [
@@ -78,10 +68,8 @@ class GroupController extends CController
     /**
      * 解散群组接口
      * @RequestMapping(path="dismiss", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function dismiss()
+    public function dismiss(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id']);
         $this->validate($params, [
@@ -99,10 +87,8 @@ class GroupController extends CController
     /**
      * 邀请好友加入群组接口
      * @RequestMapping(path="invite", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function invite()
+    public function invite(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id', 'uids']);
         $this->validate($params, [
@@ -121,10 +107,8 @@ class GroupController extends CController
     /**
      * 退出群组接口
      * @RequestMapping(path="secede", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function secede()
+    public function secede(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id']);
         $this->validate($params, [
@@ -141,10 +125,8 @@ class GroupController extends CController
     /**
      * 编辑群组信息
      * @RequestMapping(path="edit", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function editDetail()
+    public function editDetail(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id', 'group_name', 'profile', 'avatar']);
         $this->validate($params, [
@@ -162,10 +144,8 @@ class GroupController extends CController
     /**
      * 移除指定成员（管理员权限）
      * @RequestMapping(path="remove-members", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function removeMembers()
+    public function removeMembers(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id', 'members_ids']);
         $this->validate($params, [
@@ -191,10 +171,8 @@ class GroupController extends CController
     /**
      * 获取群信息接口
      * @RequestMapping(path="detail", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function detail(TalkListService $service)
+    public function detail(TalkListService $service): ResponseInterface
     {
         $group_id = $this->request->input('group_id', 0);
         $user_id  = $this->uid();
@@ -231,10 +209,8 @@ class GroupController extends CController
     /**
      * 设置群名片
      * @RequestMapping(path="set-group-card", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function editGroupCard()
+    public function editGroupCard(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id', 'visit_card']);
         $this->validate($params, [
@@ -252,10 +228,8 @@ class GroupController extends CController
     /**
      * 获取可邀请加入群组的好友列表
      * @RequestMapping(path="invite-friends", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function getInviteFriends(UserService $service)
+    public function getInviteFriends(UserService $service): ResponseInterface
     {
         $group_id = $this->request->input('group_id', 0);
         $friends  = $service->getUserFriends($this->uid());
@@ -275,10 +249,8 @@ class GroupController extends CController
     /**
      * 获取群组列表
      * @RequestMapping(path="list", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function getGroups()
+    public function getGroups(): ResponseInterface
     {
         return $this->response->success(
             $this->groupService->getUserGroups($this->uid())
@@ -288,10 +260,8 @@ class GroupController extends CController
     /**
      * 获取群组成员列表
      * @RequestMapping(path="members", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function getGroupMembers()
+    public function getGroupMembers(): ResponseInterface
     {
         $user_id  = $this->uid();
         $group_id = $this->request->input('group_id', 0);
@@ -323,10 +293,8 @@ class GroupController extends CController
     /**
      * 获取群组公告列表
      * @RequestMapping(path="notices", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function getGroupNotice(GroupNoticeService $service)
+    public function getGroupNotice(GroupNoticeService $service): ResponseInterface
     {
         $user_id  = $this->uid();
         $group_id = $this->request->input('group_id', 0);
@@ -342,12 +310,13 @@ class GroupController extends CController
     /**
      * 创建/编辑群公告
      * @RequestMapping(path="edit-notice", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function editNotice(GroupNoticeService $service)
+    public function editNotice(GroupNoticeService $service): ResponseInterface
     {
-        $params = $this->request->inputs(['group_id', 'notice_id', 'title', 'content', 'is_top', 'is_confirm']);
+        $params = $this->request->inputs([
+            'group_id', 'notice_id', 'title', 'content', 'is_top', 'is_confirm'
+        ]);
+
         $this->validate($params, [
             'notice_id'  => 'required|integer',
             'group_id'   => 'required|integer',
@@ -381,10 +350,8 @@ class GroupController extends CController
     /**
      * 删除群公告(软删除)
      * @RequestMapping(path="delete-notice", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function deleteNotice(GroupNoticeService $service)
+    public function deleteNotice(GroupNoticeService $service): ResponseInterface
     {
         $params = $this->request->inputs(['group_id', 'notice_id']);
         $this->validate($params, [

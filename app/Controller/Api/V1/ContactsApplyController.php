@@ -30,6 +30,8 @@ class ContactsApplyController extends CController
     private $service;
 
     /**
+     * 添加联系人申请接口
+     *
      * @RequestMapping(path="create", methods="post")
      * @param UserService $userService
      * @return ResponseInterface

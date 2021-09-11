@@ -1,12 +1,4 @@
 <?php
-/**
- * This is my open source code, please do not use it for commercial applications.
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
 
 namespace App\Controller\Api\V1;
 
@@ -42,11 +34,10 @@ class ContactsController extends CController
 
     /**
      * 获取用户联系人列表
-     * @RequestMapping(path="list", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="list", methods="get")
      */
-    public function getContacts(UserService $service)
+    public function getContacts(UserService $service): ResponseInterface
     {
         $rows = $service->getUserFriends($this->uid());
         if ($rows) {
@@ -61,11 +52,10 @@ class ContactsController extends CController
 
     /**
      * 删除联系人
-     * @RequestMapping(path="delete", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="delete", methods="post")
      */
-    public function deleteContact()
+    public function deleteContact(): ResponseInterface
     {
         $params = $this->request->inputs(['friend_id']);
         $this->validate($params, [
@@ -86,11 +76,10 @@ class ContactsController extends CController
 
     /**
      * 获取联系人申请未读数
-     * @RequestMapping(path="apply-unread-num", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="apply-unread-num", methods="get")
      */
-    public function getContactApplyUnreadNum()
+    public function getContactApplyUnreadNum(): ResponseInterface
     {
         return $this->response->success([
             'unread_num' => (int)FriendApply::getInstance()->get(strval($this->uid()))
@@ -99,11 +88,10 @@ class ContactsController extends CController
 
     /**
      * 搜索联系人
-     * @RequestMapping(path="search", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="search", methods="get")
      */
-    public function searchContacts()
+    public function searchContacts(): ResponseInterface
     {
         $params = $this->request->inputs(['mobile']);
         $this->validate($params, [
@@ -116,11 +104,10 @@ class ContactsController extends CController
 
     /**
      * 编辑联系人备注
-     * @RequestMapping(path="edit-remark", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="edit-remark", methods="post")
      */
-    public function editContactRemark()
+    public function editContactRemark(): ResponseInterface
     {
         $params = $this->request->inputs(['friend_id', 'remarks']);
         $this->validate($params, [
@@ -129,7 +116,7 @@ class ContactsController extends CController
         ]);
 
         $user_id = $this->uid();
-        $isTrue = $this->service->editRemark($user_id, intval($params['friend_id']), $params['remarks']);
+        $isTrue  = $this->service->editRemark($user_id, intval($params['friend_id']), $params['remarks']);
         if (!$isTrue) {
             return $this->response->fail('备注修改失败！');
         }

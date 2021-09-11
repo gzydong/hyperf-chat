@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * This is my open source code, please do not use it for commercial applications.
  * For the full copyright and license information,
@@ -40,19 +41,13 @@ abstract class AbstractController
     protected $response;
 
     /**
-     * @Inject
-     * @var ValidatorFactoryInterface
-     */
-    protected $validationFactory;
-
-    /**
      * 自定义控制器验证器
      *
      * @param mixed ...$arg
      */
     protected function validate(...$arg)
     {
-        $validator = $this->validationFactory->make(...$arg);
+        $validator = di()->get(ValidatorFactoryInterface::class)->make(...$arg);
         if ($validator->fails()) {
             throw new ValidateException($validator->errors()->first(), ResponseCode::VALIDATION_ERROR);
         }

@@ -1,15 +1,6 @@
 <?php
 declare(strict_types=1);
 
-/**
- * This is my open source code, please do not use it for commercial applications.
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
-
 namespace App\Controller\Api\V1;
 
 use Hyperf\Di\Annotation\Inject;
@@ -103,11 +94,11 @@ class UsersController extends CController
             'avatar'   => 'present|url'
         ]);
 
-        $isTrue = User::where('id', $this->uid())->update($params);
+        $params['updated_at'] = date("Y-m-d H:i:s");
 
-        return $isTrue
-            ? $this->response->success([], '个人信息修改成功...')
-            : $this->response->fail('个人信息修改失败！');
+        User::where('id', $this->uid())->update($params);
+
+        return $this->response->success([], '个人信息修改成功...');
     }
 
     /**
@@ -123,11 +114,12 @@ class UsersController extends CController
             'avatar' => 'required|url'
         ]);
 
-        $isTrue = User::where('id', $this->uid())->update(['avatar' => $params['avatar']]);
+        User::where('id', $this->uid())->update([
+            'avatar'     => $params['avatar'],
+            'updated_at' => date("Y-m-d H:i:s")
+        ]);
 
-        return $isTrue
-            ? $this->response->success([], '头像修改成功...')
-            : $this->response->fail('头像修改失败！');
+        return $this->response->success([], '头像修改成功...');
     }
 
     /**
@@ -165,14 +157,16 @@ class UsersController extends CController
         $userInfo = $this->user();
 
         // 验证密码是否正确
-        if (!HashHelper::check($this->request->post('old_password'), $userInfo->password)) {
+        if (!HashHelper::check($params['old_password'], $userInfo->password)) {
             return $this->response->fail('旧密码验证失败！');
         }
 
         $isTrue = $this->userService->resetPassword($userInfo->mobile, $params['new_password']);
-        return $isTrue
-            ? $this->response->success([], '密码修改成功...')
-            : $this->response->fail('密码修改失败！');
+        if (!$isTrue) {
+            return $this->response->fail('密码修改失败！');
+        }
+
+        return $this->response->success([], '密码修改成功...');
     }
 
     /**
@@ -191,7 +185,7 @@ class UsersController extends CController
             'sms_code' => 'required|digits:6'
         ]);
 
-        if (!$smsCodeService->check('change_mobile', $params['mobile'], $params['sms_code'])) {
+        if (!$smsCodeService->check('change_mobile', $params['mobile'], (string)$params['sms_code'])) {
             return $this->response->fail('验证码填写错误！');
         }
 
@@ -226,7 +220,7 @@ class UsersController extends CController
         ]);
 
         $sendEmailCode = new SendEmailCode();
-        if (!$sendEmailCode->check(SendEmailCode::CHANGE_EMAIL, $params['email'], $params['email_code'])) {
+        if (!$sendEmailCode->check(SendEmailCode::CHANGE_EMAIL, $params['email'], (string)$params['email_code'])) {
             return $this->response->fail('验证码填写错误！');
         }
 

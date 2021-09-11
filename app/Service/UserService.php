@@ -16,9 +16,9 @@ class UserService extends BaseService
      *
      * @param int   $user_id 用户ID
      * @param array $field   查询字段
-     * @return User
+     * @return User|object|null
      */
-    public function findById(int $user_id, $field = ['*'])
+    public function findById(int $user_id, $field = ['*']): ?User
     {
         return User::where('id', $user_id)->first($field);
     }
@@ -149,7 +149,7 @@ class UserService extends BaseService
      * @param int $user_id 用户ID
      * @return array
      */
-    public function getUserFriends(int $user_id)
+    public function getUserFriends(int $user_id): array
     {
         return UsersFriend::leftJoin('users', 'users.id', '=', 'users_friends.friend_id')
             ->where('user_id', $user_id)->where('users_friends.status', 1)
@@ -169,7 +169,7 @@ class UserService extends BaseService
      * @param int $user_id 指定用户ID
      * @return array
      */
-    public function getFriendIds(int $user_id)
+    public function getFriendIds(int $user_id): array
     {
         return UsersFriend::where('user_id', $user_id)->where('status', 1)->pluck('friend_id')->toArray();
     }

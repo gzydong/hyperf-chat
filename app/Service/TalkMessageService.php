@@ -32,7 +32,7 @@ class TalkMessageService
      * @param array $message
      * @return bool
      */
-    public function insertTextMessage(array $message): bool
+    public function insertText(array $message): bool
     {
         $message['msg_type']   = TalkMessageType::TEXT_MESSAGE;
         $message['content']    = htmlspecialchars($message['content']);
@@ -62,7 +62,6 @@ class TalkMessageService
         return true;
     }
 
-
     /**
      * 创建代码块消息
      *
@@ -70,7 +69,7 @@ class TalkMessageService
      * @param array $code
      * @return bool
      */
-    public function insertCodeMessage(array $message, array $code): bool
+    public function insertCode(array $message, array $code): bool
     {
         Db::beginTransaction();
         try {
@@ -117,7 +116,7 @@ class TalkMessageService
      * @param array $file
      * @return bool
      */
-    public function insertFileMessage(array $message, array $file): bool
+    public function insertFile(array $message, array $file): bool
     {
         Db::beginTransaction();
         try {
@@ -165,7 +164,7 @@ class TalkMessageService
      * @param array $vote
      * @return bool
      */
-    public function insertVoteMessage(array $message, array $vote): bool
+    public function insertVote(array $message, array $vote): bool
     {
         $answer_num = GroupMember::where('group_id', $message['receiver_id'])->where('is_quit', 0)->count();
 
@@ -294,7 +293,7 @@ class TalkMessageService
      * @param array $loginParams
      * @return bool
      */
-    public function insertLoginMessage(array $message, array $loginParams): bool
+    public function insertLogin(array $message, array $loginParams): bool
     {
         Db::beginTransaction();
         try {

@@ -1,12 +1,4 @@
 <?php
-/**
- * This is my open source code, please do not use it for commercial applications.
- * For the full copyright and license information,
- * please view the LICENSE file that was distributed with this source code
- *
- * @author Yuandong<837215079@qq.com>
- * @link   https://github.com/gzydong/hyperf-chat
- */
 
 namespace App\Controller\Api\V1;
 
@@ -57,7 +49,7 @@ class TalkController extends CController
      *
      * @return ResponseInterface
      */
-    public function list()
+    public function list(): ResponseInterface
     {
         $user_id = $this->uid();
 
@@ -74,10 +66,8 @@ class TalkController extends CController
     /**
      * 新增对话列表
      * @RequestMapping(path="create", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function create(UserFriendService $service)
+    public function create(UserFriendService $service): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id']);
         $this->validate($params, [
@@ -135,10 +125,8 @@ class TalkController extends CController
     /**
      * 删除对话列表
      * @RequestMapping(path="delete", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function delete()
+    public function delete(): ResponseInterface
     {
         $params = $this->request->inputs(['list_id']);
         $this->validate($params, [
@@ -153,10 +141,8 @@ class TalkController extends CController
     /**
      * 对话列表置顶
      * @RequestMapping(path="topping", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function topping()
+    public function topping(): ResponseInterface
     {
         $params = $this->request->inputs(['list_id', 'type']);
         $this->validate($params, [
@@ -172,10 +158,8 @@ class TalkController extends CController
     /**
      * 设置消息免打扰状态
      * @RequestMapping(path="disturb", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function disturb()
+    public function disturb(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'is_disturb']);
         $this->validate($params, [
@@ -192,10 +176,8 @@ class TalkController extends CController
     /**
      * 更新对话列表未读数
      * @RequestMapping(path="update-unread-num", methods="post")
-     *
-     * @return ResponseInterface
      */
-    public function updateUnreadNum()
+    public function updateUnreadNum(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id']);
         $this->validate($params, [
@@ -214,10 +196,8 @@ class TalkController extends CController
     /**
      * 获取对话面板中的聊天记录
      * @RequestMapping(path="records", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function getChatRecords()
+    public function getChatRecords(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'record_id']);
         $this->validate($params, [
@@ -251,10 +231,8 @@ class TalkController extends CController
     /**
      * 获取转发记录详情
      * @RequestMapping(path="get-forward-records", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function getForwardRecords()
+    public function getForwardRecords(): ResponseInterface
     {
         $params = $this->request->inputs(['record_id']);
         $this->validate($params, [
@@ -269,10 +247,8 @@ class TalkController extends CController
     /**
      * 查询聊天记录
      * @RequestMapping(path="find-chat-records", methods="get")
-     *
-     * @return ResponseInterface
      */
-    public function findChatRecords()
+    public function findChatRecords(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'record_id', 'msg_type']);
         $this->validate($params, [

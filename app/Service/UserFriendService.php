@@ -14,7 +14,7 @@ class UserFriendService
      * @param int $friend_id 好友ID
      * @return string
      */
-    public function getFriendRemark(int $user_id, int $friend_id)
+    public function getFriendRemark(int $user_id, int $friend_id): string
     {
         $remark = FriendRemark::getInstance()->read($user_id, $friend_id);
         if ($remark) return $remark;
@@ -33,7 +33,7 @@ class UserFriendService
      * @param bool $is_mutual 相互互为好友
      * @return bool
      */
-    public function isFriend(int $user_id, int $friend_id, $is_mutual = false)
+    public function isFriend(int $user_id, int $friend_id, $is_mutual = false): bool
     {
         $isTrue1 = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->exists();
 
