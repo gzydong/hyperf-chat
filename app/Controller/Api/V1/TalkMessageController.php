@@ -241,31 +241,6 @@ class TalkMessageController extends CController
     }
 
     /**
-     * 投票处理
-     *
-     * @RequestMapping(path="vote/handle", methods="post")
-     */
-    public function handleVote(): ResponseInterface
-    {
-        $params = $this->request->inputs(['record_id', 'options']);
-        $this->validate($params, [
-            'record_id' => 'required|integer|min:1',
-            'options'   => 'required',
-        ]);
-
-        $params['options'] = array_filter(explode(',', $params['options']));
-        if (!$params['options']) {
-            return $this->response->fail('投票失败，请稍后再试！');
-        }
-
-        [$isTrue, $cache] = $this->talkMessageService->handleVote($this->uid(), $params);
-
-        if (!$isTrue) return $this->response->fail('投票失败，请稍后再试！');
-
-        return $this->response->success($cache);
-    }
-
-    /**
      * 发送表情包消息
      *
      * @RequestMapping(path="emoticon", methods="post")
@@ -306,7 +281,7 @@ class TalkMessageController extends CController
     }
 
     /**
-     * 转发消息记录
+     * 发送转发消息
      *
      * @RequestMapping(path="forward", methods="post")
      */
@@ -349,11 +324,9 @@ class TalkMessageController extends CController
         // 需要转发的好友或者群组
         $items = array_merge($receive_user_ids, $receive_group_ids);
 
-        if ($params['forward_mode'] == 1) {// 逐条转发
-            $ids = $forwardService->multiSplitForward($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
-        } else {// 合并转发
-            $ids = $forwardService->multiMergeForward($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
-        }
+        $method = $params['forward_mode'] == 1 ? "multiSplitForward" : "multiMergeForward";
+
+        $ids = $forwardService->{$method}($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
 
         if (!$ids) return $this->response->fail('转发失败！');
 
@@ -374,6 +347,16 @@ class TalkMessageController extends CController
         }
 
         return $this->response->success([], '转发成功...');
+    }
+
+    /**
+     * 发送用户名片消息
+     *
+     * @RequestMapping(path="card", methods="post")
+     */
+    public function card(): ResponseInterface
+    {
+        // todo 待开发
     }
 
     /**
@@ -436,8 +419,35 @@ class TalkMessageController extends CController
             parse_ids($params['record_id'])
         );
 
-        return $isTrue
-            ? $this->response->success([], '删除成功...')
-            : $this->response->fail('删除失败！');
+        if (!$isTrue) {
+            return $this->response->fail('删除失败！');
+        }
+
+        return $this->response->success([], '删除成功...');
+    }
+
+    /**
+     * 投票处理
+     *
+     * @RequestMapping(path="vote/handle", methods="post")
+     */
+    public function handleVote(): ResponseInterface
+    {
+        $params = $this->request->inputs(['record_id', 'options']);
+        $this->validate($params, [
+            'record_id' => 'required|integer|min:1',
+            'options'   => 'required',
+        ]);
+
+        $params['options'] = array_filter(explode(',', $params['options']));
+        if (!$params['options']) {
+            return $this->response->fail('投票失败，请稍后再试！');
+        }
+
+        [$isTrue, $cache] = $this->talkMessageService->handleVote($this->uid(), $params);
+
+        if (!$isTrue) return $this->response->fail('投票失败，请稍后再试！');
+
+        return $this->response->success($cache);
     }
 }

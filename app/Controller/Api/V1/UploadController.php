@@ -29,8 +29,9 @@ class UploadController extends CController
 
     /**
      * 图片文件流上传接口
-     * @RequestMapping(path="file-stream", methods="post")
      *
+     * @RequestMapping(path="file-stream", methods="post")
+     * @param Filesystem $filesystem
      * @return ResponseInterface
      */
     public function fileStream(Filesystem $filesystem): ResponseInterface
@@ -52,9 +53,8 @@ class UploadController extends CController
 
     /**
      * 获取拆分文件信息
-     * @RequestMapping(path="get-file-split-info", methods="get")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="get-file-split-info", methods="get")
      */
     public function getFileSplitInfo(): ResponseInterface
     {
@@ -71,9 +71,8 @@ class UploadController extends CController
 
     /**
      * 文件拆分上传接口
-     * @RequestMapping(path="file-subarea-upload", methods="post")
      *
-     * @return ResponseInterface
+     * @RequestMapping(path="file-subarea-upload", methods="post")
      */
     public function fileSubareaUpload(): ResponseInterface
     {
