@@ -61,7 +61,7 @@ class ReceiveHandleService
             return;
         }
 
-        di()->get(TalkMessageService::class)->insertTextMessage([
+        di()->get(TalkMessageService::class)->insertText([
             'talk_type'   => $data['talk_type'],
             'user_id'     => $data['sender_id'],
             'receiver_id' => $data['receiver_id'],

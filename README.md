@@ -23,14 +23,14 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
 - PHP >= 7.3
 - MySQL >= 5.7
 - Redis >= 5.0
-- Swoole  >= 4.5
+- Swoole >= 4.5
 - OpenSSL
 - JSON
 - PDO
 
 ## 4、相关文档
 
-[Hyperf 框架](https://hyperf.wiki/2.0/#/README)
+[Hyperf 框架](https://hyperf.wiki/2.1/#/README)
 
 ## 5、项目安装
 
@@ -47,7 +47,7 @@ Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + 
 ##### 配置 Http 服务
 
 ```
-upstream hyperfhttp {
+upstream hyperf_http {
     # Hyperf HTTP Server 的 IP 及 端口
     server 127.0.0.1:9503;
 }
@@ -69,7 +69,7 @@ server {
         proxy_cookie_path / "/; secure; HttpOnly; SameSite=strict";
 
         # 执行代理访问真实服务器
-        proxy_pass http://hyperfhttp;
+        proxy_pass http://hyperf_http;
     }
 }
 ```
@@ -149,6 +149,4 @@ Author => Swoole Team <team@swoole.com>
 Version => 4.5.9
 ...
 openssl => OpenSSL 1.0.2k-fips  26 Jan 2017 (请确保此处开启)
-``` 
-
-3. 请确保 RabbitMQ 中添加了对应的vhost
+```

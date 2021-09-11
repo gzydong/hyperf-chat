@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+use App\Support\Mailer;
 
 /**
  * Class MailerService
@@ -47,11 +46,7 @@ class MailerService
      */
     public function realSend(string $email, string $subject, string $template): bool
     {
-        try {
-            return $this->mail($email, $subject, $template);
-        } catch (Exception $e) {
-            return false;
-        }
+        return $this->mail($email, $subject, $template);
     }
 
     /**
@@ -61,25 +56,9 @@ class MailerService
      * @param string $subject 邮件标题
      * @param string $view    邮件内容
      * @return bool
-     * @throws Exception
      */
     private function mail(string $address, string $subject, string $view): bool
     {
-        $config        = config('mail');
-        $mail          = new PHPMailer();
-        $mail->CharSet = 'UTF-8';
-        $mail->IsSMTP();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       // 设定使用SMTP服务
-        $mail->SMTPDebug  = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // 关闭SMTP调试功能
-        $mail->SMTPAuth  = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // 启用 SMTP 验证功能
-        $mail->SMTPSecure = 'ssl';                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // 使用安全协议
-        $mail->Host       = $config['host'];
-        $mail->Port       = $config['port'];
-        $mail->Username   = $config['username'];
-        $mail->Password   = $config['password'];
-        $mail->SetFrom($config['from'], $config['name']);
-        $mail->Subject = $subject;
-        $mail->MsgHTML($view);
-        $mail->AddAddress($address); // 收件人
-        return $mail->Send();
+        return di()->get(Mailer::class)->send($address, $subject, $view);
     }
 }

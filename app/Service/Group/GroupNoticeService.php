@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service\Group;
 
@@ -40,7 +41,7 @@ class GroupNoticeService extends BaseService
      * @return bool
      * @throws Exception
      */
-    public function delete(int $notice_id, int $user_id)
+    public function delete(int $notice_id, int $user_id): bool
     {
         $notice = GroupNotice::where('id', $notice_id)->first();
 
@@ -64,7 +65,7 @@ class GroupNoticeService extends BaseService
      * @param int $group_id 群ID
      * @return array
      */
-    public function lists(int $group_id)
+    public function lists(int $group_id): array
     {
         return GroupNotice::leftJoin('users', 'users.id', '=', 'group_notice.creator_id')
             ->where([

@@ -37,6 +37,9 @@ class AppExceptionHandler extends ExceptionHandler
             'traces' => $isDev ? $throwable->getLine() : [],
         ], JSON_UNESCAPED_UNICODE);
 
+        // 错误信息记录日志
+        logger()->error($throwable->getTraceAsString());
+
         !$isDev && $this->sendAdminEmail($throwable);
 
         return $response->withHeader('Server', 'Lumen IM')->withStatus(500)->withBody(new SwooleStream($data));

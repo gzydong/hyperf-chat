@@ -57,7 +57,7 @@ class TalkMessageController extends CController
             'text'        => 'required|max:65535',
         ]);
 
-        di()->get(TalkMessageService::class)->insertText([
+        $this->talkMessageService->insertText([
             'talk_type'   => $params['talk_type'],
             'user_id'     => $this->uid(),
             'receiver_id' => $params['receiver_id'],
