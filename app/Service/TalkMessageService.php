@@ -17,6 +17,7 @@ use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsLogin;
 use App\Model\Talk\TalkRecordsVote;
 use App\Model\Talk\TalkRecordsVoteAnswer;
+use App\Repository\RobotRepository;
 use App\Support\UserRelation;
 use Exception;
 use App\Constants\MediaTypeConstant;
@@ -41,23 +42,7 @@ class TalkMessageService
 
         $result = TalkRecords::create($message);
 
-        // 判断是否私信
-        if ($result->talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            UnreadTalkCache::getInstance()->increment($result->user_id, $result->receiver_id);
-        }
-
-        // 缓存最后一条聊天消息
-        LastMessage::getInstance()->save($result->talk_type, $result->user_id, $result->receiver_id, [
-            'text'       => mb_substr($result->content, 0, 30),
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
-            'sender_id'   => $result->user_id,
-            'receiver_id' => $result->receiver_id,
-            'talk_type'   => $result->talk_type,
-            'record_id'   => $result->id
-        ]));
+        $this->handle($result, ['text' => mb_substr($result->content, 0, 30)]);
 
         return true;
     }
@@ -94,17 +79,7 @@ class TalkMessageService
             return false;
         }
 
-        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
-            'text'       => '[代码消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
-            'sender_id'   => $insert->user_id,
-            'receiver_id' => $insert->receiver_id,
-            'talk_type'   => $insert->talk_type,
-            'record_id'   => $insert->id
-        ]));
+        $this->handle($insert, ['text' => '[代码消息]']);
 
         return true;
     }
@@ -142,17 +117,7 @@ class TalkMessageService
             return false;
         }
 
-        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
-            'text'       => '[图片消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
-            'sender_id'   => $insert->user_id,
-            'receiver_id' => $insert->receiver_id,
-            'talk_type'   => $insert->talk_type,
-            'record_id'   => $insert->id
-        ]));
+        $this->handle($insert, ['text' => '[图片消息]']);
 
         return true;
     }
@@ -195,17 +160,7 @@ class TalkMessageService
             return false;
         }
 
-        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
-            'text'       => '[投票消息]',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
-            'sender_id'   => $insert->user_id,
-            'receiver_id' => $insert->receiver_id,
-            'talk_type'   => $insert->talk_type,
-            'record_id'   => $insert->id
-        ]));
+        $this->handle($insert, ['text' => '[投票消息]']);
 
         return true;
     }
@@ -279,6 +234,7 @@ class TalkMessageService
 
         // 更新投票缓存
         VoteCache::getInstance()->updateCache($record->vote_id);
+
         $cache = VoteStatisticsCache::getInstance()->updateVoteCache($record->vote_id);
 
         // todo 推送消息
@@ -295,7 +251,7 @@ class TalkMessageService
      */
     public function insertLogin(array $message, array $loginParams): bool
     {
-        $user_id = di()->get(RobotService::class)->getRootUserID(RobotConstant::LOGIN_ROBOT);
+        $user_id = di()->get(RobotRepository::class)->findTypeByUserId(RobotConstant::LOGIN_ROBOT);
 
         if ($user_id == 0) return false;
 
@@ -328,18 +284,33 @@ class TalkMessageService
         // 创建对话列表
         di()->get(TalkListService::class)->create($insert->receiver_id, $insert->user_id, $insert->talk_type, true);
 
-        LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
-            'text'       => '[登录提醒]',
+        $this->handle($insert, ['text' => '[登录提醒]']);
+
+        return true;
+    }
+
+    /**
+     * 处理数据
+     *
+     * @param TalkRecords $record
+     * @param array       $option
+     */
+    private function handle(TalkRecords $record, array $option = []): void
+    {
+        if ($record->talk_type == TalkModeConstant::PRIVATE_CHAT) {
+            UnreadTalkCache::getInstance()->increment($record->user_id, $record->receiver_id);
+        }
+
+        LastMessage::getInstance()->save($record->talk_type, $record->user_id, $record->receiver_id, [
+            'text'       => $option['text'],
             'created_at' => date('Y-m-d H:i:s')
         ]);
 
         event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK, [
-            'sender_id'   => $insert->user_id,
-            'receiver_id' => $insert->receiver_id,
-            'talk_type'   => $insert->talk_type,
-            'record_id'   => $insert->id
+            'sender_id'   => $record->user_id,
+            'receiver_id' => $record->receiver_id,
+            'talk_type'   => $record->talk_type,
+            'record_id'   => $record->id
         ]));
-
-        return true;
     }
 }

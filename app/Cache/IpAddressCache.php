@@ -19,7 +19,7 @@ class IpAddressCache extends HashRedis
             return JsonHelper::decode($result);
         }
 
-        $result = di()->get(IpAddress::class)->read($ip);
+        $result = di()->get(IpAddress::class)->get($ip);
         if (!empty($result)) {
             $this->add($ip, JsonHelper::encode($result));
         }

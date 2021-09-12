@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
@@ -10,17 +11,6 @@ use Hyperf\Utils\Str;
 
 class RobotService
 {
-    /**
-     * 获取机器人关联的用户ID
-     *
-     * @param int $robot_type
-     * @return int
-     */
-    public function getRootUserID(int $robot_type): int
-    {
-        return (int)Robot::where('type', $robot_type)->value('user_id');
-    }
-
     /**
      * 创建机器人
      *

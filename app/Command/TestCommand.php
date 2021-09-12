@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Cache\IpAddressCache;
+use App\Constants\RobotConstant;
 use App\Model\UsersFriend;
 use App\Repository\ExampleRepository;
+use App\Repository\RobotRepository;
 use App\Service\RobotService;
 use App\Support\IpAddress;
 use Hyperf\Command\Command as HyperfCommand;
@@ -40,13 +42,13 @@ class TestCommand extends HyperfCommand
         // $repository = di()->get(ExampleRepository::class);
         // $repository->where_case2();
 
-        di()->get(RobotService::class)->create([
-            'robot_name' => "登录助手",
-            'describe'   => "异地登录助手",
-            'logo'       => '',
-            'is_talk'    => 0,
-            'type'       => 1,
-        ]);
+        // di()->get(RobotService::class)->create([
+        //     'robot_name' => "登录助手",
+        //     'describe'   => "异地登录助手",
+        //     'logo'       => '',
+        //     'is_talk'    => 0,
+        //     'type'       => 1,
+        // ]);
     }
 
 

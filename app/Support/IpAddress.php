@@ -7,12 +7,24 @@ use Hyperf\Guzzle\ClientFactory;
 
 class IpAddress
 {
-    public function read(string $ip)
+    /**
+     * 获取IP地址信息
+     *
+     * @param string $ip
+     * @return array
+     */
+    public function get(string $ip): array
     {
         return $this->request($ip);
     }
 
-    private function request(string $ip)
+    /**
+     * 请求聚合数据IP查询接口
+     *
+     * @param string $ip
+     * @return array
+     */
+    private function request(string $ip): array
     {
         $api = config('juhe_api.ip');
 
