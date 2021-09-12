@@ -156,11 +156,11 @@ class TalkForwardService extends BaseService
         }
 
         if (!empty($fileArray)) {
-            $fileArray = TalkRecordsFile::where('record_id', $fileArray)->get()->keyBy('record_id')->toArray();
+            $fileArray = TalkRecordsFile::whereIn('record_id', $fileArray)->get()->keyBy('record_id')->toArray();
         }
 
         if (!empty($codeArray)) {
-            $codeArray = TalkRecordsCode::where('record_id', $codeArray)->get()->keyBy('record_id')->toArray();
+            $codeArray = TalkRecordsCode::whereIn('record_id', $codeArray)->get()->keyBy('record_id')->toArray();
         }
 
         $insRecordIds = [];
