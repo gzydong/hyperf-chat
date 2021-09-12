@@ -22,7 +22,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class Robot extends Model
 {
-    protected $table = 'Robot';
+    protected $table = 'robots';
 
     protected $fillable = [
         'user_id',
@@ -31,6 +31,7 @@ class Robot extends Model
         'logo',
         'is_talk',
         'status',
+        'type',
         'created_at',
         'updated_at',
     ];
@@ -39,6 +40,7 @@ class Robot extends Model
         'user_id'    => 'integer',
         'is_talk'    => 'integer',
         'status'     => 'integer',
+        'type'       => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -7,6 +7,7 @@ use App\Constants\TalkEventConstant;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
 use App\Event\TalkEvent;
+use App\Model\Robot;
 use App\Service\Group\GroupMemberService;
 use App\Service\Message\FormatMessageService;
 use App\Model\Talk\TalkRecords;
@@ -81,7 +82,8 @@ class TalkService extends BaseService
         $rows = $model->orderBy('talk_records.id', 'desc')->limit($limit)->get()->toArray();
 
         if ($record_id === 0 && $talk_type == TalkModeConstant::PRIVATE_CHAT && empty($msg_type)) {
-            if (!di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) {
+            $isBoot = Robot::where('user_id', $receiver_id)->exists();
+            if (!$isBoot && !di()->get(UserFriendService::class)->isFriend($user_id, $receiver_id, true)) {
                 array_unshift($rows, [
                     'id'          => ($rows[0]['id'] ?? 0) + 1,
                     'talk_type'   => TalkModeConstant::PRIVATE_CHAT,

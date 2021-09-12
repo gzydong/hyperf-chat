@@ -12,7 +12,7 @@ class CreateUsersTable extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->unsignedInteger('id', true)->comment('用户ID');
+            $table->unsignedInteger('id', true)->autoIncrement()->comment('用户ID');
             $table->string('mobile', 11)->default('')->comment('手机号');
             $table->string('nickname', 20)->default('')->comment('用户昵称');
             $table->string('avatar', 255)->default('')->comment('用户头像地址');

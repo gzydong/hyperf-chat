@@ -109,7 +109,7 @@ class TalkListService
     public function getTalkList(int $user_id): array
     {
         $filed = [
-            'list.id', 'list.talk_type', 'list.receiver_id', 'list.updated_at', 'list.is_disturb', 'list.is_top',
+            'list.id', 'list.talk_type', 'list.receiver_id', 'list.updated_at', 'list.is_disturb', 'list.is_top', 'list.is_robot',
             'users.avatar as user_avatar', 'users.nickname',
             'group.group_name', 'group.avatar as group_avatar'
         ];
@@ -137,6 +137,7 @@ class TalkListService
                 'receiver_id' => $item['receiver_id'],
                 'is_top'      => $item['is_top'],
                 'is_disturb'  => $item['is_disturb'],
+                'is_robot'    => $item['is_robot'],
                 'updated_at'  => Carbon::parse($item['updated_at'])->toDateTimeString(),
             ]);
 
@@ -144,7 +145,7 @@ class TalkListService
                 $data['name']        = $item['nickname'];
                 $data['avatar']      = $item['user_avatar'];
                 $data['unread_num']  = UnreadTalkCache::getInstance()->read($item['receiver_id'], $user_id);
-                $data['is_online']   = di()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
+                $data['is_online']   = (int)di()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
                 $data['remark_name'] = di()->get(UserFriendService::class)->getFriendRemark($user_id, $item['receiver_id']);
             } else if (TalkModeConstant::GROUP_CHAT) {
                 $data['name']   = strval($item['group_name']);

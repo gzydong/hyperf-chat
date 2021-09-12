@@ -3,8 +3,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Cache\IpAddressCache;
 use App\Model\UsersFriend;
 use App\Repository\ExampleRepository;
+use App\Service\RobotService;
+use App\Support\IpAddress;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Psr\Container\ContainerInterface;
@@ -34,28 +37,16 @@ class TestCommand extends HyperfCommand
 
     public function handle()
     {
-        $repository = di()->get(ExampleRepository::class);
+        // $repository = di()->get(ExampleRepository::class);
+        // $repository->where_case2();
 
-        $repository->where_case2();
-        //$api     = config('juhe_api.ip');
-        //$options = [];
-        //$client  = di()->get(ClientFactory::class)->create($options);
-        //$params  = [
-        //    'ip'  => '47.105.180.123',
-        //    'key' => $api['key'],
-        //];
-        //
-        //$address  = '';
-        //$response = $client->get($api['api'] . '?' . http_build_query($params));
-        //if ($response->getStatusCode() == 200) {
-        //    $result = json_decode($response->getBody()->getContents(), true);
-        //    if ($result['resultcode'] == 200) {
-        //        unset($result['result']['Isp']);
-        //        $address = join(' ', $result['result']);
-        //    }
-        //}
-        //
-        //var_dump($address);
+        di()->get(RobotService::class)->create([
+            'robot_name' => "登录助手",
+            'describe'   => "异地登录助手",
+            'logo'       => '',
+            'is_talk'    => 0,
+            'type'       => 1,
+        ]);
     }
 
 

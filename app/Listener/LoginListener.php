@@ -3,11 +3,12 @@ declare(strict_types=1);
 
 namespace App\Listener;
 
+use App\Cache\IpAddressCache;
+use App\Model\Talk\TalkRecordsLogin;
 use App\Service\TalkMessageService;
 use Hyperf\Event\Contract\ListenerInterface;
 use App\Event\LoginEvent;
 use Hyperf\Event\Annotation\Listener;
-use Hyperf\Guzzle\ClientFactory;
 
 /**
  * @Listener
@@ -27,35 +28,36 @@ class LoginListener implements ListenerInterface
      */
     public function process(object $event)
     {
-        //$reason  = '正常登录';
-        //$address = '';
-        //
-        //$api = config('juhe_api.ip');
-        //
-        //$client = di()->get(ClientFactory::class)->create([]);
-        //$params = [
-        //    'ip'  => $event->ip,
-        //    'key' => $api['key'],
-        //];
-        //
-        //$response = $client->get($api['api'] . '?' . http_build_query($params));
-        //if ($response->getStatusCode() == 200) {
-        //    $result = json_decode($response->getBody()->getContents(), true);
-        //    if ($result['resultcode'] == 200) {
-        //        unset($result['result']['Isp']);
-        //        $address = join(' ', $result['result']);
-        //    }
-        //}
-        //
-        //di()->get(TalkMessageService::class)->insertLoginMessage([
-        //    'user_id' => $event->user->id,
-        //], [
-        //    'user_id'  => $event->user->id,
-        //    'ip'       => $event->ip,
-        //    'platform' => $event->platform,
-        //    'agent'    => $event->agent,
-        //    'address'  => $address,
-        //    'reason'   => $reason,
-        //]);
+        $reason  = '常用设备登录';
+        $address = '';
+
+        $result = di()->get(IpAddressCache::class)->getAddressInfo($event->ip);
+        if ($result) {
+            $arr = array_unique(array_filter([
+                $result['country'],
+                $result['province'],
+                $result['city'],
+                $result['isp'],
+            ]));
+
+            $address = join(" ", $arr);
+        }
+
+        // 判读是否存在异地登录
+        $isExist = TalkRecordsLogin::where('user_id', $event->user->id)->where('ip', $event->ip)->exists();
+        if (!$isExist) {
+            $reason = '非常用设备登录【异常登录】';
+        }
+
+        di()->get(TalkMessageService::class)->insertLogin([
+            'receiver_id' => $event->user->id,
+        ], [
+            'user_id'  => $event->user->id,
+            'ip'       => $event->ip,
+            'platform' => $event->platform,
+            'agent'    => $event->agent,
+            'address'  => $address,
+            'reason'   => $reason,
+        ]);
     }
 }

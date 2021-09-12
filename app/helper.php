@@ -208,3 +208,19 @@ function create_random_filename(string $ext): string
     $ext = $ext ? '.' . $ext : '';
     return Str::random(10) . uniqid() . $ext;
 }
+
+/**
+ * 获取客户端你真实IP
+ *
+ * @return mixed|string
+ */
+function get_real_ip(): string
+{
+    if ($ip = request()->getHeaderLine('x-real-ip')) {
+        return $ip;
+    } else if ($ip = request()->getHeaderLine('x-forwarded-for')) {
+        return $ip;
+    }
+
+    return request()->getServerParams()['remote_addr'] ?? '';
+}

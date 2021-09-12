@@ -49,7 +49,7 @@ class RemoveWsCacheCommand extends HyperfCommand
         // 获取所有已停止运行的服务ID
         $arr = ServerRunID::getInstance()->getServerRunIdAll(2);
         foreach ($arr as $run_id => $value) {
-            $this->clear($run_id);
+            $this->clear((string)$run_id);
         }
 
         $this->line('缓存已清除!', 'info');

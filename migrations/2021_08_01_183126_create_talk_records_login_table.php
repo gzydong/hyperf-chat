@@ -27,6 +27,8 @@ class CreateTalkRecordsLoginTable extends Migration
             $table->engine    = 'InnoDB';
 
             $table->unique(['record_id'], 'uk_record_id');
+            $table->index(['user_id', 'ip'], 'idx_user_id_ip');
+
             $table->comment('聊天对话记录（登录日志）');
         });
     }

@@ -295,13 +295,17 @@ class TalkMessageService
      */
     public function insertLogin(array $message, array $loginParams): bool
     {
+        $user_id = di()->get(RobotService::class)->getRootUserID(RobotConstant::LOGIN_ROBOT);
+
+        if ($user_id == 0) return false;
+
         Db::beginTransaction();
         try {
-            $message['receiver_id'] = RobotConstant::LOGIN_ROBOT;
-            $message['talk_type']   = TalkModeConstant::PRIVATE_CHAT;
-            $message['msg_type']    = TalkMessageType::USER_LOGIN_MESSAGE;
-            $message['created_at']  = date('Y-m-d H:i:s');
-            $message['updated_at']  = date('Y-m-d H:i:s');
+            $message['user_id']    = $user_id;
+            $message['talk_type']  = TalkModeConstant::PRIVATE_CHAT;
+            $message['msg_type']   = TalkMessageType::USER_LOGIN_MESSAGE;
+            $message['created_at'] = date('Y-m-d H:i:s');
+            $message['updated_at'] = date('Y-m-d H:i:s');
 
             $insert = TalkRecords::create($message);
             if (!$insert) {
@@ -322,7 +326,7 @@ class TalkMessageService
         }
 
         // 创建对话列表
-        di()->get(TalkListService::class)->create($insert->user_id, $insert->receiver_id, $insert->talk_type, true);
+        di()->get(TalkListService::class)->create($insert->receiver_id, $insert->user_id, $insert->talk_type, true);
 
         LastMessage::getInstance()->save($insert->talk_type, $insert->user_id, $insert->receiver_id, [
             'text'       => '[登录提醒]',

@@ -11,6 +11,19 @@ use Hyperf\Utils\Str;
 class RobotService
 {
     /**
+     * 获取机器人关联的用户ID
+     *
+     * @param int $robot_type
+     * @return int
+     */
+    public function getRootUserID(int $robot_type): int
+    {
+        return (int)Robot::where('type', $robot_type)->value('user_id');
+    }
+
+    /**
+     * 创建机器人
+     *
      * @param array $data
      * @return bool|array
      */
@@ -30,6 +43,7 @@ class RobotService
                 'describe'   => $data['describe'],
                 'logo'       => $data['logo'],
                 'is_talk'    => $data['is_talk'],
+                'type'       => $data['type'],
                 'status'     => 0,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),

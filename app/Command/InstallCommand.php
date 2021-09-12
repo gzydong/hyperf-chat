@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Service\RobotService;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Psr\Container\ContainerInterface;
@@ -42,7 +43,17 @@ class InstallCommand extends HyperfCommand
     public function handle()
     {
         $this->line('LumenIM 正在创建数据库，请耐心等待!', 'info');
+
+
         $this->call('migrate');
+
+        di()->get(RobotService::class)->create([
+            'robot_name' => "登录助手",
+            'describe'   => "异地登录助手",
+            'logo'       => '',
+            'is_talk'    => 0,
+            'type'       => 1,
+        ]);
 
         if ($this->confirm('是否需要生成测试数据？')) {
             $this->call('db:seed');

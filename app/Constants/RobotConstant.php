@@ -12,4 +12,7 @@ class RobotConstant
 {
     // 登录机器人
     const LOGIN_ROBOT = 1;
+
+    // 聊天机器人
+    const TALK_ROBOT = 2;
 }

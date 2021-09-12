@@ -10,6 +10,7 @@ use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsFile;
 use App\Model\Talk\TalkRecordsForward;
 use App\Model\Talk\TalkRecordsInvite;
+use App\Model\Talk\TalkRecordsLogin;
 use App\Model\Talk\TalkRecordsVote;
 use App\Model\User;
 
@@ -42,6 +43,7 @@ class FormatMessageService
             "forward"      => [], // 转发消息
             "invite"       => [], // 邀请消息
             "vote"         => [], // 投票消息
+            "login"        => [], // 登录消息
 
             // 消息创建时间
             "content"      => '', // 文本消息
@@ -66,7 +68,7 @@ class FormatMessageService
     {
         if (!$rows) return [];
 
-        $files = $codes = $forwards = $invites = $votes = [];
+        $files = $codes = $forwards = $invites = $votes = $logins = [];
         foreach ($rows as $value) {
             switch ($value['msg_type']) {
                 case TalkMessageType::FILE_MESSAGE:
@@ -83,6 +85,9 @@ class FormatMessageService
                     break;
                 case TalkMessageType::VOTE_MESSAGE:
                     $votes[] = $value['id'];
+                    break;
+                case TalkMessageType::USER_LOGIN_MESSAGE:
+                    $logins[] = $value['id'];
                     break;
                 default:
             }
@@ -115,12 +120,20 @@ class FormatMessageService
             ])->keyBy('record_id')->toArray();
         }
 
+        // 登录消息
+        if ($logins) {
+            $logins = TalkRecordsLogin::whereIn('record_id', $logins)->get([
+                'id', 'record_id', 'ip', 'platform', 'agent', 'address', 'reason', 'created_at'
+            ])->keyBy('record_id')->toArray();
+        }
+
         foreach ($rows as $k => $row) {
             $rows[$k]['file']       = [];
             $rows[$k]['code_block'] = [];
             $rows[$k]['forward']    = [];
             $rows[$k]['invite']     = [];
             $rows[$k]['vote']       = [];
+            $rows[$k]['login']      = [];
 
             switch ($row['msg_type']) {
                 // 文件消息
@@ -166,6 +179,11 @@ class FormatMessageService
                         'vote_users' => VoteCache::getInstance()->getOrSetCache($votes[$row['id']]['id']),
                         'detail'     => $votes[$row['id']],
                     ];
+                    break;
+
+                // 登录消息
+                case TalkMessageType::USER_LOGIN_MESSAGE:
+                    $rows[$k]['login'] = $logins[$row['id']];
                     break;
 
                 // 入群消息/退群消息

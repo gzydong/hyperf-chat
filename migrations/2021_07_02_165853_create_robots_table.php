@@ -25,6 +25,7 @@ class CreateRobotsTable extends Migration
             $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
+
             $table->comment('聊天机器人表');
         });
     }
