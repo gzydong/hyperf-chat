@@ -26,7 +26,7 @@ class FormatMessageService
     {
         $message = [
             "id"           => 0,  // 消息记录ID
-            "talk_type"    => 1,  // 消息来源[1:好友私信;2:群聊]
+            "talk_type"    => 1,  // 消息来源[1:私信;2:群聊]
             "msg_type"     => 1,  // 消息类型
             "user_id"      => 0,  // 发送者用户ID
             "receiver_id"  => 0,  // 接收者ID[好友ID或群ID]
@@ -95,22 +95,31 @@ class FormatMessageService
 
         // 查询聊天文件信息
         if ($files) {
-            $files = TalkRecordsFile::whereIn('record_id', $files)->get(['id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type', 'original_name', 'file_suffix', 'file_size', 'save_dir'])->keyBy('record_id')->toArray();
+            $files = TalkRecordsFile::whereIn('record_id', $files)->get([
+                'id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type',
+                'original_name', 'file_suffix', 'file_size', 'save_dir'
+            ])->keyBy('record_id')->toArray();
         }
 
         // 查询群聊邀请信息
         if ($invites) {
-            $invites = TalkRecordsInvite::whereIn('record_id', $invites)->get(['record_id', 'type', 'operate_user_id', 'user_ids'])->keyBy('record_id')->toArray();
+            $invites = TalkRecordsInvite::whereIn('record_id', $invites)->get([
+                'record_id', 'type', 'operate_user_id', 'user_ids'
+            ])->keyBy('record_id')->toArray();
         }
 
         // 查询代码块消息
         if ($codes) {
-            $codes = TalkRecordsCode::whereIn('record_id', $codes)->get(['record_id', 'code_lang', 'code'])->keyBy('record_id')->toArray();
+            $codes = TalkRecordsCode::whereIn('record_id', $codes)->get([
+                'record_id', 'code_lang', 'code'
+            ])->keyBy('record_id')->toArray();
         }
 
         // 查询消息转发信息
         if ($forwards) {
-            $forwards = TalkRecordsForward::whereIn('record_id', $forwards)->get(['record_id', 'records_id', 'text'])->keyBy('record_id')->toArray();
+            $forwards = TalkRecordsForward::whereIn('record_id', $forwards)->get([
+                'record_id', 'records_id', 'text'
+            ])->keyBy('record_id')->toArray();
         }
 
         // 查询投票消息
