@@ -6,6 +6,8 @@
 */
 
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\Database\Query\Builder as QueryBuilder;
+use Hyperf\Database\Model\Builder as ModelBuilder;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Logger\LoggerFactory;
 use Hyperf\Server\ServerFactory;
@@ -223,4 +225,32 @@ function get_real_ip(): string
     }
 
     return request()->getServerParams()['remote_addr'] ?? '';
+}
+
+
+/**
+ * 通过查询构造器读取分页数据
+ *
+ * @param QueryBuilder|ModelBuilder $model  查询构造器
+ * @param array                     $fields 查询字段
+ * @param int                       $page   当前分页
+ * @param int                       $size   分页大小
+ * @return array
+ */
+function toPaginate($model, array $fields = ['*'], int $page = 1, int $size = 15): array
+{
+    $total = $model->count();
+
+    $data = [
+        'rows'     => [],
+        'paginate' => [
+            'page'  => $page,
+            'size'  => $size,
+            'total' => $total,
+        ]
+    ];
+
+    if ($total > 0) $data['rows'] = $model->forPage($page, $size)->get($fields)->toArray();
+
+    return $data;
 }

@@ -5,7 +5,7 @@ namespace App\Repository;
 
 use App\Traits\RepositoryTrait;
 use Hyperf\Database\Model\Model;
-use Hyperf\Database\Model\Builder;
+use Hyperf\Database\Model\Builder as ModelBuilder;
 use Hyperf\DbConnection\Db;
 use Hyperf\Utils\Collection;
 
@@ -61,7 +61,7 @@ abstract class BaseRepository
      * @param array    $where    查询条件
      * @param string[] $fields   查询字段
      * @param bool     $is_array 是否返回数组格式
-     * @return Builder|Model|object|array|null
+     * @return ModelBuilder|Model|object|array|null
      */
     final public function first(array $where = [], array $fields = ['*'], bool $is_array = false)
     {
@@ -112,7 +112,7 @@ abstract class BaseRepository
 
         $model = $this->buildWhere($where);
 
-        return $this->toPaginate($model, $fields, $page, $size);
+        return toPaginate($model, $fields, $page, $size);
     }
 
     /**
@@ -191,32 +191,5 @@ abstract class BaseRepository
     final public function sql(string $query, array $bindings = [], bool $useReadPdo = true): array
     {
         return Db::select($query, $bindings, $useReadPdo);
-    }
-
-    /**
-     * 通过 Model 读取分页数据
-     *
-     * @param Builder $model  查询构造器
-     * @param array   $fields 查询字段
-     * @param int     $page   当前分页
-     * @param int     $size   分页大小
-     * @return array
-     */
-    public function toPaginate(Builder $model, array $fields = ['*'], int $page = 1, int $size = 15): array
-    {
-        $total = $model->count();
-
-        $data = [
-            'rows'     => [],
-            'paginate' => [
-                'page'  => $page,
-                'size'  => $size,
-                'total' => $total,
-            ]
-        ];
-
-        if ($total > 0) $data['rows'] = $model->forPage($page, $size)->get($fields)->toArray();
-
-        return $data;
     }
 }
