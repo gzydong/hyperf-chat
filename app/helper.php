@@ -252,5 +252,11 @@ function toPaginate($model, array $fields = ['*'], int $page = 1, int $size = 15
 
     if ($total > 0) $data['rows'] = $model->forPage($page, $size)->get($fields)->toArray();
 
+    if ($data['rows'] && $model instanceof QueryBuilder) {
+        foreach ($data['rows'] as &$row) {
+            $row = (array)$row;
+        }
+    }
+
     return $data;
 }
