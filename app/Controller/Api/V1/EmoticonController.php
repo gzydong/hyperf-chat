@@ -132,7 +132,7 @@ class EmoticonController extends CController
     /**
      * 自定义上传表情包
      *
-     * @RequestMapping(path="upload", methods="post")
+     * @RequestMapping(path="upload-emoticon", methods="post")
      * @param Filesystem $filesystem
      * @return ResponseInterface
      */
@@ -142,6 +142,7 @@ class EmoticonController extends CController
         if (!$file->isValid()) {
             return $this->response->fail(
                 '图片上传失败，请稍后再试！',
+                [],
                 ResponseCode::VALIDATION_ERROR
             );
         }
@@ -150,6 +151,7 @@ class EmoticonController extends CController
         if (!in_array($ext, ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
             return $this->response->fail(
                 '图片格式错误，目前仅支持jpg、png、jpeg、gif和webp',
+                [],
                 ResponseCode::VALIDATION_ERROR
             );
         }
