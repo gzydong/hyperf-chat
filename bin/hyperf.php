@@ -12,6 +12,7 @@ date_default_timezone_set('Asia/Shanghai');
 
 require BASE_PATH . '/vendor/autoload.php';
 
+
 // 设置服务运行ID
 define('SERVER_RUN_ID', uniqid());
 

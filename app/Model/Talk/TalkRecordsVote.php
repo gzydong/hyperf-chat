@@ -9,7 +9,7 @@ use App\Model\BaseModel;
 /**
  * 聊天记录(入群/退群消息)数据表模型
  *
- * @property int    $id
+ * @property int    $id               投票ID
  * @property int    $record_id        消息记录ID
  * @property int    $user_id          用户ID
  * @property string $title            投票标题

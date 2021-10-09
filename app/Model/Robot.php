@@ -16,6 +16,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property int    $logo            机器人logo
  * @property int    $is_talk         可发送消息
  * @property int    $status          状态
+ * @property int    $type            机器人类型
  * @property string $created_at      创建时间
  * @property string $updated_at      更新时间
  * @package App\Model
