@@ -27,7 +27,7 @@ class CreateTalkListTable extends Migration
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
 
-            $table->index(['user_id', 'receiver_id', 'talk_type'], 'idx_user_id_receiver_id_talk_type');
+            $table->unique(['user_id', 'receiver_id', 'talk_type'], 'uk_user_id_receiver_id_talk_type');
             $table->comment('用户聊天列表');
         });
     }
