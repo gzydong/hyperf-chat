@@ -254,7 +254,7 @@ class GroupService extends BaseService
 
             if ($updateArr1) {
                 TalkList::whereIn('id', $updateArr1)->update([
-                    'is_delete'  => 1,
+                    'is_delete'  => 0,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
