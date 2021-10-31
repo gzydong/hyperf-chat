@@ -15,8 +15,8 @@ class CreateTalkRecordsLocation extends Migration
             $table->unsignedInteger('id', true)->comment('自增ID');
             $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
             $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
-            $table->decimal('longitude', 11, 6)->default('0.000000')->comment('经度');
-            $table->decimal('latitude', 11, 6)->default('0.000000')->comment('纬度');
+            $table->string('longitude', 20)->default('')->comment('经度');
+            $table->string('latitude', 20)->default('')->comment('纬度');
             $table->dateTime('created_at')->nullable(true)->comment('创建时间');
 
             $table->charset   = 'utf8';
