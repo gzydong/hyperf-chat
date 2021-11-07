@@ -159,16 +159,16 @@ class TalkService extends BaseService
                     ->orWhere([['user_id', '=', $receiver_id], ['receiver_id', '=', $user_id]]);
             })->where('talk_type', $talk_type)->pluck('id');
         } else {// 群聊信息
+            // 判读是否属于群消息并且判断是否是群成员
+            if ($talk_type == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember($receiver_id, $user_id)) {
+                return false;
+            }
+
             $ids = TalkRecords::whereIn('id', $record_ids)->where('talk_type', TalkModeConstant::GROUP_CHAT)->pluck('id');
         }
 
         // 判断要删除的消息在数据库中是否存在
         if (count($ids) != count($record_ids)) {
-            return false;
-        }
-
-        // 判读是否属于群消息并且判断是否是群成员
-        if ($talk_type == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember($receiver_id, $user_id)) {
             return false;
         }
 
