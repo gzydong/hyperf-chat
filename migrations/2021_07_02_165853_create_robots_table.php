@@ -19,6 +19,7 @@ class CreateRobotsTable extends Migration
             $table->string('logo', 255)->default('')->comment('机器人logo');
             $table->unsignedTinyInteger('is_talk')->default(0)->unsigned()->comment('可发送消息[0:否;1:是;]');
             $table->unsignedTinyInteger('status')->default(0)->unsigned()->comment('状态[-1:已删除;0:正常;1:已禁用;]');
+            $table->unsignedTinyInteger('type')->default(0)->unsigned()->comment('机器人类型');
             $table->dateTime('created_at')->nullable()->comment('注册时间');
             $table->dateTime('updated_at')->nullable()->comment('更新时间');
 
