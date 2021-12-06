@@ -51,7 +51,7 @@ class Initialize extends Seeder
         ArticleClass::insert($defaultArticleClass);
 
         $prefix = config('databases.default.prefix');
-        $list   = Db::select("SELECT u1.id as user_id,u2.id as friend_id FROM {$prefix}users as u1,lar_users as u2 where u1.id != u2.id");
+        $list   = Db::select("SELECT u1.id as user_id,u2.id as friend_id FROM {$prefix}users as u1,{$prefix}users as u2 where u1.id != u2.id");
 
         $friends = [];
 
