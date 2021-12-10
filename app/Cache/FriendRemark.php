@@ -55,10 +55,9 @@ class FriendRemark extends HashRedis
      */
     public function reload()
     {
-        UsersFriend::select(['id', 'user1', 'user2', 'user1_remark', 'user2_remark'])->chunk(200, function ($rows) {
+        UsersFriend::select(['id', 'user_id', 'friend_id', 'remark'])->chunk(200, function ($rows) {
             foreach ($rows as $row) {
-                $row->user1_remark && $this->save($row->user1, $row->user2, $row->user1_remark);
-                $row->user2_remark && $this->save($row->user2, $row->user1, $row->user2_remark);
+                $row->remark && $this->save($row->user_id, $row->friend_id, $row->remark);
             }
         });
     }
