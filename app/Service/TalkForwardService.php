@@ -41,9 +41,9 @@ class TalkForwardService extends BaseService
             });
         }
 
-        $result = $sqlObj->where('talk_type', $talk_type)->whereIn('msg_type', $msg_type)->where('is_revoke', 0)->get();
+        $count = $sqlObj->where('talk_type', $talk_type)->whereIn('msg_type', $msg_type)->where('is_revoke', 0)->count();
 
-        return count($result) == count($records_ids);
+        return $count == count($records_ids);
     }
 
     /**
