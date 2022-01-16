@@ -11,7 +11,7 @@
 namespace App\Service;
 
 use App\Model\User;
-use App\Model\UsersFriend;
+use App\Model\Contact;
 use App\Traits\PagingTrait;
 
 /**
@@ -33,7 +33,7 @@ class ContactsService extends BaseService
      */
     public function delete(int $user_id, int $friend_id): bool
     {
-        $res = (bool)UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->update([
+        $res = (bool)Contact::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->update([
             'status'     => 0,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -55,7 +55,7 @@ class ContactsService extends BaseService
      */
     public function editRemark(int $user_id, int $friend_id, string $remark): bool
     {
-        return (bool)UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->update([
+        return (bool)Contact::where('user_id', $user_id)->where('friend_id', $friend_id)->update([
             'remark'     => $remark,
             'updated_at' => date('Y-m-d H:i:s')
         ]);

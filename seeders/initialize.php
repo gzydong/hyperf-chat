@@ -7,7 +7,7 @@ use Hyperf\Database\Seeders\Seeder;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
 use Hyperf\DbConnection\Db;
-use App\Model\UsersFriend;
+use App\Model\Contact;
 
 class Initialize extends Seeder
 {
@@ -65,7 +65,7 @@ class Initialize extends Seeder
             ];
         }
 
-        UsersFriend::insert($friends);
+        Contact::insert($friends);
 
         $service = new \App\Service\TalkListService();
         foreach ($list as $item) {

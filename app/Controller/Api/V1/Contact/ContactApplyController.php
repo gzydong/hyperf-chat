@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Controller\Api\V1;
+namespace App\Controller\Api\V1\Contact;
 
 use App\Cache\FriendApply;
 use App\Cache\Repository\LockRedis;
+use App\Controller\Api\V1\CController;
 use App\Service\UserService;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -16,12 +17,12 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class ContactsApplyController
- * @Controller(prefix="/api/v1/contacts/apply")
+ * @Controller(prefix="/api/v1/contact/apply")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1
  */
-class ContactsApplyController extends CController
+class ContactApplyController extends CController
 {
     /**
      * @Inject
@@ -129,5 +130,17 @@ class ContactsApplyController extends CController
         return $this->response->success(
             $this->service->getApplyRecords($user_id, $page, $page_size)
         );
+    }
+
+    /**
+     * 获取联系人申请未读数
+     *
+     * @RequestMapping(path="unread-num", methods="get")
+     */
+    public function getContactApplyUnreadNum(): ResponseInterface
+    {
+        return $this->response->success([
+            'unread_num' => (int)FriendApply::getInstance()->get(strval($this->uid()))
+        ]);
     }
 }

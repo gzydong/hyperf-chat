@@ -156,7 +156,7 @@ class ArticleService extends BaseService
             ['user_id', '=', $user_id],
             ['article_id', '=', $article_id],
             ['status', '=', 1]
-        ])->get(['id', 'file_suffix', 'file_size', 'original_name', 'created_at'])->toArray();
+        ])->get(['id', 'suffix', 'size', 'original_name', 'created_at'])->toArray();
     }
 
     /**
@@ -191,12 +191,18 @@ class ArticleService extends BaseService
                 ArticleClass::where('id', $val['id'])->update(['sort' => $val['sort']]);
             }
 
-            $res = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => 1, 'created_at' => time()]);
+            $res = ArticleClass::create(['user_id' => $uid, 'class_name' => $class_name, 'sort' => 1, 'created_at' => date("y-m-d H:i:s")]);
 
             Db::commit();
             return $res->id;
         } catch (Exception $e) {
             Db::rollBack();
+
+            logger()->info("编辑标签失败", [
+                "error" => $e->getMessage(),
+                "line"  => $e->getLine(),
+                "file"  => $e->getFile(),
+            ]);
             return false;
         }
     }
@@ -331,7 +337,7 @@ class ArticleService extends BaseService
             // 判断新添加的标签名是否存在
             if ($id) return false;
 
-            $insRes = ArticleTag::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1, 'created_at' => time()]);
+            $insRes = ArticleTag::create(['user_id' => $uid, 'tag_name' => $tag_name, 'sort' => 1]);
             if (!$insRes) {
                 return false;
             }
@@ -594,7 +600,7 @@ class ArticleService extends BaseService
      */
     public function foreverDelAnnex(int $uid, int $annex_id)
     {
-        $info = ArticleAnnex::where('id', $annex_id)->where('user_id', $uid)->where('status', 2)->first(['id', 'save_dir']);
+        $info = ArticleAnnex::where('id', $annex_id)->where('user_id', $uid)->where('status', 2)->first(['id', 'path']);
         if (!$info) {
             return false;
         }
@@ -619,11 +625,13 @@ class ArticleService extends BaseService
         $result = ArticleAnnex::create([
             'user_id'       => $user_id,
             'article_id'    => $article_id,
-            'file_suffix'   => $annex['file_suffix'],
-            'file_size'     => $annex['file_size'],
-            'save_dir'      => $annex['save_dir'],
+            'suffix'        => $annex['suffix'],
+            'size'          => $annex['size'],
+            'drive'         => $annex['drive'],
+            'path'          => $annex['path'],
             'original_name' => $annex['original_name'],
-            'created_at'    => date('Y-m-d H:i:s')
+            'created_at'    => date('Y-m-d H:i:s'),
+            'updated_at'    => date('Y-m-d H:i:s'),
         ]);
 
         return $result ? $result->id : false;

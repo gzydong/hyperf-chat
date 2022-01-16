@@ -6,17 +6,14 @@ use App\Constants\TalkModeConstant;
 
 use App\Service\Group\GroupMemberService;
 use App\Service\TalkListService;
-use App\Service\UserService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Model\Group\Group;
-use App\Model\Group\GroupMember;
 use App\Model\Group\GroupNotice;
 use App\Service\Group\GroupService;
-use App\Service\Group\GroupNoticeService;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -142,33 +139,6 @@ class GroupController extends CController
     }
 
     /**
-     * 移除指定成员（管理员权限）
-     * @RequestMapping(path="remove-members", methods="post")
-     */
-    public function removeMembers(): ResponseInterface
-    {
-        $params = $this->request->inputs(['group_id', 'members_ids']);
-        $this->validate($params, [
-            'group_id'    => 'required|integer',
-            'members_ids' => 'required|ids'
-        ]);
-
-        $params['members_ids'] = parse_ids($params['members_ids']);
-
-        $user_id = $this->uid();
-        if (in_array($user_id, $params['members_ids'])) {
-            return $this->response->fail('群聊用户移除失败！');
-        }
-
-        $isTrue = $this->groupService->removeMember($params['group_id'], $user_id, $params['members_ids']);
-        if (!$isTrue) {
-            return $this->response->fail('群聊用户移除失败！');
-        }
-
-        return $this->response->success([], '已成功退出群组...');
-    }
-
-    /**
      * 获取群信息接口
      * @RequestMapping(path="detail", methods="get")
      */
@@ -204,169 +174,5 @@ class GroupController extends CController
             'is_disturb'       => (int)$service->isDisturb($user_id, $group_id, TalkModeConstant::GROUP_CHAT),
             'notice'           => $notice ? $notice->toArray() : []
         ]);
-    }
-
-    /**
-     * 设置群名片
-     * @RequestMapping(path="set-group-card", methods="post")
-     */
-    public function editGroupCard(): ResponseInterface
-    {
-        $params = $this->request->inputs(['group_id', 'visit_card']);
-        $this->validate($params, [
-            'group_id'   => 'required|integer',
-            'visit_card' => 'required|max:20'
-        ]);
-
-        $isTrue = $this->groupService->updateMemberCard($params['group_id'], $this->uid(), $params['visit_card']);
-
-        return $isTrue
-            ? $this->response->success([], '群名片修改成功...')
-            : $this->response->error('群名片修改失败！');
-    }
-
-    /**
-     * 获取可邀请加入群组的好友列表
-     * @RequestMapping(path="invite-friends", methods="get")
-     */
-    public function getInviteFriends(UserService $service): ResponseInterface
-    {
-        $group_id = $this->request->input('group_id', 0);
-        $friends  = $service->getUserFriends($this->uid());
-        if ($group_id > 0 && $friends) {
-            if ($ids = $this->groupMemberService->getMemberIds($group_id)) {
-                foreach ($friends as $k => $item) {
-                    if (in_array($item['id'], $ids)) unset($friends[$k]);
-                }
-            }
-
-            $friends = array_values($friends);
-        }
-
-        return $this->response->success($friends);
-    }
-
-    /**
-     * 获取群组列表
-     * @RequestMapping(path="list", methods="get")
-     */
-    public function getGroups(): ResponseInterface
-    {
-        return $this->response->success(
-            $this->groupService->getUserGroups($this->uid())
-        );
-    }
-
-    /**
-     * 获取群组成员列表
-     * @RequestMapping(path="members", methods="get")
-     */
-    public function getGroupMembers(): ResponseInterface
-    {
-        $user_id  = $this->uid();
-        $group_id = $this->request->input('group_id', 0);
-
-        // 判断用户是否是群成员
-        if (!$this->groupMemberService->isMember($group_id, $user_id)) {
-            return $this->response->fail('非法操作！');
-        }
-
-        $members = GroupMember::select([
-            'group_member.id',
-            'group_member.leader',
-            'group_member.user_card',
-            'group_member.user_id',
-            'users.avatar',
-            'users.nickname',
-            'users.gender',
-            'users.motto',
-        ])
-            ->leftJoin('users', 'users.id', '=', 'group_member.user_id')
-            ->where([
-                ['group_member.group_id', '=', $group_id],
-                ['group_member.is_quit', '=', 0],
-            ])->orderBy('leader', 'desc')->get()->toArray();
-
-        return $this->response->success($members);
-    }
-
-    /**
-     * 获取群组公告列表
-     * @RequestMapping(path="notices", methods="get")
-     */
-    public function getGroupNotice(GroupNoticeService $service): ResponseInterface
-    {
-        $user_id  = $this->uid();
-        $group_id = $this->request->input('group_id', 0);
-
-        // 判断用户是否是群成员
-        if (!$this->groupMemberService->isMember($group_id, $user_id)) {
-            return $this->response->fail('非管理员禁止操作！');
-        }
-
-        return $this->response->success($service->lists($group_id));
-    }
-
-    /**
-     * 创建/编辑群公告
-     * @RequestMapping(path="edit-notice", methods="post")
-     */
-    public function editNotice(GroupNoticeService $service): ResponseInterface
-    {
-        $params = $this->request->inputs([
-            'group_id', 'notice_id', 'title', 'content', 'is_top', 'is_confirm'
-        ]);
-
-        $this->validate($params, [
-            'notice_id'  => 'required|integer',
-            'group_id'   => 'required|integer',
-            'title'      => 'required|max:50',
-            'is_top'     => 'integer|in:0,1',
-            'is_confirm' => 'integer|in:0,1',
-            'content'    => 'required'
-        ]);
-
-        $user_id = $this->uid();
-
-        // 判断用户是否是管理员
-        if (!$this->groupMemberService->isAuth($params['group_id'], $user_id)) {
-            return $this->response->fail('非管理员禁止操作！');
-        }
-
-        // 判断是否是新增数据
-        if (empty($params['notice_id'])) {
-            if (!$service->create($user_id, $params)) {
-                return $this->response->fail('添加群公告信息失败！');
-            }
-
-            return $this->response->success([], '添加群公告信息成功...');
-        }
-
-        return $service->update($params)
-            ? $this->response->success([], '修改群公告信息成功...')
-            : $this->response->fail('修改群公告信息失败！');
-    }
-
-    /**
-     * 删除群公告(软删除)
-     * @RequestMapping(path="delete-notice", methods="post")
-     */
-    public function deleteNotice(GroupNoticeService $service): ResponseInterface
-    {
-        $params = $this->request->inputs(['group_id', 'notice_id']);
-        $this->validate($params, [
-            'group_id'  => 'required|integer',
-            'notice_id' => 'required|integer'
-        ]);
-
-        try {
-            $isTrue = $service->delete($params['notice_id'], $this->uid());
-        } catch (\Exception $e) {
-            return $this->response->fail($e->getMessage());
-        }
-
-        return $isTrue
-            ? $this->response->success([], '公告删除成功...')
-            : $this->response->fail('公告删除失败！');
     }
 }

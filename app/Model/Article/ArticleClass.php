@@ -19,7 +19,11 @@ use App\Model\BaseModel;
  */
 class ArticleClass extends BaseModel
 {
+
+
     protected $table = 'article_class';
+
+    public $timestamps = true;
 
     protected $fillable = [
         'user_id',
@@ -27,12 +31,14 @@ class ArticleClass extends BaseModel
         'sort',
         'is_default',
         'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
         'user_id'    => 'integer',
         'sort'       => 'integer',
         'is_default' => 'integer',
-        'created_at' => 'int'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 }

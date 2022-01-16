@@ -70,31 +70,4 @@ class DownloadController extends CController
 
         return $response->download($this->getFilePath($info->save_dir), $info->original_name);
     }
-
-    /**
-     * 下载笔记附件
-     * @RequestMapping(path="article-annex", methods="get")
-     *
-     * @param ResponseInterface $response
-     * @param Filesystem        $filesystem
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    public function articleAnnex(ResponseInterface $response, Filesystem $filesystem)
-    {
-        $params = $this->request->inputs(['annex_id']);
-        $this->validate($params, [
-            'annex_id' => 'required|integer'
-        ]);
-
-        $info = ArticleAnnex::select(['save_dir', 'original_name'])
-            ->where('id', $params['annex_id'])
-            ->where('user_id', $this->uid())
-            ->first();
-
-        if (!$info || !$filesystem->has($info->save_dir)) {
-            return $this->response->fail('文件不存在或没有下载权限！');
-        }
-
-        return $response->download($this->getFilePath($info->save_dir), $info->original_name);
-    }
 }

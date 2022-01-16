@@ -380,7 +380,7 @@ class GroupService extends BaseService
      */
     public function removeMember(int $group_id, int $user_id, array $member_ids)
     {
-        if (di()->get(GroupMemberService::class)->isAuth($group_id, $user_id)) {
+        if (!di()->get(GroupMemberService::class)->isAuth($group_id, $user_id)) {
             return false;
         }
 

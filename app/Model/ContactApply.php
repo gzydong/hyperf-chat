@@ -14,9 +14,9 @@ namespace App\Model;
  * @property string $created_at 创建时间
  * @package App\ModelÒ
  */
-class UsersFriendApply extends BaseModel
+class ContactApply extends BaseModel
 {
-    protected $table = 'users_friends_apply';
+    protected $table = 'contact_apply';
 
     protected $fillable = [
         'user_id',

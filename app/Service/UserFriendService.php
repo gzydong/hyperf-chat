@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Cache\FriendRemark;
-use App\Model\UsersFriend;
+use App\Model\Contact;
 
 class UserFriendService
 {
@@ -19,7 +19,7 @@ class UserFriendService
         $remark = FriendRemark::getInstance()->read($user_id, $friend_id);
         if ($remark) return $remark;
 
-        $remark = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->value('remark');
+        $remark = Contact::where('user_id', $user_id)->where('friend_id', $friend_id)->value('remark');
         if ($remark) FriendRemark::getInstance()->save($user_id, $friend_id, $remark);
 
         return (string)$remark;
@@ -35,13 +35,13 @@ class UserFriendService
      */
     public function isFriend(int $user_id, int $friend_id, $is_mutual = false): bool
     {
-        $isTrue1 = UsersFriend::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->exists();
+        $isTrue1 = Contact::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->exists();
 
         if ($is_mutual === false) {
             return $isTrue1;
         }
 
-        $isTrue2 = UsersFriend::where('user_id', $friend_id)->where('friend_id', $user_id)->where('status', 1)->exists();
+        $isTrue2 = Contact::where('user_id', $friend_id)->where('friend_id', $user_id)->where('status', 1)->exists();
 
         return $isTrue1 && $isTrue2;
     }

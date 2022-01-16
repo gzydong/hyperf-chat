@@ -3,7 +3,7 @@
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
-use App\Model\UsersFriend;
+use App\Model\Contact;
 
 /**
  * 好友备注 - 缓存助手
@@ -55,7 +55,7 @@ class FriendRemark extends HashRedis
      */
     public function reload()
     {
-        UsersFriend::select(['id', 'user_id', 'friend_id', 'remark'])->chunk(200, function ($rows) {
+        Contact::select(['id', 'user_id', 'friend_id', 'remark'])->chunk(200, function ($rows) {
             foreach ($rows as $row) {
                 $row->remark && $this->save($row->user_id, $row->friend_id, $row->remark);
             }

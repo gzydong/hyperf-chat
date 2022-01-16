@@ -5,7 +5,7 @@ namespace App\Command;
 
 use App\Cache\IpAddressCache;
 use App\Constants\RobotConstant;
-use App\Model\UsersFriend;
+use App\Model\Contact;
 use App\Repository\ExampleRepository;
 use App\Repository\RobotRepository;
 use App\Service\RobotService;
@@ -55,8 +55,8 @@ class TestCommand extends HyperfCommand
     // 更新好友表数据
     public function updateData()
     {
-        $max = UsersFriend::max('id');
-        UsersFriend::where('id', '<=', $max)->chunk(1000, function ($rows) {
+        $max = Contact::max('id');
+        Contact::where('id', '<=', $max)->chunk(1000, function ($rows) {
             $arr = [];
             foreach ($rows as $row) {
                 $arr[] = [
@@ -69,7 +69,7 @@ class TestCommand extends HyperfCommand
                 ];
             }
 
-            UsersFriend::insert($arr);
+            Contact::insert($arr);
         });
     }
 }

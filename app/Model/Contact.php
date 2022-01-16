@@ -18,9 +18,9 @@ use App\Cache\FriendRemark;
  * @property string $updated_at       更新时间
  * @package App\Model
  */
-class UsersFriend extends BaseModel
+class Contact extends BaseModel
 {
-    protected $table = 'users_friends';
+    protected $table = 'contact';
 
     protected $fillable = [
         'user_id',

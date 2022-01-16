@@ -58,18 +58,9 @@ class AuthController extends CController
         event()->dispatch(new LoginEvent($this->request, $user));
 
         return $this->response->success([
-            'authorize' => [
-                'type'         => 'Bearer',
-                'access_token' => $token,
-                'expires_in'   => $this->guard()->getJwtManager()->getTtl(),
-            ],
-            'user_info' => [
-                'nickname' => $user->nickname,
-                'avatar'   => $user->avatar,
-                'gender'   => $user->gender,
-                'motto'    => $user->motto,
-                'email'    => $user->email,
-            ]
+            'type'         => 'Bearer',
+            'access_token' => $token,
+            'expires_in'   => $this->guard()->getJwtManager()->getTtl(),
         ], '账号登录成功...');
     }
 

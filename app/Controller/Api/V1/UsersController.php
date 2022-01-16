@@ -123,24 +123,6 @@ class UsersController extends CController
     }
 
     /**
-     * 通过用户ID查找用户
-     * @RequestMapping(path="search-user", methods="post")
-     *
-     * @return ResponseInterface
-     */
-    public function search(): ResponseInterface
-    {
-        $params = $this->request->inputs(['user_id']);
-        $this->validate($params, ['user_id' => 'required|integer']);
-
-        if ($data = $this->userService->getUserCard($params['user_id'], $this->uid())) {
-            return $this->response->success($data);
-        }
-
-        return $this->response->fail('用户查询失败！');
-    }
-
-    /**
      * 修改我的密码
      * @RequestMapping(path="change-password", methods="post")
      *

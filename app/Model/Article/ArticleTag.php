@@ -17,18 +17,22 @@ use App\Model\BaseModel;
  */
 class ArticleTag extends BaseModel
 {
-    protected $table = 'article_tags';
+    protected $table = 'article_tag';
+
+    public $timestamps = true;
 
     protected $fillable = [
         'user_id',
         'tag_name',
         'sort',
-        'created_at'
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
         'user_id'    => 'integer',
         'sort'       => 'integer',
-        'created_at' => 'integer'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 }

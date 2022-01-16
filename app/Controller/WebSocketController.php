@@ -93,10 +93,13 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onMessage($server, Frame $frame): void
     {
-        // 判断是否为心跳检测
-        if ($frame->data == 'PING') return;
-
         $result = json_decode($frame->data, true);
+
+        // 判断是否为心跳检测
+        if ($result['event'] == 'heartbeat') {
+            $server->push($frame->fd, json_encode(['event' => "heartbeat", 'content' => "pong"]));
+            return;
+        }
 
         if (!isset(ReceiveHandleService::EVENTS[$result['event']])) {
             return;

@@ -9,7 +9,7 @@ use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\User;
-use App\Model\UsersFriendApply;
+use App\Model\ContactApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
 
@@ -216,7 +216,7 @@ class SubscribeHandleService
     {
         $data = $data['data'];
 
-        $applyInfo = UsersFriendApply::where('id', $data['apply_id'])->first();
+        $applyInfo = ContactApply::where('id', $data['apply_id'])->first();
         if (!$applyInfo) return;
 
         $fds = $this->clientService->findUserFds($data['type'] == 1 ? $applyInfo->friend_id : $applyInfo->user_id);

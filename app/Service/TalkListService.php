@@ -114,7 +114,7 @@ class TalkListService
             'group.group_name', 'group.avatar as group_avatar'
         ];
 
-        $rows = TalkList::from('talk_list as list')
+        $rows = TalkList::from('talk_session as list')
             ->leftJoin('users', function ($join) {
                 $join->on('users.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkModeConstant::PRIVATE_CHAT);
             })

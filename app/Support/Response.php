@@ -36,8 +36,14 @@ class Response
      */
     public function success(array $data = [], string $message = 'success'): PsrResponseInterface
     {
-        $code = ResponseCode::SUCCESS;
-        return $this->response->json(compact('code', 'message', 'data'));
+        $resp = [
+            "code"    => ResponseCode::SUCCESS,
+            "message" => $message,
+        ];
+
+        if ($data) $resp["data"] = $data;
+
+        return $this->response->json($resp);
     }
 
     /**
@@ -50,7 +56,14 @@ class Response
      */
     public function fail(string $message = 'fail', array $data = [], $code = ResponseCode::FAIL): PsrResponseInterface
     {
-        return $this->response->json(compact('code', 'message', 'data'));
+        $resp = [
+            "code"    => $code,
+            "message" => $message,
+        ];
+
+        if ($data) $resp["data"] = $data;
+
+        return $this->response->json($resp);
     }
 
     /**

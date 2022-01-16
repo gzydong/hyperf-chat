@@ -23,7 +23,7 @@ use App\Model\BaseModel;
  */
 class TalkList extends BaseModel
 {
-    protected $table = 'talk_list';
+    protected $table = 'talk_session';
 
     public $timestamps = true;
 

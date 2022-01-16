@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Controller\Api\V1;
+namespace App\Controller\Api\V1\Contact;
 
 use App\Constants\TalkModeConstant;
+use App\Controller\Api\V1\CController;
 use App\Service\TalkListService;
 use App\Service\UserService;
 use Hyperf\Di\Annotation\Inject;
@@ -13,24 +14,29 @@ use App\Middleware\JWTAuthMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use App\Service\ContactsService;
 use App\Service\SocketClientService;
-use App\Cache\FriendApply;
 use App\Cache\FriendRemark;
 use App\Cache\ServerRunID;
 
 /**
  * Class ContactsController
- * @Controller(prefix="/api/v1/contacts")
+ * @Controller(prefix="/api/v1/contact")
  * @Middleware(JWTAuthMiddleware::class)
  *
  * @package App\Controller\Api\V1
  */
-class ContactsController extends CController
+class ContactController extends CController
 {
     /**
      * @Inject
      * @var ContactsService
      */
     private $service;
+
+    /**
+     * @Inject
+     * @var UserService
+     */
+    private $userService;
 
     /**
      * 获取用户联系人列表
@@ -69,21 +75,7 @@ class ContactsController extends CController
 
         di()->get(TalkListService::class)->deleteByType($user_id, $params['friend_id'], TalkModeConstant::PRIVATE_CHAT);
 
-        // TODO 推送消息（待完善）
-
         return $this->response->success([], '好友关系解除成功...');
-    }
-
-    /**
-     * 获取联系人申请未读数
-     *
-     * @RequestMapping(path="apply-unread-num", methods="get")
-     */
-    public function getContactApplyUnreadNum(): ResponseInterface
-    {
-        return $this->response->success([
-            'unread_num' => (int)FriendApply::getInstance()->get(strval($this->uid()))
-        ]);
     }
 
     /**
@@ -91,14 +83,16 @@ class ContactsController extends CController
      *
      * @RequestMapping(path="search", methods="get")
      */
-    public function searchContacts(): ResponseInterface
+    public function search(): ResponseInterface
     {
         $params = $this->request->inputs(['mobile']);
+
         $this->validate($params, [
             'mobile' => "present|regex:/^1[3456789][0-9]{9}$/"
         ]);
 
         $result = $this->service->findContact($params['mobile']);
+
         return $this->response->success($result);
     }
 
@@ -107,9 +101,10 @@ class ContactsController extends CController
      *
      * @RequestMapping(path="edit-remark", methods="post")
      */
-    public function editContactRemark(): ResponseInterface
+    public function editRemark(): ResponseInterface
     {
         $params = $this->request->inputs(['friend_id', 'remarks']);
+
         $this->validate($params, [
             'friend_id' => 'required|integer|min:1',
             'remarks'   => "required|max:20"
@@ -124,5 +119,24 @@ class ContactsController extends CController
         FriendRemark::getInstance()->save($user_id, (int)$params['friend_id'], $params['remarks']);
 
         return $this->response->success([], '备注修改成功...');
+    }
+
+    /**
+     * 通过用户ID查找用户
+     *
+     * @RequestMapping(path="detail", methods="get")
+     *
+     * @return ResponseInterface
+     */
+    public function detail(): ResponseInterface
+    {
+        $params = $this->request->inputs(['user_id']);
+        $this->validate($params, ['user_id' => 'required|integer']);
+
+        if ($data = $this->userService->getUserCard($params['user_id'], $this->uid())) {
+            return $this->response->success($data);
+        }
+
+        return $this->response->fail('用户查询失败！');
     }
 }

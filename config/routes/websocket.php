@@ -15,6 +15,6 @@ use Hyperf\HttpServer\Router\Router;
 
 
 // 添加 ws 服务对应的路由
-Router::get('/socket.io', 'App\Controller\WebSocketController', [
+Router::get('/wss/default.io', 'App\Controller\WebSocketController', [
     'middleware' => [\App\Middleware\WebSocketAuthMiddleware::class]
 ]);

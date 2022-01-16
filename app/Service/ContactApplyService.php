@@ -6,8 +6,8 @@ use App\Cache\FriendApply;
 use App\Constants\TalkEventConstant;
 use App\Event\TalkEvent;
 use App\Model\User;
-use App\Model\UsersFriend;
-use App\Model\UsersFriendApply;
+use App\Model\Contact;
+use App\Model\ContactApply;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
 
@@ -25,13 +25,13 @@ class ContactApplyService
      */
     public function create(int $user_id, int $friend_id, string $remark)
     {
-        $result = UsersFriendApply::where([
+        $result = ContactApply::where([
             ['user_id', '=', $user_id],
             ['friend_id', '=', $friend_id],
         ])->orderByDesc('id')->first();
 
         if (!$result) {
-            $result = UsersFriendApply::create([
+            $result = ContactApply::create([
                 'user_id'    => $user_id,
                 'friend_id'  => $friend_id,
                 'remark'     => $remark,
@@ -66,14 +66,14 @@ class ContactApplyService
      */
     public function accept(int $user_id, int $apply_id, string $remarks = '')
     {
-        $info = UsersFriendApply::where('id', $apply_id)->first();
+        $info = ContactApply::where('id', $apply_id)->first();
         if (!$info || $info->friend_id != $user_id) {
             return false;
         }
 
         Db::beginTransaction();
         try {
-            UsersFriend::updateOrCreate([
+            Contact::updateOrCreate([
                 'user_id'   => $info->user_id,
                 'friend_id' => $info->friend_id,
             ], [
@@ -81,7 +81,7 @@ class ContactApplyService
                 'remark' => $remarks,
             ]);
 
-            UsersFriend::updateOrCreate([
+            Contact::updateOrCreate([
                 'user_id'   => $info->friend_id,
                 'friend_id' => $info->user_id,
             ], [
@@ -117,7 +117,7 @@ class ContactApplyService
      */
     public function decline(int $user_id, int $apply_id, string $reason = '')
     {
-        $result = UsersFriendApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
+        $result = ContactApply::where('id', $apply_id)->where('friend_id', $user_id)->delete();
 
         if (!$result) return false;
 
@@ -136,24 +136,24 @@ class ContactApplyService
      */
     public function getApplyRecords(int $user_id, $page = 1, $page_size = 30): array
     {
-        $rowsSqlObj = UsersFriendApply::select([
-            'users_friends_apply.id',
-            'users_friends_apply.remark',
+        $rowsSqlObj = ContactApply::select([
+            'contact_apply.id',
+            'contact_apply.remark',
             'users.nickname',
             'users.avatar',
             'users.mobile',
-            'users_friends_apply.user_id',
-            'users_friends_apply.friend_id',
-            'users_friends_apply.created_at'
+            'contact_apply.user_id',
+            'contact_apply.friend_id',
+            'contact_apply.created_at'
         ]);
 
-        $rowsSqlObj->leftJoin('users', 'users.id', '=', 'users_friends_apply.user_id');
-        $rowsSqlObj->where('users_friends_apply.friend_id', $user_id);
+        $rowsSqlObj->leftJoin('users', 'users.id', '=', 'contact_apply.user_id');
+        $rowsSqlObj->where('contact_apply.friend_id', $user_id);
 
         $count = $rowsSqlObj->count();
         $rows  = [];
         if ($count > 0) {
-            $rows = $rowsSqlObj->orderBy('users_friends_apply.id', 'desc')->forPage($page, $page_size)->get()->toArray();
+            $rows = $rowsSqlObj->orderBy('contact_apply.id', 'desc')->forPage($page, $page_size)->get()->toArray();
         }
 
         return $this->getPagingRows($rows, $count, $page, $page_size);

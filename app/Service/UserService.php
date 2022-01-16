@@ -5,8 +5,8 @@ namespace App\Service;
 use App\Helpers\HashHelper;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
-use App\Model\UsersFriend;
-use App\Model\UsersFriendApply;
+use App\Model\Contact;
+use App\Model\ContactApply;
 use Hyperf\DbConnection\Db;
 
 class UserService extends BaseService
@@ -131,7 +131,7 @@ class UserService extends BaseService
             if ($is_friend) {
                 $info['nickname_remark'] = di()->get(UserFriendService::class)->getFriendRemark($me_user_id, $friend_id);
             } else {
-                $res = UsersFriendApply::where('user_id', $me_user_id)
+                $res = ContactApply::where('user_id', $me_user_id)
                     ->where('friend_id', $friend_id)
                     ->orderBy('id', 'desc')
                     ->exists();
@@ -151,15 +151,15 @@ class UserService extends BaseService
      */
     public function getUserFriends(int $user_id): array
     {
-        return UsersFriend::leftJoin('users', 'users.id', '=', 'users_friends.friend_id')
-            ->where('user_id', $user_id)->where('users_friends.status', 1)
+        return Contact::Join('users', 'users.id', '=', 'contact.friend_id')
+            ->where('user_id', $user_id)->where('contact.status', 1)
             ->get([
                 'users.id',
                 'users.nickname',
                 'users.avatar',
                 'users.motto',
                 'users.gender',
-                'users_friends.remark as friend_remark',
+                'contact.remark as friend_remark',
             ])->toArray();
     }
 
@@ -171,6 +171,6 @@ class UserService extends BaseService
      */
     public function getFriendIds(int $user_id): array
     {
-        return UsersFriend::where('user_id', $user_id)->where('status', 1)->pluck('friend_id')->toArray();
+        return Contact::where('user_id', $user_id)->where('status', 1)->pluck('friend_id')->toArray();
     }
 }

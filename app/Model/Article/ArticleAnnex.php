@@ -12,9 +12,10 @@ use App\Model\BaseModel;
  * @property integer $id            笔记附件ID
  * @property integer $user_id       用户ID
  * @property integer $article_id    笔记ID
+ * @property integer $drive         文件驱动
  * @property string  $file_suffix   文件后缀名
  * @property int     $file_size     文件大小
- * @property string  $save_dir      文件相对路径
+ * @property string  $path          文件相对路径
  * @property string  $original_name 文件原名
  * @property integer $status        文件状态
  * @property string  $created_at    上传时间
@@ -28,20 +29,23 @@ class ArticleAnnex extends BaseModel
     protected $fillable = [
         'user_id',
         'article_id',
-        'file_suffix',
-        'file_size',
-        'save_dir',
+        'drive',
+        'suffix',
+        'size',
+        'path',
         'original_name',
         'status',
         'created_at',
+        'updated_at',
         'deleted_at'
     ];
 
     protected $casts = [
         'user_id'    => 'integer',
         'article_id' => 'integer',
-        'file_size'  => 'integer',
+        'size'       => 'integer',
         'status'     => 'integer',
-        'created_at' => 'datetime'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }
