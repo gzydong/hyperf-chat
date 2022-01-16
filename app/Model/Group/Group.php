@@ -40,6 +40,7 @@ class Group extends BaseModel
         'is_mute',
         'is_dismiss',
         'created_at',
+        'updated_at',
         'dismissed_at',
     ];
 
@@ -49,6 +50,7 @@ class Group extends BaseModel
         'is_overt'   => 'integer',
         'is_mute'    => 'integer',
         'is_dismiss' => 'integer',
-        'created_at' => 'datetime'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }

@@ -7,7 +7,7 @@ use App\Cache\Repository\LockRedis;
 use App\Cache\UnreadTalkCache;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
-use App\Model\Talk\TalkList;
+use App\Model\Talk\TalkSession;
 use App\Service\Group\GroupMemberService;
 use App\Service\UserFriendService;
 use App\Support\UserRelation;
@@ -95,7 +95,7 @@ class TalkController extends CController
             return $this->response->fail('创建失败！');
         }
 
-        $data = TalkList::item([
+        $data = TalkSession::item([
             'id'          => $result['id'],
             'talk_type'   => $result['talk_type'],
             'receiver_id' => $result['receiver_id'],

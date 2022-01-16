@@ -31,6 +31,7 @@ class GroupMember extends BaseModel
         'is_quit',
         'user_card',
         'created_at',
+        'updated_at',
         'deleted_at',
     ];
 
@@ -41,6 +42,7 @@ class GroupMember extends BaseModel
         'is_mute'    => 'integer',
         'is_quit'    => 'integer',
         'created_at' => 'datetime',
+        'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 }

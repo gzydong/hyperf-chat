@@ -7,7 +7,7 @@ use App\Cache\LastMessage;
 use App\Cache\ServerRunID;
 use App\Cache\UnreadTalkCache;
 use App\Constants\TalkModeConstant;
-use App\Model\Talk\TalkList;
+use App\Model\Talk\TalkSession;
 use Carbon\Carbon;
 
 class TalkListService
@@ -23,7 +23,7 @@ class TalkListService
      */
     public function create(int $user_id, int $receiver_id, int $talk_type, bool $is_robot = false): array
     {
-        $result = TalkList::updateOrCreate([
+        $result = TalkSession::updateOrCreate([
             'talk_type'   => $talk_type,
             'user_id'     => $user_id,
             'receiver_id' => $receiver_id,
@@ -53,7 +53,7 @@ class TalkListService
      */
     public function top(int $user_id, int $list_id, $is_top = true): bool
     {
-        return (bool)TalkList::query()->where([
+        return (bool)TalkSession::query()->where([
             ['id', '=', $list_id],
             ['user_id', '=', $user_id],
         ])->update([
@@ -71,7 +71,7 @@ class TalkListService
      */
     public function delete(int $user_id, int $list_id): bool
     {
-        return (bool)TalkList::query()->where([
+        return (bool)TalkSession::query()->where([
             ['id', '=', $list_id],
             ['user_id', '=', $user_id],
         ])->update([
@@ -90,7 +90,7 @@ class TalkListService
      */
     public function deleteByType(int $user_id, int $receiver_id, int $talk_type): bool
     {
-        return (bool)TalkList::query()->where([
+        return (bool)TalkSession::query()->where([
             ['user_id', '=', $user_id],
             ['talk_type', '=', $talk_type],
             ['receiver_id', '=', $receiver_id],
@@ -114,7 +114,7 @@ class TalkListService
             'group.group_name', 'group.avatar as group_avatar'
         ];
 
-        $rows = TalkList::from('talk_session as list')
+        $rows = TalkSession::from('talk_session as list')
             ->leftJoin('users', function ($join) {
                 $join->on('users.id', '=', 'list.receiver_id')->where('list.talk_type', '=', TalkModeConstant::PRIVATE_CHAT);
             })
@@ -131,7 +131,7 @@ class TalkListService
 
         $runIdAll = ServerRunID::getInstance()->getServerRunIdAll();
         return array_map(function ($item) use ($user_id, $runIdAll) {
-            $data = TalkList::item([
+            $data = TalkSession::item([
                 'id'          => $item['id'],
                 'talk_type'   => $item['talk_type'],
                 'receiver_id' => $item['receiver_id'],
@@ -173,7 +173,7 @@ class TalkListService
      */
     public function disturb(int $user_id, int $receiver_id, int $talk_type, int $is_disturb): bool
     {
-        $result = TalkList::query()->where([
+        $result = TalkSession::query()->where([
             ['user_id', '=', $user_id],
             ['talk_type', '=', $talk_type],
             ['receiver_id', '=', $receiver_id],
@@ -183,7 +183,7 @@ class TalkListService
             return false;
         }
 
-        return (bool)TalkList::query()->where('id', $result->id)->update([
+        return (bool)TalkSession::query()->where('id', $result->id)->update([
             'is_disturb' => $is_disturb,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -199,7 +199,7 @@ class TalkListService
      */
     public function isDisturb(int $user_id, int $receiver_id, int $talk_type): bool
     {
-        return (bool)TalkList::query()->where([
+        return (bool)TalkSession::query()->where([
             ['user_id', '=', $user_id],
             ['talk_type', '=', $talk_type],
             ['receiver_id', '=', $receiver_id],

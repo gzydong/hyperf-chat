@@ -21,7 +21,7 @@ use App\Model\BaseModel;
  * @property \Carbon\Carbon $updated_at    更新时间
  * @package App\Model
  */
-class TalkList extends BaseModel
+class TalkSession extends BaseModel
 {
     protected $table = 'talk_session';
 

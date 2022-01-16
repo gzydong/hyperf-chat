@@ -13,7 +13,7 @@ use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsInvite;
 use App\Model\Group\Group;
 use App\Model\Group\GroupMember;
-use App\Model\Talk\TalkList;
+use App\Model\Talk\TalkSession;
 use Hyperf\DbConnection\Db;
 use Exception;
 use App\Service\BaseService;
@@ -62,7 +62,8 @@ class GroupService extends BaseService
                 'is_overt'   => 0,
                 'is_mute'    => 0,
                 'is_dismiss' => 0,
-                'created_at' => date('Y-m-d H:i:s')
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
             ]);
 
             foreach ($friend_ids as $friend_id) {
@@ -71,6 +72,7 @@ class GroupService extends BaseService
                     'user_id'    => $friend_id,
                     'leader'     => $user_id == $friend_id ? 2 : 0,
                     'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
                 ];
 
                 $chatList[] = [
@@ -86,7 +88,7 @@ class GroupService extends BaseService
                 throw new Exception('创建群成员信息失败');
             }
 
-            if (!TalkList::insert($chatList)) {
+            if (!TalkSession::insert($chatList)) {
                 throw new Exception('创建群成员的聊天列表失败');
             }
 
@@ -109,6 +111,7 @@ class GroupService extends BaseService
             Db::commit();
         } catch (Exception $e) {
             Db::rollBack();
+            logger()->error($e->getMessage());
             return [false, null];
         }
 
@@ -206,7 +209,8 @@ class GroupService extends BaseService
         $updateArr = $insertArr = $updateArr1 = $insertArr1 = [];
 
         $members = GroupMember::where('group_id', $group_id)->whereIn('user_id', $friend_ids)->get(['id', 'user_id', 'is_quit'])->keyBy('user_id')->toArray();
-        $chatArr = TalkList::where('talk_type', TalkModeConstant::GROUP_CHAT)
+
+        $chatArr = TalkSession::where('talk_type', TalkModeConstant::GROUP_CHAT)
             ->where('receiver_id', $group_id)
             ->whereIn('user_id', $friend_ids)
             ->get(['id', 'user_id', 'is_delete'])
@@ -217,7 +221,8 @@ class GroupService extends BaseService
                 $insertArr[] = [
                     'group_id'   => $group_id,
                     'user_id'    => $uid,
-                    'created_at' => date('Y-m-d H:i:s')
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
                 ];
             } else if ($members[$uid]['is_quit'] == 1) {
                 $updateArr[] = $members[$uid]['id'];
@@ -243,25 +248,20 @@ class GroupService extends BaseService
                     'leader'     => 0,
                     'is_mute'    => 0,
                     'is_quit'    => 0,
-                    'user_card'  => '',
-                    'created_at' => date('Y-m-d H:i:s')
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
                 ]);
             }
 
-            if ($insertArr) {
-                GroupMember::insert($insertArr);
-            }
-
             if ($updateArr1) {
-                TalkList::whereIn('id', $updateArr1)->update([
+                TalkSession::whereIn('id', $updateArr1)->update([
                     'is_delete'  => 0,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
 
-            if ($insertArr1) {
-                TalkList::insert($insertArr1);
-            }
+            $insertArr && GroupMember::insert($insertArr);
+            $insertArr1 && TalkSession::insert($insertArr1);
 
             $result = TalkRecords::create([
                 'talk_type'   => TalkModeConstant::GROUP_CHAT,
@@ -282,6 +282,7 @@ class GroupService extends BaseService
             Db::commit();
         } catch (Exception $e) {
             Db::rollBack();
+            var_dump($e->getMessage());
             return false;
         }
 
@@ -345,7 +346,7 @@ class GroupService extends BaseService
                 'user_ids'        => $user_id
             ]);
 
-            TalkList::where([
+            TalkSession::where([
                 ['talk_type', '=', TalkModeConstant::GROUP_CHAT],
                 ['user_id', '=', $user_id],
                 ['receiver_id', '=', $group_id],
@@ -409,7 +410,7 @@ class GroupService extends BaseService
                 'user_ids'        => implode(',', $member_ids)
             ]);
 
-            TalkList::whereIn('user_id', $member_ids)->where('receiver_id', $group_id)->where('talk_type', TalkModeConstant::GROUP_CHAT)->update([
+            TalkSession::whereIn('user_id', $member_ids)->where('receiver_id', $group_id)->where('talk_type', TalkModeConstant::GROUP_CHAT)->update([
                 'is_delete'  => 1,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
@@ -472,7 +473,7 @@ class GroupService extends BaseService
 
         $list = [];
         if ($items) {
-            $list = TalkList::query()->where('user_id', $user_id)
+            $list = TalkSession::query()->where('user_id', $user_id)
                 ->where('talk_type', TalkModeConstant::GROUP_CHAT)
                 ->whereIn('receiver_id', array_column($items, 'id'))
                 ->get(['receiver_id', 'is_disturb'])->keyBy('receiver_id')->toArray();
