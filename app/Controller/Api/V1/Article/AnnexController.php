@@ -172,7 +172,7 @@ class AnnexController extends CController
         ]);
 
         /** @var ArticleAnnex $info */
-        $info = ArticleAnnex::select(['path', 'original_name'])->where('id', $params['annex_id'])->where('user_id', $this->uid())->first();
+        $info = ArticleAnnex::select(['path', 'original_name', 'drive'])->where('id', $params['annex_id'])->where('user_id', $this->uid())->first();
 
         if (!$info || !$filesystem->has($info->path)) {
             return $this->response->fail('文件不存在或没有下载权限！');
