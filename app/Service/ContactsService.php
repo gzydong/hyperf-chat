@@ -11,7 +11,7 @@
 namespace App\Service;
 
 use App\Model\User;
-use App\Model\Contact;
+use App\Model\Contact\Contact;
 use App\Traits\PagingTrait;
 
 /**

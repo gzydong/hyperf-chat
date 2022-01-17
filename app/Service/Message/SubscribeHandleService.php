@@ -9,7 +9,7 @@ use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\User;
-use App\Model\ContactApply;
+use App\Model\Contact\ContactApply;
 use App\Service\SocketClientService;
 use App\Service\UserService;
 

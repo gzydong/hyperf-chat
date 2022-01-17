@@ -7,7 +7,7 @@ use Hyperf\Database\Seeders\Seeder;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
 use Hyperf\DbConnection\Db;
-use App\Model\Contact;
+use App\Model\Contact\Contact;
 
 class Initialize extends Seeder
 {

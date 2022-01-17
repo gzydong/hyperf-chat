@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Cache\FriendRemark;
-use App\Model\Contact;
+use App\Model\Contact\Contact;
 
 class UserFriendService
 {

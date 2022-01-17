@@ -15,8 +15,9 @@ use App\Model\BaseModel;
  * @property integer $is_mute    是否禁言[0:否;1:是;]
  * @property integer $is_quit    是否退群[0:否;1:是;]
  * @property string  $user_card  群名片
- * @property string  $created_at 入群时间
- * @property string  $deleted_at 退群时间
+ * @property string  $created_at 创建时间
+ * @property string  $updated_at 更新时间
+ * @property string  $deleted_at 删除时间
  * @package App\Model\Group
  */
 class GroupMember extends BaseModel
@@ -30,6 +31,7 @@ class GroupMember extends BaseModel
         'is_mute',
         'is_quit',
         'user_card',
+        'last_record_id',
         'created_at',
         'updated_at',
         'deleted_at',

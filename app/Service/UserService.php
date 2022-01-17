@@ -5,8 +5,8 @@ namespace App\Service;
 use App\Helpers\HashHelper;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
-use App\Model\Contact;
-use App\Model\ContactApply;
+use App\Model\Contact\Contact;
+use App\Model\Contact\ContactApply;
 use Hyperf\DbConnection\Db;
 
 class UserService extends BaseService

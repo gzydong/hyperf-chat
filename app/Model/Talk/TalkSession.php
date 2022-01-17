@@ -19,6 +19,7 @@ use App\Model\BaseModel;
  * @property integer        $is_robot      是否机器人
  * @property string         $created_at    创建时间
  * @property \Carbon\Carbon $updated_at    更新时间
+ *
  * @package App\Model
  */
 class TalkSession extends BaseModel
@@ -31,10 +32,10 @@ class TalkSession extends BaseModel
         'talk_type',
         'user_id',
         'receiver_id',
-        'is_delete',
         'is_top',
-        'is_robot',
         'is_disturb',
+        'is_delete',
+        'is_robot',
         'created_at',
         'updated_at'
     ];
