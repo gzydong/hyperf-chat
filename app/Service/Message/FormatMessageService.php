@@ -96,8 +96,8 @@ class FormatMessageService
         // 查询聊天文件信息
         if ($files) {
             $files = TalkRecordsFile::whereIn('record_id', $files)->get([
-                'id', 'record_id', 'user_id', 'file_source', 'file_type', 'save_type',
-                'original_name', 'file_suffix', 'file_size', 'save_dir'
+                'id', 'record_id', 'user_id', 'source', 'type', 'drive',
+                'original_name', 'suffix', 'size', 'path'
             ])->keyBy('record_id')->toArray();
         }
 
@@ -111,7 +111,7 @@ class FormatMessageService
         // 查询代码块消息
         if ($codes) {
             $codes = TalkRecordsCode::whereIn('record_id', $codes)->get([
-                'record_id', 'code_lang', 'code'
+                'record_id', 'lang', 'code'
             ])->keyBy('record_id')->toArray();
         }
 
@@ -149,7 +149,7 @@ class FormatMessageService
                 case TalkMessageType::FILE_MESSAGE:
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
                     if ($rows[$k]['file']) {
-                        $rows[$k]['file']['file_url'] = get_media_url($rows[$k]['file']['save_dir']);
+                        $rows[$k]['file']['file_url'] = get_media_url($rows[$k]['file']['path']);
                     }
                     break;
 

@@ -1,11 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Controller\Api\V1;
+namespace App\Controller\Api\V1\Talk;
 
 use App\Cache\UnreadTalkCache;
 use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
+use App\Controller\Api\V1\CController;
 use App\Event\TalkEvent;
 use App\Model\EmoticonItem;
 use App\Model\FileSplitUpload;
@@ -29,7 +30,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  * @package App\Controller\Api\V1
  */
-class TalkMessageController extends CController
+class MessageController extends CController
 {
     /**
      * @Inject
@@ -75,6 +76,7 @@ class TalkMessageController extends CController
     public function code(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'lang', 'code']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',
@@ -83,6 +85,7 @@ class TalkMessageController extends CController
         ]);
 
         $user_id = $this->uid();
+
         if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
@@ -92,9 +95,9 @@ class TalkMessageController extends CController
             'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
         ], [
-            'user_id'   => $user_id,
-            'code_lang' => $params['lang'],
-            'code'      => $params['code']
+            'user_id' => $user_id,
+            'lang'    => $params['lang'],
+            'code'    => $params['code']
         ]);
 
         if (!$isTrue) return $this->response->fail('消息发送失败！');
@@ -110,12 +113,14 @@ class TalkMessageController extends CController
     public function image(Filesystem $filesystem): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1'
         ]);
 
         $user_id = $this->uid();
+
         if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
@@ -163,6 +168,7 @@ class TalkMessageController extends CController
     public function file(Filesystem $filesystem): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'hash_name']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',
@@ -314,11 +320,11 @@ class TalkMessageController extends CController
         };
 
         if (isset($params['receive_user_ids']) && !empty($params['receive_user_ids'])) {
-            $receive_user_ids = $func($params['receive_user_ids'], TalkModeConstant::PRIVATE_CHAT);
+            $receive_user_ids = $func(parse_ids($params['receive_user_ids']), TalkModeConstant::PRIVATE_CHAT);
         }
 
         if (isset($params['receive_group_ids']) && !empty($params['receive_group_ids'])) {
-            $receive_group_ids = $func($params['receive_group_ids'], TalkModeConstant::GROUP_CHAT);
+            $receive_group_ids = $func(parse_ids($params['receive_group_ids']), TalkModeConstant::GROUP_CHAT);
         }
 
         // 需要转发的好友或者群组
@@ -326,7 +332,7 @@ class TalkMessageController extends CController
 
         $method = $params['forward_mode'] == 1 ? "multiSplitForward" : "multiMergeForward";
 
-        $ids = $forwardService->{$method}($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], $params['records_ids'], $items);
+        $ids = $forwardService->{$method}($user_id, (int)$params['receiver_id'], (int)$params['talk_type'], parse_ids($params['records_ids']), $items);
 
         if (!$ids) return $this->response->fail('转发失败！');
 
@@ -434,6 +440,7 @@ class TalkMessageController extends CController
     public function handleVote(): ResponseInterface
     {
         $params = $this->request->inputs(['record_id', 'options']);
+
         $this->validate($params, [
             'record_id' => 'required|integer|min:1',
             'options'   => 'required',

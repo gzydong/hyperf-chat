@@ -19,6 +19,7 @@ use App\Model\BaseModel;
  * @property integer $is_dismiss   是否已解散[0:否;1:是;]
  * @property string  $created_at   创建时间
  * @property string  $dismissed_at 解散时间
+ *
  * @package App\Model\Group
  */
 class Group extends BaseModel

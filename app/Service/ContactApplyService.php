@@ -6,8 +6,8 @@ use App\Cache\FriendApply;
 use App\Constants\TalkEventConstant;
 use App\Event\TalkEvent;
 use App\Model\User;
-use App\Model\Contact;
-use App\Model\ContactApply;
+use App\Model\Contact\Contact;
+use App\Model\Contact\ContactApply;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
 

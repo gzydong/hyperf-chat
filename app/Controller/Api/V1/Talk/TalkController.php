@@ -1,14 +1,18 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Controller\Api\V1;
+namespace App\Controller\Api\V1\Talk;
 
 use App\Cache\LastMessage;
 use App\Cache\Repository\LockRedis;
 use App\Cache\UnreadTalkCache;
-use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
+use App\Controller\Api\V1\CController;
+use App\Model\Group\Group;
 use App\Model\Talk\TalkSession;
-use App\Service\Group\GroupMemberService;
+use App\Model\User;
+use App\Service\TalkListService;
+use App\Service\TalkService;
 use App\Service\UserFriendService;
 use App\Support\UserRelation;
 use Hyperf\Di\Annotation\Inject;
@@ -17,10 +21,6 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use Psr\Http\Message\ResponseInterface;
-use App\Model\User;
-use App\Model\Group\Group;
-use App\Service\TalkService;
-use App\Service\TalkListService;
 
 /**
  * Class TalkController
@@ -65,6 +65,7 @@ class TalkController extends CController
 
     /**
      * 新增对话列表
+     *
      * @RequestMapping(path="create", methods="post")
      */
     public function create(UserFriendService $service): ResponseInterface
@@ -124,6 +125,7 @@ class TalkController extends CController
 
     /**
      * 删除对话列表
+     *
      * @RequestMapping(path="delete", methods="post")
      */
     public function delete(): ResponseInterface
@@ -140,6 +142,7 @@ class TalkController extends CController
 
     /**
      * 对话列表置顶
+     *
      * @RequestMapping(path="topping", methods="post")
      */
     public function topping(): ResponseInterface
@@ -157,6 +160,7 @@ class TalkController extends CController
 
     /**
      * 设置消息免打扰状态
+     *
      * @RequestMapping(path="disturb", methods="post")
      */
     public function disturb(): ResponseInterface
@@ -175,7 +179,7 @@ class TalkController extends CController
 
     /**
      * 更新对话列表未读数
-     * @RequestMapping(path="update-unread-num", methods="post")
+     * @RequestMapping(path="unread/clear", methods="post")
      */
     public function updateUnreadNum(): ResponseInterface
     {
@@ -191,106 +195,5 @@ class TalkController extends CController
         }
 
         return $this->response->success();
-    }
-
-    /**
-     * 获取对话面板中的聊天记录
-     * @RequestMapping(path="records", methods="get")
-     */
-    public function getChatRecords(): ResponseInterface
-    {
-        $params = $this->request->inputs(['talk_type', 'receiver_id', 'record_id']);
-        $this->validate($params, [
-            'talk_type'   => 'required|in:1,2',
-            'receiver_id' => 'required|integer|min:1',
-            'record_id'   => 'required|integer|min:0',
-        ]);
-
-        $user_id = $this->uid();
-
-        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember((int)$params['receiver_id'], $user_id)) {
-            return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
-        }
-
-        $limit  = 30;
-        $result = $this->talkService->getChatRecords(
-            $user_id,
-            $params['receiver_id'],
-            $params['talk_type'],
-            $params['record_id'],
-            $limit
-        );
-
-        return $this->response->success([
-            'rows'      => $result,
-            'record_id' => $result ? end($result)['id'] : 0,
-            'limit'     => $limit
-        ]);
-    }
-
-    /**
-     * 获取转发记录详情
-     * @RequestMapping(path="get-forward-records", methods="get")
-     */
-    public function getForwardRecords(): ResponseInterface
-    {
-        $params = $this->request->inputs(['record_id']);
-        $this->validate($params, [
-            'record_id' => 'required|integer|min:1'
-        ]);
-
-        $rows = $this->talkService->getForwardRecords($this->uid(), $params['record_id']);
-
-        return $this->response->success(['rows' => $rows]);
-    }
-
-    /**
-     * 查询聊天记录
-     * @RequestMapping(path="find-chat-records", methods="get")
-     */
-    public function findChatRecords(): ResponseInterface
-    {
-        $params = $this->request->inputs(['talk_type', 'receiver_id', 'record_id', 'msg_type']);
-        $this->validate($params, [
-            'talk_type'   => 'required|in:1,2',
-            'receiver_id' => 'required|integer|min:1',
-            'record_id'   => 'required|integer|min:0',
-            'msg_type'    => 'required|integer',
-        ]);
-
-        $user_id = $this->uid();
-        if ($params['talk_type'] == TalkModeConstant::GROUP_CHAT && !di()->get(GroupMemberService::class)->isMember((int)$params['receiver_id'], $user_id)) {
-            return $this->response->fail('暂不属于好友关系或群聊成员，无法查看聊天记录！');
-        }
-
-        $types = [
-            TalkMessageType::TEXT_MESSAGE,
-            TalkMessageType::FILE_MESSAGE,
-            TalkMessageType::FORWARD_MESSAGE,
-            TalkMessageType::CODE_MESSAGE,
-            TalkMessageType::VOTE_MESSAGE
-        ];
-
-        if (in_array($params['msg_type'], $types)) {
-            $msg_type = [$params['msg_type']];
-        } else {
-            $msg_type = $types;
-        }
-
-        $limit  = 30;
-        $result = $this->talkService->getChatRecords(
-            $user_id,
-            $params['receiver_id'],
-            $params['talk_type'],
-            $params['record_id'],
-            $limit,
-            $msg_type
-        );
-
-        return $this->response->success([
-            'rows'      => $result,
-            'record_id' => $result ? end($result)['id'] : 0,
-            'limit'     => $limit
-        ]);
     }
 }

@@ -12,14 +12,13 @@ use App\Model\BaseModel;
  * @property int    $id            文件消息ID
  * @property int    $record_id     聊天记录ID
  * @property int    $user_id       用户ID
- * @property int    $file_source   文件上传来源
- * @property int    $file_type     文件类型
- * @property int    $save_type     文件保存类型
+ * @property int    $source        文件上传来源
+ * @property int    $type          文件类型
+ * @property int    $drive         文件保存类型
  * @property string $original_name 文件原始名称
- * @property string $file_suffix   文件后缀名
- * @property int    $file_size     文件大小
- * @property string $save_dir      文件保存路径
- * @property int    $is_delete     是否已删除
+ * @property string $suffix        文件后缀名
+ * @property int    $size          文件大小
+ * @property string $path          文件保存路径
  * @property string $created_at    上传时间
  * @package App\Model\Chat
  */
@@ -30,25 +29,23 @@ class TalkRecordsFile extends BaseModel
     protected $fillable = [
         'record_id',
         'user_id',
-        'file_source',
-        'file_type',
-        'save_type',
+        'source',
+        'type',
+        'drive',
         'original_name',
-        'file_suffix',
-        'file_size',
-        'save_dir',
-        'is_delete',
+        'suffix',
+        'size',
+        'path',
         'created_at'
     ];
 
     protected $casts = [
-        'record_id'   => 'integer',
-        'user_id'     => 'integer',
-        'file_source' => 'integer',
-        'file_type'   => 'integer',
-        'save_type'   => 'integer',
-        'file_size'   => 'integer',
-        'is_delete'   => 'integer',
-        'created_at'  => 'datetime'
+        'record_id'  => 'integer',
+        'user_id'    => 'integer',
+        'source'     => 'integer',
+        'type'       => 'integer',
+        'drive'      => 'integer',
+        'size'       => 'integer',
+        'created_at' => 'datetime'
     ];
 }

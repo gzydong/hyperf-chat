@@ -5,7 +5,7 @@ namespace App\Command;
 
 use App\Cache\IpAddressCache;
 use App\Constants\RobotConstant;
-use App\Model\Contact;
+use App\Model\Contact\Contact;
 use App\Repository\ExampleRepository;
 use App\Repository\RobotRepository;
 use App\Service\RobotService;

@@ -2,7 +2,9 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Contact;
+
+use App\Model\BaseModel;
 
 /**
  * 好友添加申请数据表模型
@@ -23,7 +25,6 @@ class ContactApply extends BaseModel
         'friend_id',
         'remark',
         'created_at',
-        'updated_at'
     ];
 
     protected $casts = [

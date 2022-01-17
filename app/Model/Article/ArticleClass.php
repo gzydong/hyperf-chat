@@ -15,12 +15,12 @@ use App\Model\BaseModel;
  * @property integer $sort       排序[值越小越靠前]
  * @property integer $is_default 默认分类[1:是;0:不是]
  * @property string  $created_at 创建时间
+ * @property string  $updated_at 更新时间
+ *
  * @package App\Model\Article
  */
 class ArticleClass extends BaseModel
 {
-
-
     protected $table = 'article_class';
 
     public $timestamps = true;

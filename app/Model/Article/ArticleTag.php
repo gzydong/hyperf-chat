@@ -14,6 +14,7 @@ use App\Model\BaseModel;
  * @property string  $tag_name   标签名称
  * @property integer $sort       标签排序
  * @property integer $created_at 创建时间
+ * @property integer $updated_at 更新时间
  */
 class ArticleTag extends BaseModel
 {

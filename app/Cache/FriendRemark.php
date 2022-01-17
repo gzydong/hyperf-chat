@@ -3,7 +3,7 @@
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
-use App\Model\Contact;
+use App\Model\Contact\Contact;
 
 /**
  * 好友备注 - 缓存助手

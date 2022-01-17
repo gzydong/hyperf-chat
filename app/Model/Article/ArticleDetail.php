@@ -13,6 +13,7 @@ use App\Model\BaseModel;
  * @property integer $article_id 笔记ID
  * @property string  $md_content 笔记MD格式内容
  * @property string  $content    笔记html格式内容
+ *
  * @package App\Model\Article
  */
 class ArticleDetail extends BaseModel

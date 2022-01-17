@@ -30,6 +30,7 @@ class Article extends BaseModel
     protected $fillable = [
         'user_id',
         'class_id',
+        'tags_id',
         'title',
         'abstract',
         'image',
@@ -37,6 +38,7 @@ class Article extends BaseModel
         'status',
         'created_at',
         'updated_at',
+        'deleted_at',
     ];
 
     protected $casts = [

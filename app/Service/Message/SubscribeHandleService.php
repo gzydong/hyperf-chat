@@ -49,14 +49,14 @@ class SubscribeHandleService
 
     /**
      * @param array $data 数据
-     * <pre>
-     * [
-     * 'uuid'    => '',
-     * 'event'   => '',
-     * 'data'    => '',
-     * 'options' => ''
-     * ];
-     * </pre>
+     *                    <pre>
+     *                    [
+     *                    'uuid'    => '',
+     *                    'event'   => '',
+     *                    'data'    => '',
+     *                    'options' => ''
+     *                    ];
+     *                    </pre>
      */
     public function handle(array $data)
     {
@@ -120,7 +120,8 @@ class SubscribeHandleService
         if (!$result) return;
 
         $message = di()->get(FormatMessageService::class)->handleChatRecords([$result->toArray()])[0];
-        $push    = [
+
+        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_TALK, [
             'sender_id'   => $sender_id,
             'receiver_id' => $receiver_id,
             'talk_type'   => $talk_type,
@@ -128,9 +129,7 @@ class SubscribeHandleService
                 'group_name'   => $groupInfo ? $groupInfo['group_name'] : '',
                 'group_avatar' => $groupInfo ? $groupInfo['avatar'] : ''
             ])
-        ];
-
-        $this->push($fds, json_encode([TalkEventConstant::EVENT_TALK, $push]));
+        ]));
     }
 
     /**
@@ -142,7 +141,7 @@ class SubscribeHandleService
     {
         $fds = $this->clientService->findUserFds($data['data']['receiver_id']);
 
-        $this->push($fds, json_encode([TalkEventConstant::EVENT_KEYBOARD, $data['data']]));
+        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_KEYBOARD, $data['data']));
     }
 
     /**
@@ -166,11 +165,9 @@ class SubscribeHandleService
 
         $fds = array_unique(array_merge(...$fds));
 
-        $this->push($fds, json_encode([
-            TalkEventConstant::EVENT_ONLINE_STATUS, [
-                'user_id' => $user_id,
-                'status'  => $status
-            ]
+        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_ONLINE_STATUS, [
+            'user_id' => $user_id,
+            'status'  => $status
         ]));
     }
 
@@ -199,12 +196,12 @@ class SubscribeHandleService
 
         if (!$fds) return;
 
-        $this->push($fds, json_encode([TalkEventConstant::EVENT_REVOKE_TALK, [
+        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_REVOKE_TALK, [
             'talk_type'   => $record->talk_type,
             'sender_id'   => $record->user_id,
             'receiver_id' => $record->receiver_id,
             'record_id'   => $record->id,
-        ]]));
+        ]));
     }
 
     /**
@@ -245,7 +242,12 @@ class SubscribeHandleService
             'mobile'   => $friendInfo->mobile,
         ];
 
-        $this->push(array_unique($fds), json_encode([TalkEventConstant::EVENT_FRIEND_APPLY, $msg]));
+        $this->push(array_unique($fds), $this->toJson(TalkEventConstant::EVENT_FRIEND_APPLY, $msg));
+    }
+
+    private function toJson(string $event, array $data): string
+    {
+        return json_encode(["event" => $event, "content" => $data]);
     }
 
     /**

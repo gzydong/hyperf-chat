@@ -2,9 +2,9 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Contact;
 
-use App\Cache\FriendRemark;
+use App\Model\BaseModel;
 
 /**
  * 表情包收藏数据表模型

@@ -206,7 +206,7 @@ class TalkForwardService extends BaseService
                             $code[]   = [
                                 'record_id'  => $res->id,
                                 'user_id'    => $user_id,
-                                'code_lang'  => $codeInfo['code_lang'],
+                                'code_lang'  => $codeInfo['lang'],
                                 'code'       => $codeInfo['code'],
                                 'created_at' => date('Y-m-d H:i:s')
                             ];

@@ -50,6 +50,8 @@ class RedisWebsocketSubscribe extends AbstractProcess
         //echo PHP_EOL . "chan : $chan , msg : $message";
         $data = json_decode($message, true);
 
+        var_dump("subscribe ====> {$message}");
+
         $this->handleService->handle($data);
     }
 }
