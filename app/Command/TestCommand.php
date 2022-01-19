@@ -50,26 +50,4 @@ class TestCommand extends HyperfCommand
         //     'type'       => 1,
         // ]);
     }
-
-
-    // 更新好友表数据
-    public function updateData()
-    {
-        $max = Contact::max('id');
-        Contact::where('id', '<=', $max)->chunk(1000, function ($rows) {
-            $arr = [];
-            foreach ($rows as $row) {
-                $arr[] = [
-                    'user_id'    => $row->friend_id,
-                    'friend_id'  => $row->user_id,
-                    'status'     => 1,
-                    'remark'     => '',
-                    'updated_at' => date('Y-m-d H:i:s'),
-                    'created_at' => date('Y-m-d H:i:s'),
-                ];
-            }
-
-            Contact::insert($arr);
-        });
-    }
 }
