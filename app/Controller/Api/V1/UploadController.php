@@ -30,20 +30,21 @@ class UploadController extends CController
     /**
      * 图片文件流上传接口
      *
-     * @RequestMapping(path="file-stream", methods="post")
+     * @RequestMapping(path="avatar", methods="post")
      * @param Filesystem $filesystem
      * @return ResponseInterface
      */
     public function fileStream(Filesystem $filesystem): ResponseInterface
     {
-        $fileStream = $this->request->post('fileStream', '');
-        if (empty($fileStream)) {
+        $file = $this->request->file("file");
+
+        if (!$file->isValid()) {
             return $this->response->fail();
         }
 
-        $path = 'media/images/avatar/' . date('Ymd') . '/' . create_random_filename('png');
+        $path = 'public/media/images/avatar/' . date('Ymd') . '/' . create_random_filename('png');
         try {
-            $filesystem->write($path, base64_decode(str_replace(['data:image/png;base64,', ' '], ['', '+'], $fileStream)));
+            $filesystem->write($path, file_get_contents($file->getRealPath()));
         } catch (\Exception $e) {
             return $this->response->fail();
         }
@@ -54,9 +55,9 @@ class UploadController extends CController
     /**
      * 获取拆分文件信息
      *
-     * @RequestMapping(path="get-file-split-info", methods="get")
+     * @RequestMapping(path="multipart/initiate", methods="post")
      */
-    public function getFileSplitInfo(): ResponseInterface
+    public function initiateMultipart(): ResponseInterface
     {
         $params = $this->request->inputs(['file_name', 'file_size']);
         $this->validate($params, [
@@ -66,23 +67,23 @@ class UploadController extends CController
 
         $data = $this->splitUploadService->create($this->uid(), $params['file_name'], $params['file_size']);
 
+
+        $data['hash_name'] = $data["upload_id"];
+
         return $data ? $this->response->success($data) : $this->response->fail('获取文件拆分信息失败！');
     }
 
     /**
      * 文件拆分上传接口
      *
-     * @RequestMapping(path="file-subarea-upload", methods="post")
+     * @RequestMapping(path="multipart", methods="post")
      */
     public function fileSubareaUpload(): ResponseInterface
     {
         $file   = $this->request->file('file');
-        $params = $this->request->inputs(['name', 'hash', 'ext', 'size', 'split_index', 'split_num']);
+        $params = $this->request->inputs(['upload_id', 'split_index', 'split_num']);
         $this->validate($params, [
-            'name'        => "required",
-            'hash'        => 'required',
-            'ext'         => 'required',
-            'size'        => 'required',
+            'upload_id'   => 'required',
             'split_index' => 'required',
             'split_num'   => 'required'
         ]);
@@ -92,20 +93,20 @@ class UploadController extends CController
         }
 
         $user_id   = $this->uid();
-        $uploadRes = $this->splitUploadService->upload($user_id, $file, $params['hash'], intval($params['split_index']), intval($params['size']));
+        $uploadRes = $this->splitUploadService->upload($user_id, $file, $params['upload_id'], intval($params['split_index']));
         if (!$uploadRes) {
             return $this->response->fail('上传文件失败！');
         }
 
         if (($params['split_index'] + 1) == $params['split_num']) {
-            $fileInfo = $this->splitUploadService->merge($user_id, $params['hash']);
+            $fileInfo = $this->splitUploadService->merge($user_id, $params['upload_id']);
             if (!$fileInfo) {
                 return $this->response->fail('上传文件失败！');
             }
 
             return $this->response->success([
                 'is_file_merge' => true,
-                'hash'          => $params['hash']
+                'hash' => $params['upload_id']
             ]);
         }
 

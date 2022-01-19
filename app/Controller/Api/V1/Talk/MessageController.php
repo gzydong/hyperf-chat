@@ -9,7 +9,7 @@ use App\Constants\TalkModeConstant;
 use App\Controller\Api\V1\CController;
 use App\Event\TalkEvent;
 use App\Model\EmoticonItem;
-use App\Model\FileSplitUpload;
+use App\Model\SplitUpload;
 use App\Service\TalkForwardService;
 use App\Service\TalkMessageService;
 use App\Support\UserRelation;
@@ -149,9 +149,9 @@ class MessageController extends CController
             'receiver_id' => $params['receiver_id'],
         ], [
             'user_id'       => $user_id,
-            'file_suffix'   => $ext,
-            'file_size'     => $file->getSize(),
-            'save_dir'      => $path,
+            'suffix'        => $ext,
+            'size'          => $file->getSize(),
+            'path'          => $path,
             'original_name' => $file->getClientFilename(),
         ]);
 
@@ -180,14 +180,14 @@ class MessageController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
-        $file = FileSplitUpload::where('user_id', $user_id)->where('hash_name', $params['hash_name'])->where('file_type', 1)->first();
-        if (!$file || empty($file->save_dir)) {
+        $file = SplitUpload::where('user_id', $user_id)->where('upload_id', $params['hash_name'])->where('type', 1)->first();
+        if (!$file || empty($file->path)) {
             return $this->response->fail('文件不存在...');
         }
 
+        $save_dir = "private/files/talks/" . date('Ymd') . '/' . create_random_filename($file->file_ext);
         try {
-            $save_dir = "files/talks/" . date('Ymd') . '/' . create_random_filename($file->file_ext);
-            $filesystem->copy($file->save_dir, $save_dir);
+            $filesystem->copy($file->path, $save_dir);
         } catch (\Exception $e) {
             return $this->response->fail('文件不存在...');
         }
@@ -198,14 +198,14 @@ class MessageController extends CController
             'receiver_id' => $params['receiver_id']
         ], [
             'user_id'       => $user_id,
-            'file_source'   => 1,
+            'source'        => 1,
             'original_name' => $file->original_name,
-            'file_suffix'   => $file->file_ext,
-            'file_size'     => $file->file_size,
-            'save_dir'      => $save_dir,
+            'suffix'        => $file->file_ext,
+            'size'          => $file->file_size,
+            'path'          => $save_dir,
         ]);
 
-        if (!$isTrue) return $this->response->fail('表情发送失败！');
+        if (!$isTrue) return $this->response->fail('文件发送失败！');
 
         return $this->response->success();
     }
@@ -275,9 +275,9 @@ class MessageController extends CController
             'receiver_id' => $params['receiver_id'],
         ], [
             'user_id'       => $user_id,
-            'file_suffix'   => $emoticon->file_suffix,
-            'file_size'     => $emoticon->file_size,
-            'save_dir'      => $emoticon->url,
+            'suffix'        => $emoticon->file_suffix,
+            'size'          => $emoticon->file_size,
+            'url'           => $emoticon->url,
             'original_name' => '图片表情',
         ]);
 

@@ -105,8 +105,9 @@ class TalkMessageService
             }
 
             $file['record_id']  = $insert->id;
-            $file['file_type']  = MediaTypeConstant::getMediaType($file['file_suffix']);
+            $file['type']       = MediaTypeConstant::getMediaType($file['suffix']);
             $file['created_at'] = date('Y-m-d H:i:s');
+
             if (!TalkRecordsFile::create($file)) {
                 throw new Exception('插入聊天记录(代码消息)失败...');
             }
@@ -114,6 +115,7 @@ class TalkMessageService
             Db::commit();
         } catch (Exception $e) {
             Db::rollBack();
+            logger()->error($e->getMessage());
             return false;
         }
 

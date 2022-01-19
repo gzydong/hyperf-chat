@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Model\FileSplitUpload;
-use Hyperf\Utils\Str;
+use App\Constants\FileDriveConstant;
+use App\Model\SplitUpload;
 use Hyperf\HttpMessage\Upload\UploadedFile;
 use League\Flysystem\Filesystem;
 
@@ -24,29 +24,33 @@ class SplitUploadService
      * 创建文件拆分相关信息
      *
      * @param int    $user_id  用户ID
-     * @param string $fileName 上传的文件名
-     * @param string $fileSize 上传文件大小
+     * @param string $fileName 文件名
+     * @param int    $fileSize 文件大小
      * @return array|bool
      */
-    public function create(int $user_id, string $fileName, string $fileSize)
+    public function create(int $user_id, string $fileName, int $fileSize)
     {
-        $hash_name = implode('-', [uniqid(), rand(10000000, 99999999), Str::random(6)]);
         $split_num = intval(ceil($fileSize / self::SPLIT_SIZE));
 
         $data                  = [];
-        $data['file_type']     = 1;
+        $data['type']          = 1;
+        $data['drive']         = FileDriveConstant::Local;
+        $data['upload_id']     = uniqid(strval(time()));
         $data['user_id']       = $user_id;
         $data['original_name'] = $fileName;
-        $data['hash_name']     = $hash_name;
         $data['file_ext']      = pathinfo($fileName, PATHINFO_EXTENSION);
         $data['file_size']     = $fileSize;
-        $data['upload_at']     = time();
+        $data['attr']          = new \stdClass();
+        $data['created_at']    = date("Y-m-d H:i:s");
+        $data['updated_at']    = date("Y-m-d H:i:s");
+
+        $data['path'] = sprintf("private/tmp/multipart/%s/%s.tmp", date("Ymd"), md5($data['upload_id']));
 
         // 文件拆分数量
         $data['split_num']   = $split_num;
         $data['split_index'] = $split_num;
 
-        return FileSplitUpload::create($data) ? array_merge($data, ['split_size' => self::SPLIT_SIZE]) : false;
+        return SplitUpload::create($data) ? array_merge($data, ['split_size' => self::SPLIT_SIZE]) : false;
     }
 
     /**
@@ -54,39 +58,43 @@ class SplitUploadService
      *
      * @param int          $user_id     用户ID
      * @param UploadedFile $file        文件信息
-     * @param string       $hashName    上传临时问价hash名
+     * @param string       $upload_id   上传临时问价hash名
      * @param int          $split_index 当前拆分文件索引
-     * @param int          $fileSize    文件大小
      * @return bool
      */
-    public function upload(int $user_id, UploadedFile $file, string $hashName, int $split_index, int $fileSize)
+    public function upload(int $user_id, UploadedFile $file, string $upload_id, int $split_index)
     {
-        $fileInfo = FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext'])
-            ->where([['user_id', '=', $user_id], ['hash_name', '=', $hashName], ['file_type', '=', 1]])
+        $fileInfo = SplitUpload::select(['id', 'original_name', 'split_num', 'file_ext'])
+            ->where([['user_id', '=', $user_id], ['upload_id', '=', $upload_id], ['type', '=', 1]])
             ->first();
 
         if (!$fileInfo) return false;
 
-        $save_path = "tmp/{$hashName}/" . "{$hashName}_{$split_index}_{$fileInfo->file_ext}.tmp";
+        $path = sprintf("private/tmp/%s/%s/%d-%s.tmp", date("Ymd"), md5($upload_id), $split_index, $upload_id);
+
         try {
-            di()->get(Filesystem::class)->write($save_path, file_get_contents($file->getRealPath()));
+            di()->get(Filesystem::class)->write($path, file_get_contents($file->getRealPath()));
         } catch (\Exception $e) {
             return false;
         }
 
-        $info = FileSplitUpload::where('user_id', $user_id)->where('hash_name', $hashName)->where('split_index', $split_index)->first();
+        $info = SplitUpload::where('user_id', $user_id)->where('upload_id', $upload_id)->where('split_index', $split_index)->first();
+
         if (!$info) {
-            return (bool)FileSplitUpload::create([
+            return (bool)SplitUpload::create([
                 'user_id'       => $user_id,
-                'file_type'     => 2,
-                'hash_name'     => $hashName,
+                'type'          => 2,
+                'drive'         => FileDriveConstant::Local,
+                'upload_id'     => $upload_id,
                 'original_name' => $fileInfo->original_name,
                 'split_index'   => $split_index,
                 'split_num'     => $fileInfo->split_num,
-                'save_dir'      => $save_path,
+                'path'          => $path,
+                'attr'          => new \stdClass(),
                 'file_ext'      => $fileInfo->file_ext,
-                'file_size'     => $fileSize,
-                'upload_at'     => time(),
+                'file_size'     => $file->getSize(),
+                'created_at'    => date("Y-m-d H:i:s"),
+                'updated_at'    => date("Y-m-d H:i:s"),
             ]);
         }
 
@@ -97,46 +105,38 @@ class SplitUploadService
      * 文件合并
      *
      * @param int    $user_id   用户ID
-     * @param string $hash_name 上传临时问价hash名
+     * @param string $upload_id 上传临时问价hash名
      * @return array|bool
      */
-    public function merge(int $user_id, string $hash_name)
+    public function merge(int $user_id, string $upload_id)
     {
-        $fileInfo = FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext', 'file_size'])
+        $fileInfo = SplitUpload::select(['id', 'original_name', 'split_num', 'file_ext', 'file_size', 'path'])
             ->where('user_id', $user_id)
-            ->where('hash_name', $hash_name)
-            ->where('file_type', 1)
+            ->where('upload_id', $upload_id)
+            ->where('type', 1)
             ->first();
 
         if (!$fileInfo) return false;
 
-        $files = FileSplitUpload::where('user_id', $user_id)
-            ->where('hash_name', $hash_name)
-            ->where('file_type', 2)
-            ->orderBy('split_index', 'asc')
-            ->get(['split_index', 'save_dir'])->toArray();
+        $files = SplitUpload::where('user_id', $user_id)
+            ->where('upload_id', $upload_id)
+            ->where('type', 2)
+            ->orderBy('split_index')
+            ->get(['split_index', 'path'])->toArray();
 
         if (!$files || count($files) != $fileInfo->split_num) return false;
 
-        $file_merge = "tmp/{$hash_name}/{$fileInfo->original_name}.tmp";
-
         $filesystem = di()->get(Filesystem::class);
         $root_path  = $filesystem->getConfig()->get('root');
+
+        @mkdir(pathinfo("{$root_path}/{$fileInfo->path}", PATHINFO_DIRNAME));
+
         foreach ($files as $file) {
-            file_put_contents(
-                "{$root_path}/{$file_merge}",
-                $filesystem->read($file['save_dir']),
-                FILE_APPEND
-            );
+            file_put_contents("{$root_path}/{$fileInfo->path}", $filesystem->read($file['path']), FILE_APPEND);
         }
 
-        FileSplitUpload::select(['id', 'original_name', 'split_num', 'file_ext', 'file_size'])
-            ->where('user_id', $user_id)->where('hash_name', $hash_name)
-            ->where('file_type', 1)
-            ->update(['save_dir' => $file_merge]);
-
         return [
-            'path'          => $file_merge,
+            'path'          => $fileInfo->path,
             'tmp_file_name' => "{$fileInfo->original_name}.tmp",
             'original_name' => $fileInfo->original_name,
             'file_size'     => $fileInfo->file_size
@@ -152,10 +152,11 @@ class SplitUploadService
         // 24小时前
         $time = time() - 60 * 60 * 24 * 1;
 
-        FileSplitUpload::where('file_type', 1)->where('upload_at', '<', $time)->select('hash_name')->chunk(100, function ($rows) {
+        SplitUpload::where('file_type', 1)->where('upload_at', '<', $time)->select('upload_id')->chunk(100, function ($rows) {
             foreach ($rows as $row) {
-                @di()->get(Filesystem::class)->deleteDir("tmp/{$row->hash_name}");
-                @FileSplitUpload::where('hash_name', $row->hash_name)->delete();
+                @di()->get(Filesystem::class)->deleteDir(pathinfo($row->path, PATHINFO_DIRNAME));
+
+                @SplitUpload::where('upload_id', $row->upload_id)->delete();
             }
         });
     }

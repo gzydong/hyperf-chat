@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1\Talk;
 
+use App\Constants\FileDriveConstant;
 use App\Constants\TalkMessageType;
 use App\Constants\TalkModeConstant;
 use App\Controller\Api\V1\CController;
+use App\Model\Talk\TalkRecords;
+use App\Model\Talk\TalkRecordsFile;
 use App\Service\Group\GroupMemberService;
 use App\Service\TalkListService;
 use App\Service\TalkService;
@@ -14,6 +17,7 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
+use League\Flysystem\Filesystem;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -144,5 +148,59 @@ class RecordsController extends CController
         $rows = $this->talkService->getForwardRecords($this->uid(), intval($params['record_id']));
 
         return $this->response->success(['rows' => $rows]);
+    }
+
+    /**
+     * 获取转发记录详情
+     *
+     * @RequestMapping(path="file/download", methods="get")
+     */
+    public function download(\Hyperf\HttpServer\Contract\ResponseInterface $response, Filesystem $filesystem)
+    {
+        $params = $this->request->inputs(['cr_id']);
+        $this->validate($params, [
+            'cr_id' => 'required|integer'
+        ]);
+
+        $recordsInfo = TalkRecords::select(['msg_type', 'talk_type', 'user_id', 'receiver_id'])->where('id', $params['cr_id'])->first();
+        if (!$recordsInfo) {
+            return $this->response->fail('文件不存在！');
+        }
+
+        $user_id = $this->uid();
+
+        // 判断消息是否是当前用户发送(如果是则跳过权限验证)
+        if ($recordsInfo->user_id != $user_id) {
+            if ($recordsInfo->talk_type == 1) {
+                if ($recordsInfo->receiver_id != $user_id) {
+                    return $this->response->fail('非法请求！');
+                }
+            } else {
+                if (!di()->get(GroupMemberService::class)->isMember($recordsInfo->receiver_id, $user_id)) {
+                    return $this->response->fail('非法请求！');
+                }
+            }
+        }
+
+        $info = TalkRecordsFile::select(['path', 'original_name', "drive"])->where('record_id', $params['cr_id'])->first();
+
+        switch ($info->drive) {
+            case FileDriveConstant::Local:
+                if (!$info || !$filesystem->has($info->path)) {
+                    return $this->response->fail('文件不存在或没有下载权限！');
+                }
+
+                return $response->download($this->getFilePath($info->path), $info->original_name);
+            case FileDriveConstant::Cos:
+                // 后期添加
+                break;
+            default:
+                break;
+        }
+    }
+
+    private function getFilePath(string $path)
+    {
+        return di()->get(Filesystem::class)->getConfig()->get('root') . '/' . $path;
     }
 }
