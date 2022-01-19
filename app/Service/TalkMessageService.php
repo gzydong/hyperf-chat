@@ -119,7 +119,7 @@ class TalkMessageService
             return false;
         }
 
-        $this->handle($insert, ['text' => '[图片消息]']);
+        $this->handle($insert, ['text' => '[文件消息]']);
 
         return true;
     }
