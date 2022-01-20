@@ -8,8 +8,8 @@ use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Constants\ResponseCode;
-use App\Model\Emoticon;
-use App\Model\EmoticonItem;
+use App\Model\Emoticon\Emoticon;
+use App\Model\Emoticon\EmoticonItem;
 use App\Service\EmoticonService;
 use League\Flysystem\Filesystem;
 use Psr\Http\Message\ResponseInterface;
@@ -189,12 +189,13 @@ class EmoticonController extends CController
     public function delCollectEmoticon(): ResponseInterface
     {
         $params = $this->request->inputs(['ids']);
+
         $this->validate($params, [
             'ids' => 'required|ids'
         ]);
 
-        return $this->emoticonService->deleteCollect($this->uid(), parse_ids($params['ids'])) ?
-            $this->response->success([]) :
-            $this->response->fail();
+        $isTrue = $this->emoticonService->deleteCollect($this->uid(), parse_ids($params['ids']));
+
+        return $isTrue ? $this->response->success() : $this->response->fail();
     }
 }

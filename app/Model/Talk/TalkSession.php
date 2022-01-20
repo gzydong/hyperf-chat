@@ -41,7 +41,6 @@ class TalkSession extends BaseModel
     ];
 
     protected $casts = [
-        'id'          => 'integer',
         'talk_type'   => 'integer',
         'user_id'     => 'integer',
         'receiver_id' => 'integer',

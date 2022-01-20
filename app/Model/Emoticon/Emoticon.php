@@ -2,7 +2,9 @@
 
 declare (strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Emoticon;
+
+use App\Model\BaseModel;
 
 /**
  * 表情包分组数据表模型

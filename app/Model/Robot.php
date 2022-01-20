@@ -19,11 +19,12 @@ use Hyperf\DbConnection\Model\Model;
  * @property int    $type            机器人类型
  * @property string $created_at      创建时间
  * @property string $updated_at      更新时间
+ *
  * @package App\Model
  */
 class Robot extends Model
 {
-    protected $table = 'robots';
+    protected $table = 'robot';
 
     protected $fillable = [
         'user_id',

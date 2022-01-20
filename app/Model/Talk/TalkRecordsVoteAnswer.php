@@ -5,7 +5,6 @@ namespace App\Model\Talk;
 
 use App\Model\BaseModel;
 
-
 /**
  * Class TalkRecordsVoteAnswer
  *
@@ -30,6 +29,6 @@ class TalkRecordsVoteAnswer extends BaseModel
     protected $casts = [
         'vote_id'    => 'integer',
         'user_id'    => 'integer',
-        'created_at' => 'integer',
+        'created_at' => 'datetime',
     ];
 }
