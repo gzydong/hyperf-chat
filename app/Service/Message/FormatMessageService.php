@@ -192,7 +192,10 @@ class FormatMessageService
 
                 // 登录消息
                 case TalkMessageType::USER_LOGIN_MESSAGE:
-                    $rows[$k]['login'] = $logins[$row['id']];
+                    if (isset($logins[$row['id']])) {
+                        $rows[$k]['login'] = $logins[$row['id']];
+                    }
+
                     break;
 
                 // 入群消息/退群消息
