@@ -10,15 +10,6 @@ namespace App\Service;
 class SmsCodeService
 {
     /**
-     * 短信验证码用途渠道
-     */
-    const SMS_USAGE = [
-        'user_register',     // 注册账号
-        'forget_password',   // 找回密码验
-        'change_mobile',     // 修改手机
-    ];
-
-    /**
      * 获取Redis连接
      *
      * @return mixed|\Redis
@@ -35,7 +26,7 @@ class SmsCodeService
      * @param string $mobile 手机号
      * @return string
      */
-    private function getKey(string $type, string $mobile)
+    private function key(string $type, string $mobile)
     {
         return "sms_code:{$type}:{$mobile}";
     }
@@ -50,7 +41,7 @@ class SmsCodeService
      */
     public function check(string $type, string $mobile, string $code)
     {
-        $sms_code = $this->redis()->get($this->getKey($type, $mobile));
+        $sms_code = $this->redis()->get($this->key($type, $mobile));
 
         return $sms_code == $code;
     }
@@ -62,16 +53,9 @@ class SmsCodeService
      * @param string $mobile 手机号
      * @return array|bool
      */
-    public function send(string $usage, string $mobile)
+    public function send(string $usage, string $mobile): array
     {
-        if (!$this->isUsages($usage)) {
-            return [false, [
-                'msg'  => "[{$usage}]：此类短信验证码不支持发送",
-                'data' => []
-            ]];
-        }
-
-        $key = $this->getKey($usage, $mobile);
+        $key = $this->key($usage, $mobile);
 
         // 为防止刷短信行为，此处可进行过滤处理
         [$isTrue, $data] = $this->filter($usage, $mobile);
@@ -127,7 +111,7 @@ class SmsCodeService
      */
     public function delCode(string $usage, string $mobile)
     {
-        return $this->redis()->del($this->getKey($usage, $mobile));
+        return $this->redis()->del($this->key($usage, $mobile));
     }
 
     /**
@@ -151,16 +135,5 @@ class SmsCodeService
             'msg'  => 'ok',
             'data' => []
         ]];
-    }
-
-    /**
-     * 判断验证码用途渠道是否注册
-     *
-     * @param string $usage
-     * @return bool
-     */
-    public function isUsages(string $usage)
-    {
-        return in_array($usage, self::SMS_USAGE);
     }
 }

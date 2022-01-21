@@ -11,6 +11,12 @@ use Hyperf\DbConnection\Db;
 
 class UserService extends BaseService
 {
+
+    public function isMobileExist(string $mobile): bool
+    {
+        return User::where('mobile', $mobile)->exists();
+    }
+
     /**
      * 获取用户信息
      *
@@ -28,10 +34,11 @@ class UserService extends BaseService
      *
      * @param string $mobile   手机号
      * @param string $password 登录密码
-     * @return User|bool
+     * @return false|User
      */
     public function login(string $mobile, string $password)
     {
+        $user = User::where('mobile', $mobile)->first();
         if (!$user = User::where('mobile', $mobile)->first()) {
             return false;
         }

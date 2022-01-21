@@ -67,7 +67,6 @@ class UploadController extends CController
 
         $data = $this->splitUploadService->create($this->uid(), $params['file_name'], $params['file_size']);
 
-
         $data['hash_name'] = $data["upload_id"];
 
         return $data ? $this->response->success($data) : $this->response->fail('获取文件拆分信息失败！');

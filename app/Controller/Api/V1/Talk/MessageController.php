@@ -8,7 +8,7 @@ use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
 use App\Controller\Api\V1\CController;
 use App\Event\TalkEvent;
-use App\Model\EmoticonItem;
+use App\Model\Emoticon\EmoticonItem;
 use App\Model\SplitUpload;
 use App\Service\TalkForwardService;
 use App\Service\TalkMessageService;

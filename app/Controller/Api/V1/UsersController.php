@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Constants\SmsConstant;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -36,7 +37,7 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function getUserDetail(): ResponseInterface
+    public function getDetail(): ResponseInterface
     {
         $userInfo = $this->user();
 
@@ -56,7 +57,7 @@ class UsersController extends CController
      *
      * @return ResponseInterface
      */
-    public function getUserSetting(): ResponseInterface
+    public function getSetting(): ResponseInterface
     {
         $userInfo = $this->user();
 
@@ -80,13 +81,14 @@ class UsersController extends CController
 
     /**
      * 编辑我的信息
-     * @RequestMapping(path="edit-user-detail", methods="post")
+     * @RequestMapping(path="edit/detail", methods="post")
      *
      * @return ResponseInterface
      */
-    public function editUserDetail(): ResponseInterface
+    public function editDetail(): ResponseInterface
     {
         $params = $this->request->inputs(['nickname', 'avatar', 'motto', 'gender']);
+
         $this->validate($params, [
             'nickname' => 'required',
             'motto'    => 'present|max:100',
@@ -94,43 +96,21 @@ class UsersController extends CController
             'avatar'   => 'present|url'
         ]);
 
-        $params['updated_at'] = date("Y-m-d H:i:s");
-
         User::where('id', $this->uid())->update($params);
 
         return $this->response->success([], '个人信息修改成功...');
     }
 
     /**
-     * 修改用户头像
-     * @RequestMapping(path="edit-avatar", methods="post")
-     *
-     * @return ResponseInterface
-     */
-    public function editAvatar(): ResponseInterface
-    {
-        $params = $this->request->inputs(['avatar']);
-        $this->validate($params, [
-            'avatar' => 'required|url'
-        ]);
-
-        User::where('id', $this->uid())->update([
-            'avatar'     => $params['avatar'],
-            'updated_at' => date("Y-m-d H:i:s")
-        ]);
-
-        return $this->response->success([], '头像修改成功...');
-    }
-
-    /**
      * 修改我的密码
-     * @RequestMapping(path="change-password", methods="post")
+     * @RequestMapping(path="edit/password", methods="post")
      *
      * @return ResponseInterface
      */
-    public function editUserPassword(): ResponseInterface
+    public function editPassword(): ResponseInterface
     {
         $params = $this->request->inputs(['old_password', 'new_password']);
+
         $this->validate($params, [
             'old_password' => 'required',
             'new_password' => 'required|min:6|max:16'
@@ -153,21 +133,22 @@ class UsersController extends CController
 
     /**
      * 更换用户手机号
-     * @RequestMapping(path="change-mobile", methods="post")
+     * @RequestMapping(path="edit/mobile", methods="post")
      *
      * @param SmsCodeService $smsCodeService
      * @return ResponseInterface
      */
-    public function editUserMobile(SmsCodeService $smsCodeService): ResponseInterface
+    public function editMobile(SmsCodeService $smsCodeService): ResponseInterface
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
+
         $this->validate($params, [
             'mobile'   => "required|phone",
             'password' => 'required',
             'sms_code' => 'required|digits:6'
         ]);
 
-        if (!$smsCodeService->check('change_mobile', $params['mobile'], (string)$params['sms_code'])) {
+        if (!$smsCodeService->check(SmsConstant::SmsChangeAccountChannel, $params['mobile'], (string)$params['sms_code'])) {
             return $this->response->fail('验证码填写错误！');
         }
 
@@ -180,29 +161,29 @@ class UsersController extends CController
             return $this->response->fail('手机号更换失败！');
         }
 
-        // 清除缓存信息
-        $smsCodeService->delCode('change_mobile', $params['mobile']);
+        $smsCodeService->delCode(SmsConstant::SmsChangeAccountChannel, $params['mobile']);
 
         return $this->response->success([], '手机号更换成功...');
     }
 
     /**
      * 修改用户邮箱接口
-     * @RequestMapping(path="change-email", methods="post")
+     * @RequestMapping(path="edit/email", methods="post")
      *
-     * @return ResponseInterface
+     * @param \App\Support\SendEmailCode $emailCode
+     * @return \Psr\Http\Message\ResponseInterface
      */
-    public function editUserEmail(): ResponseInterface
+    public function editEmail(SendEmailCode $emailCode): ResponseInterface
     {
         $params = $this->request->inputs(['email', 'password', 'email_code']);
+
         $this->validate($params, [
             'email'      => 'required|email',
             'password'   => 'required',
             'email_code' => 'required|digits:6'
         ]);
 
-        $sendEmailCode = new SendEmailCode();
-        if (!$sendEmailCode->check(SendEmailCode::CHANGE_EMAIL, $params['email'], (string)$params['email_code'])) {
+        if (!$emailCode->check(SendEmailCode::CHANGE_EMAIL, $params['email'], (string)$params['email_code'])) {
             return $this->response->fail('验证码填写错误！');
         }
 
@@ -215,66 +196,8 @@ class UsersController extends CController
             return $this->response->fail('邮箱设置失败！');
         }
 
-        $sendEmailCode->delCode(SendEmailCode::CHANGE_EMAIL, $params['email']);
+        $emailCode->delCode(SendEmailCode::CHANGE_EMAIL, $params['email']);
 
         return $this->response->success([], '邮箱设置成功...');
-    }
-
-    /**
-     * 修改手机号发送验证码
-     * @RequestMapping(path="send-mobile-code", methods="post")
-     *
-     * @param SmsCodeService $smsCodeService
-     * @return ResponseInterface
-     */
-    public function sendMobileCode(SmsCodeService $smsCodeService): ResponseInterface
-    {
-        $params = $this->request->inputs(['mobile']);
-        $this->validate($params, [
-            'mobile' => "present|phone"
-        ]);
-
-        $user_id = $this->uid();
-        if (in_array($user_id, [2054, 2055])) {
-            return $this->response->fail('测试账号不支持修改手机号！');
-        }
-
-        if (User::where('mobile', $params['mobile'])->exists()) {
-            return $this->response->fail('手机号已被他人注册！');
-        }
-
-        $data = ['is_debug' => true];
-        [$isTrue, $result] = $smsCodeService->send('change_mobile', $params['mobile']);
-        if (!$isTrue) {
-            // ... 处理发送失败逻辑，当前默认发送成功
-            return $this->response->fail('验证码发送失败！');
-        }
-
-        // 测试环境下直接返回验证码
-        $data['sms_code'] = $result['data']['code'];
-
-        return $this->response->success($data, '验证码发送成功...');
-    }
-
-    /**
-     * 发送绑定邮箱的验证码
-     * @RequestMapping(path="send-change-email-code", methods="post")
-     *
-     * @param SendEmailCode $sendEmailCode
-     * @return ResponseInterface
-     */
-    public function sendChangeEmailCode(SendEmailCode $sendEmailCode): ResponseInterface
-    {
-        $params = $this->request->inputs(['email']);
-        $this->validate($params, [
-            'email' => "required|email"
-        ]);
-
-        $isTrue = $sendEmailCode->send(SendEmailCode::CHANGE_EMAIL, '绑定邮箱', $params['email']);
-        if (!$isTrue) {
-            return $this->response->fail('验证码发送失败！');
-        }
-
-        return $this->response->success([], '验证码发送成功...');
     }
 }
