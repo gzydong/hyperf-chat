@@ -4,14 +4,14 @@ use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
 
-class CreateRobotsTable extends Migration
+class CreateRobotTable extends Migration
 {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('robots', function (Blueprint $table) {
+        Schema::create('robot', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('机器人ID');
             $table->unsignedInteger('user_id')->comment('关联用户ID');
             $table->string('robot_name', 30)->default('')->comment('机器人名称');
@@ -20,7 +20,7 @@ class CreateRobotsTable extends Migration
             $table->unsignedTinyInteger('is_talk')->default(0)->unsigned()->comment('可发送消息[0:否;1:是;]');
             $table->unsignedTinyInteger('status')->default(0)->unsigned()->comment('状态[-1:已删除;0:正常;1:已禁用;]');
             $table->unsignedTinyInteger('type')->default(0)->unsigned()->comment('机器人类型');
-            $table->dateTime('created_at')->nullable()->comment('注册时间');
+            $table->dateTime('created_at')->nullable()->comment('创建时间');
             $table->dateTime('updated_at')->nullable()->comment('更新时间');
 
             $table->charset   = 'utf8';
@@ -36,6 +36,6 @@ class CreateRobotsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('robots');
+        Schema::dropIfExists('robot');
     }
 }

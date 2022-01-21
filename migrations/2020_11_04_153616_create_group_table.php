@@ -22,6 +22,7 @@ class CreateGroupTable extends Migration
             $table->tinyInteger('is_mute')->default(0)->comment('是否全员禁言 [0:否;1:是;]，提示:不包含群主或管理员');
             $table->tinyInteger('is_dismiss')->default(0)->comment('是否已解散[0:否;1:是;]');
             $table->dateTime('created_at')->nullable()->comment('创建时间');
+            $table->dateTime('updated_at')->nullable()->comment('更新时间');
             $table->dateTime('dismissed_at')->nullable()->comment('解散时间');
 
             $table->charset   = 'utf8';

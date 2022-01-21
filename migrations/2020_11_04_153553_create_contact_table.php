@@ -4,14 +4,14 @@ use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
 
-class CreateUsersFriendsTable extends Migration
+class CreateContactTable extends Migration
 {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('users_friends', function (Blueprint $table) {
+        Schema::create('contact', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('关系ID');
             $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
             $table->unsignedInteger('friend_id')->default(0)->comment('好友ID');
@@ -34,6 +34,6 @@ class CreateUsersFriendsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users_friends');
+        Schema::dropIfExists('contact');
     }
 }

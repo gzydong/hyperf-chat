@@ -17,7 +17,8 @@ class CreateArticleClassTable extends Migration
             $table->string('class_name', 20)->default('')->comment('分类名');
             $table->unsignedTinyInteger('sort')->default(0)->comment('排序');
             $table->unsignedTinyInteger('is_default')->default(0)->comment('默认分类[1:是;0:不是]');
-            $table->unsignedInteger('created_at')->nullable(true)->default(0)->comment('创建时间');
+            $table->dateTime('created_at')->nullable(true)->comment('创建时间');
+            $table->dateTime('updated_at')->nullable(true)->comment('更新时间');
 
             $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';

@@ -11,17 +11,20 @@ class CreateArticleTagsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('article_tags', function (Blueprint $table) {
+        Schema::create('article_tag', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('笔记标签ID');
             $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
             $table->string('tag_name', 20)->default('')->comment('标签名');
             $table->unsignedTinyInteger('sort')->default(0)->comment('排序');
-            $table->unsignedInteger('created_at')->nullable(true)->default(0)->comment('创建时间');
+            $table->dateTime('created_at')->nullable(true)->comment('创建时间');
+            $table->dateTime('updated_at')->nullable(true)->comment('更新时间');
 
             $table->charset   = 'utf8';
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
+
             $table->index(['user_id'], 'idx_user_id');
+
             $table->comment('笔记标签表');
         });
     }
@@ -31,6 +34,6 @@ class CreateArticleTagsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('article_tags');
+        Schema::dropIfExists('article_tag');
     }
 }

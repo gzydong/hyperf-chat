@@ -21,7 +21,7 @@ class CreateUsersTable extends Migration
             $table->string('motto', 100)->default('')->comment('用户座右铭');
             $table->string('email', 30)->default('')->comment('用户邮箱');
             $table->unsignedTinyInteger('is_robot')->default(0)->comment('是否机器人[0:否;1:是;]');
-            $table->dateTime('created_at')->nullable()->comment('注册时间');
+            $table->dateTime('created_at')->nullable()->comment('创建时间');
             $table->dateTime('updated_at')->nullable()->comment('更新时间');
 
             $table->charset   = 'utf8';

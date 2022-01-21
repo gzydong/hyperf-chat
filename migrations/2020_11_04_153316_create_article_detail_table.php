@@ -12,7 +12,7 @@ class CreateArticleDetailTable extends Migration
     public function up(): void
     {
         Schema::create('article_detail', function (Blueprint $table) {
-            $table->unsignedInteger('id', true)->comment('笔记详情ID');
+            $table->unsignedInteger('id', true)->comment('自增ID');
             $table->unsignedInteger('article_id')->nullable(false)->comment('笔记ID');
             $table->longtext('md_content')->charset('utf8mb4')->comment('Markdown 内容');
             $table->longtext('content')->charset('utf8mb4')->comment('Markdown 解析HTML内容');
@@ -21,7 +21,7 @@ class CreateArticleDetailTable extends Migration
             $table->collation = 'utf8_general_ci';
             $table->engine    = 'InnoDB';
 
-            $table->unique('article_id', 'unique_article_id');
+            $table->unique('article_id', 'uk_article_id');
 
             $table->comment('笔记详情表');
         });

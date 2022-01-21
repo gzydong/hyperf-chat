@@ -16,7 +16,7 @@ class CreateTalkRecordsCodeTable extends Migration
             $table->unsignedInteger('id', true)->comment('入群或退群通知ID');
             $table->unsignedInteger('record_id')->default(0)->comment('消息记录ID');
             $table->unsignedInteger('user_id')->default(0)->comment('上传文件的用户ID');
-            $table->string('code_lang', 20)->default('')->comment("代码片段类型(如：php,java,python)");
+            $table->string('lang', 20)->default('')->comment("代码片段类型(如：php,java,python)");
             $table->text('code')->charset('utf8mb4')->comment('代码片段内容');
             $table->dateTime('created_at')->nullable(true)->comment('创建时间');
 

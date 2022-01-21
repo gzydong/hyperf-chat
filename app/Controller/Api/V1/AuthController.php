@@ -38,6 +38,7 @@ class AuthController extends CController
     public function login(): ResponseInterface
     {
         $params = $this->request->inputs(['mobile', 'password', 'platform']);
+
         $this->validate($params, [
             'mobile'   => "required|phone",
             'password' => 'required',
@@ -61,7 +62,7 @@ class AuthController extends CController
             'type'         => 'Bearer',
             'access_token' => $token,
             'expires_in'   => $this->guard()->getJwtManager()->getTtl(),
-        ], '账号登录成功...');
+        ]);
     }
 
     /**
@@ -73,7 +74,7 @@ class AuthController extends CController
     {
         $this->guard()->check() && $this->guard()->logout();
 
-        return $this->response->success([], '退出登录成功...');
+        return $this->response->success();
     }
 
     /**
@@ -120,6 +121,7 @@ class AuthController extends CController
     public function forget(): ResponseInterface
     {
         $params = $this->request->inputs(['mobile', 'password', 'sms_code']);
+
         $this->validate($params, [
             'mobile'   => "required|phone",
             'password' => 'required|max:16',
@@ -135,10 +137,9 @@ class AuthController extends CController
             return $this->response->fail('重置密码失败！');
         }
 
-        // 删除验证码缓存
         $this->sms->delCode(SmsConstant::SmsForgetAccountChannel, $params['mobile']);
 
-        return $this->response->success([], '账号注册成功...');
+        return $this->response->success();
     }
 
     /**

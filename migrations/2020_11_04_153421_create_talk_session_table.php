@@ -4,14 +4,14 @@ use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
 
-class CreateTalkListTable extends Migration
+class CreateTalkSessionTable extends Migration
 {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('talk_list', function (Blueprint $table) {
+        Schema::create('talk_session', function (Blueprint $table) {
             $table->unsignedInteger('id', true)->comment('聊天列表ID');
             $table->unsignedTinyInteger('talk_type')->default(1)->comment('聊天类型[1:私信;2:群聊;]');
             $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
@@ -37,6 +37,6 @@ class CreateTalkListTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('talk_list');
+        Schema::dropIfExists('talk_session');
     }
 }

@@ -38,7 +38,6 @@ class UserService extends BaseService
      */
     public function login(string $mobile, string $password)
     {
-        $user = User::where('mobile', $mobile)->first();
         if (!$user = User::where('mobile', $mobile)->first()) {
             return false;
         }
