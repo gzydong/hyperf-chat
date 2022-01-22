@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
 use App\Helper\HashHelper;
 use App\Model\Contact\ContactApply;
+use App\Model\User;
 use App\Repository\Article\ArticleClassRepository;
 use App\Repository\UserRepository;
 use Hyperf\DbConnection\Db;
@@ -31,6 +33,8 @@ class UserService extends BaseService
      *
      * @param string $mobile   手机号
      * @param string $password 登录密码
+     *
+     * @return \App\Model\User|false
      */
     public function login(string $mobile, string $password)
     {
@@ -43,6 +47,7 @@ class UserService extends BaseService
             return false;
         }
 
+        /** @var \App\Model\User $user */
         return $user;
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Constant\SmsConstant;
-use Hyperf\Di\Annotation\Inject;
+use App\Repository\UserRepository;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -26,10 +26,22 @@ use Psr\Http\Message\ResponseInterface;
 class UsersController extends CController
 {
     /**
-     * @Inject
      * @var UserService
      */
     private $userService;
+
+    /**
+     * @var UserRepository
+     */
+    private $userRepository;
+
+    public function __construct(UserService $userService, UserRepository $userRepository)
+    {
+        parent::__construct();
+
+        $this->userService    = $userService;
+        $this->userRepository = $userRepository;
+    }
 
     /**
      * 获取我的信息
@@ -97,7 +109,7 @@ class UsersController extends CController
             'avatar'   => 'present|url'
         ]);
 
-        User::where('id', $this->uid())->update($params);
+        $this->userRepository->update(["id" => $this->uid()], $params);
 
         return $this->response->success([], '个人信息修改成功...');
     }

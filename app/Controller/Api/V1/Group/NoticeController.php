@@ -6,8 +6,6 @@ namespace App\Controller\Api\V1\Group;
 use App\Controller\Api\V1\CController;
 use App\Service\Group\GroupMemberService;
 use App\Service\Group\GroupNoticeService;
-use App\Service\Group\GroupService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -24,21 +22,21 @@ use Psr\Http\Message\ResponseInterface;
  */
 class NoticeController extends CController
 {
-
     /**
-     * @Inject
-     * @var GroupService
-     */
-    private $groupService;
-
-    /**
-     * @inject
      * @var GroupMemberService
      */
     private $groupMemberService;
 
+    public function __construct(GroupMemberService $groupMemberService)
+    {
+        parent::__construct();
+
+        $this->groupMemberService = $groupMemberService;
+    }
+
     /**
      * 获取群组公告列表
+     *
      * @RequestMapping(path="list", methods="get")
      */
     public function list(GroupNoticeService $service): ResponseInterface

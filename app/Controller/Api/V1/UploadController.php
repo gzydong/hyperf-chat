@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -22,10 +21,16 @@ use Psr\Http\Message\ResponseInterface;
 class UploadController extends CController
 {
     /**
-     * @inject
      * @var SplitUploadService
      */
     private $splitUploadService;
+
+    public function __construct(SplitUploadService $service)
+    {
+        parent::__construct();
+
+        $this->splitUploadService = $service;
+    }
 
     /**
      * 图片文件流上传接口
@@ -110,7 +115,7 @@ class UploadController extends CController
                 'hash'          => $params['upload_id']
             ]);
         }
-        
+
         return $this->response->success(['is_file_merge' => false]);
     }
 }

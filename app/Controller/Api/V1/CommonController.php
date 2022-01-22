@@ -5,12 +5,10 @@ namespace App\Controller\Api\V1;
 
 use App\Repository\UserRepository;
 use App\Support\SendEmailCode;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use App\Service\SmsCodeService;
 use App\Constant\SmsConstant;
-use App\Service\UserService;
 
 /**
  * class CommonController
@@ -20,10 +18,16 @@ use App\Service\UserService;
 class CommonController extends CController
 {
     /**
-     * @Inject
      * @var SmsCodeService
      */
     private $sms;
+
+    public function __construct(SmsCodeService $service)
+    {
+        parent::__construct();
+
+        $this->sms = $service;
+    }
 
     /**
      * 发送短信验证码

@@ -5,7 +5,6 @@ namespace App\Controller\Api\V1;
 
 use App\Constant\SmsConstant;
 use App\Event\LoginEvent;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use App\Service\UserService;
@@ -19,16 +18,22 @@ use Psr\Http\Message\ResponseInterface;
 class AuthController extends CController
 {
     /**
-     * @Inject
      * @var UserService
      */
     private $userService;
 
     /**
-     * @Inject
      * @var SmsCodeService
      */
     private $sms;
+
+    public function __construct(SmsCodeService $smsCodeService, UserService $userService)
+    {
+        parent::__construct();
+
+        $this->userService = $userService;
+        $this->sms         = $smsCodeService;
+    }
 
     /**
      * 授权登录接口

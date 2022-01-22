@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -24,10 +23,16 @@ use Psr\Http\Message\ResponseInterface;
 class EmoticonController extends CController
 {
     /**
-     * @Inject
      * @var EmoticonService
      */
     private $emoticonService;
+
+    public function __construct(EmoticonService $service)
+    {
+        parent::__construct();
+
+        $this->emoticonService = $service;
+    }
 
     /**
      * 获取用户表情包列表

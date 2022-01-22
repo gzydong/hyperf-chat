@@ -8,7 +8,6 @@ use App\Model\Group\GroupMember;
 use App\Repository\Contact\ContactRepository;
 use App\Service\Group\GroupMemberService;
 use App\Service\Group\GroupService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -26,19 +25,26 @@ use Psr\Http\Message\ResponseInterface;
 class MemberController extends CController
 {
     /**
-     * @Inject
      * @var GroupService
      */
     private $groupService;
 
     /**
-     * @inject
      * @var GroupMemberService
      */
     private $groupMemberService;
 
+    public function __construct(GroupService $groupService, GroupMemberService $groupMemberService)
+    {
+        parent::__construct();
+
+        $this->groupService       = $groupService;
+        $this->groupMemberService = $groupMemberService;
+    }
+
     /**
      * 获取群组成员列表
+     *
      * @RequestMapping(path="list", methods="get")
      */
     public function list(): ResponseInterface
@@ -102,6 +108,7 @@ class MemberController extends CController
     public function removeMembers(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id', 'members_ids']);
+
         $this->validate($params, [
             'group_id'    => 'required|integer',
             'members_ids' => 'required|ids'
@@ -124,11 +131,13 @@ class MemberController extends CController
 
     /**
      * 设置群名片
+     *
      * @RequestMapping(path="remark", methods="post")
      */
     public function remark(): ResponseInterface
     {
         $params = $this->request->inputs(['group_id', 'visit_card']);
+
         $this->validate($params, [
             'group_id'   => 'required|integer',
             'visit_card' => 'required|max:20'

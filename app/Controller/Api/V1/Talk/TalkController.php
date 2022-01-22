@@ -15,7 +15,6 @@ use App\Service\TalkSessionService;
 use App\Service\TalkService;
 use App\Service\UserFriendService;
 use App\Support\UserRelation;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -24,6 +23,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class TalkController
+ *
  * @Controller(prefix="/api/v1/talk")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -32,19 +32,26 @@ use Psr\Http\Message\ResponseInterface;
 class TalkController extends CController
 {
     /**
-     * @Inject
      * @var TalkService
      */
     public $talkService;
 
     /**
-     * @Inject
      * @var TalkSessionService
      */
-    public $talkListService;
+    public $talkSessionService;
+
+    public function __construct(TalkService $talkService, TalkSessionService $talkSessionService)
+    {
+        parent::__construct();
+
+        $this->talkService        = $talkService;
+        $this->talkSessionService = $talkSessionService;
+    }
 
     /**
      * 获取用户对话列表
+     *
      * @RequestMapping(path="list", methods="get")
      *
      * @return ResponseInterface
@@ -56,11 +63,11 @@ class TalkController extends CController
         // 读取用户的未读消息列表
         if ($list = UnreadTalkCache::getInstance()->reads($user_id)) {
             foreach ($list as $friend_id => $num) {
-                $this->talkListService->create($user_id, $friend_id, TalkModeConstant::PRIVATE_CHAT);
+                $this->talkSessionService->create($user_id, $friend_id, TalkModeConstant::PRIVATE_CHAT);
             }
         }
 
-        return $this->response->success($this->talkListService->getTalkList($user_id));
+        return $this->response->success($this->talkSessionService->getTalkList($user_id));
     }
 
     /**
@@ -71,6 +78,7 @@ class TalkController extends CController
     public function create(UserFriendService $service): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1'
@@ -90,7 +98,7 @@ class TalkController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法进行聊天！');
         }
 
-        $result = $this->talkListService->create($user_id, $params['receiver_id'], $params['talk_type']);
+        $result = $this->talkSessionService->create($user_id, $params['receiver_id'], $params['talk_type']);
         if (!$result) {
             LockRedis::getInstance()->delete($lock);
             return $this->response->fail('创建失败！');
@@ -135,7 +143,7 @@ class TalkController extends CController
             'list_id' => 'required|integer|min:0'
         ]);
 
-        return $this->talkListService->delete($this->uid(), $params['list_id'])
+        return $this->talkSessionService->delete($this->uid(), $params['list_id'])
             ? $this->response->success([], '对话列表删除成功...')
             : $this->response->fail('对话列表删除失败！');
     }
@@ -148,12 +156,13 @@ class TalkController extends CController
     public function topping(): ResponseInterface
     {
         $params = $this->request->inputs(['list_id', 'type']);
+
         $this->validate($params, [
             'list_id' => 'required|integer|min:0',
             'type'    => 'required|in:1,2',
         ]);
 
-        return $this->talkListService->top($this->uid(), $params['list_id'], $params['type'] == 1)
+        return $this->talkSessionService->top($this->uid(), $params['list_id'], $params['type'] == 1)
             ? $this->response->success([], '对话列表置顶(或取消置顶)成功...')
             : $this->response->fail('对话列表置顶(或取消置顶)失败！');
     }
@@ -166,13 +175,14 @@ class TalkController extends CController
     public function disturb(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'is_disturb']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',
             'is_disturb'  => 'required|in:0,1',
         ]);
 
-        return $this->talkListService->disturb($this->uid(), $params['receiver_id'], $params['talk_type'], $params['is_disturb'])
+        return $this->talkSessionService->disturb($this->uid(), $params['receiver_id'], $params['talk_type'], $params['is_disturb'])
             ? $this->response->success([], '免打扰设置成功...')
             : $this->response->fail('免打扰设置失败！');
     }
@@ -184,6 +194,7 @@ class TalkController extends CController
     public function updateUnreadNum(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',

@@ -10,7 +10,6 @@ use App\Model\Group\GroupNotice;
 use App\Service\Group\GroupMemberService;
 use App\Service\Group\GroupService;
 use App\Service\TalkSessionService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -28,19 +27,26 @@ use Psr\Http\Message\ResponseInterface;
 class GroupController extends CController
 {
     /**
-     * @Inject
      * @var GroupService
      */
     private $groupService;
 
     /**
-     * @inject
      * @var GroupMemberService
      */
     private $groupMemberService;
 
+    public function __construct(GroupService $groupService, GroupMemberService $groupMemberService)
+    {
+        parent::__construct();
+
+        $this->groupService       = $groupService;
+        $this->groupMemberService = $groupMemberService;
+    }
+
     /**
      * 获取群组列表
+     *
      * @RequestMapping(path="list", methods="get")
      */
     public function list(): ResponseInterface
@@ -52,6 +58,7 @@ class GroupController extends CController
 
     /**
      * 创建群组
+     *
      * @RequestMapping(path="create", methods="post")
      */
     public function create(): ResponseInterface
@@ -76,6 +83,7 @@ class GroupController extends CController
 
     /**
      * 解散群组接口
+     *
      * @RequestMapping(path="dismiss", methods="post")
      */
     public function dismiss(): ResponseInterface
@@ -96,6 +104,7 @@ class GroupController extends CController
 
     /**
      * 邀请好友加入群组接口
+     *
      * @RequestMapping(path="invite", methods="post")
      */
     public function invite(): ResponseInterface
@@ -117,6 +126,7 @@ class GroupController extends CController
 
     /**
      * 退出群组接口
+     *
      * @RequestMapping(path="secede", methods="post")
      */
     public function secede(): ResponseInterface
@@ -136,6 +146,7 @@ class GroupController extends CController
 
     /**
      * 获取群信息接口
+     *
      * @RequestMapping(path="detail", methods="get")
      */
     public function detail(TalkSessionService $service): ResponseInterface
@@ -174,6 +185,7 @@ class GroupController extends CController
 
     /**
      * 编辑群组信息
+     *
      * @RequestMapping(path="setting", methods="post")
      */
     public function Setting(): ResponseInterface

@@ -10,9 +10,7 @@ use App\Controller\Api\V1\CController;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsFile;
 use App\Service\Group\GroupMemberService;
-use App\Service\TalkSessionService;
 use App\Service\TalkService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -31,16 +29,17 @@ use Psr\Http\Message\ResponseInterface;
 class RecordsController extends CController
 {
     /**
-     * @Inject
      * @var TalkService
      */
-    public $talkService;
+    private $talkService;
 
-    /**
-     * @Inject
-     * @var TalkSessionService
-     */
-    public $talkListService;
+
+    public function __construct(TalkService $talkService)
+    {
+        parent::__construct();
+
+        $this->talkService = $talkService;
+    }
 
     /**
      * 获取对话面板中的聊天记录

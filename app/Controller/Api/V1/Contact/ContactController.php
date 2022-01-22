@@ -13,7 +13,6 @@ use App\Service\Contact\ContactsService;
 use App\Service\SocketClientService;
 use App\Service\TalkSessionService;
 use App\Service\UserService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -21,6 +20,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class ContactsController
+ *
  * @Controller(prefix="/api/v1/contact")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -29,13 +29,11 @@ use Psr\Http\Message\ResponseInterface;
 class ContactController extends CController
 {
     /**
-     * @Inject
      * @var ContactsService
      */
     private $service;
 
     /**
-     * @Inject
      * @var UserService
      */
     private $userService;
@@ -45,6 +43,15 @@ class ContactController extends CController
      */
     private $userRepository;
 
+    public function __construct(ContactsService $service, UserService $userService, UserRepository $userRepository)
+    {
+        parent::__construct();
+
+        $this->service        = $service;
+        $this->userService    = $userService;
+        $this->userRepository = $userRepository;
+    }
+
     /**
      * 获取用户联系人列表
      *
@@ -52,12 +59,7 @@ class ContactController extends CController
      */
     public function getContacts(UserService $service): ResponseInterface
     {
-
-
         $rows = di()->get(ContactRepository::class)->friends($this->uid());
-
-
-        // $rows = $service->getUserFriends($this->uid());
         if ($rows) {
             $runArr = ServerRunID::getInstance()->getServerRunIdAll();
             foreach ($rows as $k => $row) {

@@ -16,7 +16,6 @@ use App\Service\TalkMessageService;
 use App\Support\UserRelation;
 use App\Service\EmoticonService;
 use App\Service\TalkService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -26,6 +25,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class TalkController
+ *
  * @Controller(prefix="/api/v1/talk/message")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -34,16 +34,22 @@ use Psr\Http\Message\ResponseInterface;
 class MessageController extends CController
 {
     /**
-     * @Inject
      * @var TalkService
      */
     public $talkService;
 
     /**
-     * @Inject
      * @var TalkMessageService
      */
     public $talkMessageService;
+
+    public function __construct(TalkService $talkService, TalkMessageService $talkMessageService)
+    {
+        parent::__construct();
+
+        $this->talkService        = $talkService;
+        $this->talkMessageService = $talkMessageService;
+    }
 
     /**
      * 发送文本消息

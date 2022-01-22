@@ -9,7 +9,6 @@ use App\Controller\Api\V1\CController;
 use App\Middleware\JWTAuthMiddleware;
 use App\Repository\UserRepository;
 use App\Service\Contact\ContactApplyService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -17,6 +16,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class ContactsApplyController
+ *
  * @Controller(prefix="/api/v1/contact/apply")
  * @Middleware(JWTAuthMiddleware::class)
  *
@@ -25,10 +25,16 @@ use Psr\Http\Message\ResponseInterface;
 class ContactApplyController extends CController
 {
     /**
-     * @Inject
      * @var ContactApplyService
      */
     private $service;
+
+    public function __construct(ContactApplyService $service)
+    {
+        parent::__construct();
+
+        $this->service = $service;
+    }
 
     /**
      * 添加联系人申请接口

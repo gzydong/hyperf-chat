@@ -8,7 +8,6 @@ use App\Controller\Api\V1\CController;
 use App\Helper\DateHelper;
 use App\Model\Article\ArticleAnnex;
 use App\Service\ArticleService;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -27,10 +26,16 @@ use Psr\Http\Message\ResponseInterface;
 class AnnexController extends CController
 {
     /**
-     * @Inject
      * @var ArticleService
      */
     private $articleService;
+
+    public function __construct(ArticleService $service)
+    {
+        parent::__construct();
+
+        $this->articleService = $service;
+    }
 
     /**
      * 上传附件
