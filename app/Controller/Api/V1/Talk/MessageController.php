@@ -59,6 +59,7 @@ class MessageController extends CController
     public function text(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'text']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',
@@ -233,6 +234,7 @@ class MessageController extends CController
     public function vote(): ResponseInterface
     {
         $params = $this->request->all();
+
         $this->validate($params, [
             'receiver_id' => 'required|integer|min:1',
             'mode'        => 'required|integer|in:0,1',
@@ -389,6 +391,7 @@ class MessageController extends CController
     public function collect(EmoticonService $service): ResponseInterface
     {
         $params = $this->request->inputs(['record_id']);
+
         $this->validate($params, [
             'record_id' => 'required|integer'
         ]);
@@ -410,6 +413,7 @@ class MessageController extends CController
     public function revoke(): ResponseInterface
     {
         $params = $this->request->inputs(['record_id']);
+
         $this->validate($params, [
             'record_id' => 'required|integer|min:1'
         ]);
@@ -428,6 +432,7 @@ class MessageController extends CController
     public function delete(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'record_id']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',

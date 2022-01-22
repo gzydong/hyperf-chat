@@ -23,7 +23,6 @@ use Psr\Http\Message\ResponseInterface;
  */
 class ArticleController extends CController
 {
-
     /**
      * @var ArticleService
      */
@@ -35,8 +34,7 @@ class ArticleController extends CController
 
         $this->articleService = $service;
     }
-
-
+    
     /**
      * 获取笔记列表
      *
