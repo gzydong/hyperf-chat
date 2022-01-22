@@ -80,7 +80,6 @@ class UploadController extends CController
      */
     public function fileSubareaUpload(): ResponseInterface
     {
-
         $params = $this->request->inputs(['upload_id', 'split_index', 'split_num']);
 
         $this->validate($params, [
