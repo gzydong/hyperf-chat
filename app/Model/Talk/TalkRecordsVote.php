@@ -26,6 +26,8 @@ class TalkRecordsVote extends BaseModel
 {
     protected $table = 'talk_records_vote';
 
+    public $timestamps = true;
+
     protected $fillable = [
         'record_id',
         'user_id',

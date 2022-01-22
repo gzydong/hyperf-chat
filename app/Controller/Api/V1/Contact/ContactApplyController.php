@@ -6,13 +6,13 @@ namespace App\Controller\Api\V1\Contact;
 use App\Cache\FriendApply;
 use App\Cache\Repository\LockRedis;
 use App\Controller\Api\V1\CController;
-use App\Service\UserService;
+use App\Middleware\JWTAuthMiddleware;
+use App\Repository\UserRepository;
+use App\Service\Contact\ContactApplyService;
+use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
-use App\Middleware\JWTAuthMiddleware;
 use Hyperf\HttpServer\Annotation\RequestMapping;
-use Hyperf\Di\Annotation\Inject;
-use App\Service\ContactApplyService;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -34,10 +34,10 @@ class ContactApplyController extends CController
      * 添加联系人申请接口
      *
      * @RequestMapping(path="create", methods="post")
-     * @param UserService $userService
+     *
      * @return ResponseInterface
      */
-    public function create(UserService $userService): ResponseInterface
+    public function create(): ResponseInterface
     {
         $params = $this->request->inputs(['friend_id', 'remark']);
         $this->validate($params, [
@@ -47,12 +47,15 @@ class ContactApplyController extends CController
 
         $params['friend_id'] = (int)$params['friend_id'];
 
-        $user = $userService->findById($params['friend_id']);
+        $user = di()->get(UserRepository::class)->findById($params['friend_id']);
 
-        if (!$user) return $this->response->fail('用户不存在！');
+        if (!$user) {
+            return $this->response->fail('用户不存在！');
+        }
 
         $user_id = $this->uid();
         $key     = "{$user_id}_{$params['friend_id']}";
+
         if (LockRedis::getInstance()->lock($key, 10)) {
             $isTrue = $this->service->create($user_id, $params['friend_id'], $params['remark']);
             if ($isTrue) {

@@ -10,6 +10,7 @@ use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\User;
 use App\Model\Contact\ContactApply;
+use App\Repository\Contact\ContactRepository;
 use App\Service\SocketClientService;
 use App\Service\UserService;
 
@@ -154,7 +155,7 @@ class SubscribeHandleService
         $user_id = (int)$data['data']['user_id'];
         $status  = (int)$data['data']['status'];
 
-        $ids = di()->get(UserService::class)->getFriendIds($user_id);
+        $ids = di()->get(ContactRepository::class)->findAllFriendIds($user_id);
 
         if (empty($ids)) return;
 

@@ -3,30 +3,27 @@
 namespace App\Service;
 
 use App\Helpers\HashHelper;
-use App\Model\User;
-use App\Model\Article\ArticleClass;
-use App\Model\Contact\Contact;
 use App\Model\Contact\ContactApply;
+use App\Repository\Article\ArticleClassRepository;
+use App\Repository\UserRepository;
 use Hyperf\DbConnection\Db;
 
 class UserService extends BaseService
 {
-
-    public function isMobileExist(string $mobile): bool
-    {
-        return User::where('mobile', $mobile)->exists();
-    }
+    /**
+     * @var UserRepository
+     */
+    private $userRepository;
 
     /**
-     * 获取用户信息
-     *
-     * @param int   $user_id 用户ID
-     * @param array $field   查询字段
-     * @return User|object|null
+     * @var ArticleClassRepository
      */
-    public function findById(int $user_id, $field = ['*']): ?User
+    private $articleClassRepository;
+
+    public function __construct(UserRepository $userRepository, ArticleClassRepository $articleClassRepository)
     {
-        return User::where('id', $user_id)->first($field);
+        $this->userRepository         = $userRepository;
+        $this->articleClassRepository = $articleClassRepository;
     }
 
     /**
@@ -34,11 +31,11 @@ class UserService extends BaseService
      *
      * @param string $mobile   手机号
      * @param string $password 登录密码
-     * @return false|User
      */
     public function login(string $mobile, string $password)
     {
-        if (!$user = User::where('mobile', $mobile)->first()) {
+        $user = $this->userRepository->first(["mobile" => $mobile]);
+        if (!$user) {
             return false;
         }
 
@@ -59,19 +56,15 @@ class UserService extends BaseService
     {
         Db::beginTransaction();
         try {
-            $data['password']   = HashHelper::make($data['password']);
-            $data['created_at'] = date('Y-m-d H:i:s');
-            $data['updated_at'] = date('Y-m-d H:i:s');
+            $data['password'] = HashHelper::make($data['password']);
 
-            $result = User::create($data);
+            $result = $this->userRepository->create($data);
 
-            // 创建用户的默认笔记分类
-            ArticleClass::create([
+            $this->articleClassRepository->create([
                 'user_id'    => $result->id,
                 'class_name' => '我的笔记',
                 'is_default' => 1,
                 'sort'       => 1,
-                'created_at' => time()
             ]);
 
             Db::commit();
@@ -86,13 +79,15 @@ class UserService extends BaseService
     /**
      * 账号重置密码
      *
-     * @param string $mobile   用户手机好
+     * @param string $mobile   用户手机号
      * @param string $password 新密码
      * @return bool
      */
-    public function resetPassword(string $mobile, string $password)
+    public function resetPassword(string $mobile, string $password): bool
     {
-        return (bool)User::where('mobile', $mobile)->update(['password' => HashHelper::make($password)]);
+        return (bool)$this->userRepository->update(["mobile" => $mobile], [
+            'password' => HashHelper::make($password)
+        ]);
     }
 
     /**
@@ -104,12 +99,15 @@ class UserService extends BaseService
      */
     public function changeMobile(int $user_id, string $mobile)
     {
-        if (User::where('mobile', $mobile)->value('id')) {
+        if ($this->userRepository->isExistMobile($mobile)) {
             return [false, '手机号已被他人绑定'];
         }
 
-        $isTrue = (bool)User::where('id', $user_id)->update(['mobile' => $mobile]);
-        return [$isTrue, null];
+        $this->userRepository->update(["id" => $user_id], [
+            'mobile' => $mobile
+        ]);
+
+        return [true, null];
     }
 
     /**
@@ -119,9 +117,12 @@ class UserService extends BaseService
      * @param int $me_user_id 当前登录用户的ID
      * @return array
      */
-    public function getUserCard(int $friend_id, int $me_user_id)
+    public function getUserCard(int $friend_id, int $me_user_id): array
     {
-        $info = User::select(['id', 'mobile', 'nickname', 'avatar', 'gender', 'motto'])->where('id', $friend_id)->first();
+        $info = $this->userRepository->find($friend_id, [
+            'id', 'mobile', 'nickname', 'avatar', 'gender', 'motto'
+        ]);
+
         if (!$info) return [];
 
         $info                    = $info->toArray();
@@ -147,36 +148,5 @@ class UserService extends BaseService
         }
 
         return $info;
-    }
-
-    /**
-     * 获取用户好友列表
-     *
-     * @param int $user_id 用户ID
-     * @return array
-     */
-    public function getUserFriends(int $user_id): array
-    {
-        return Contact::Join('users', 'users.id', '=', 'contact.friend_id')
-            ->where('user_id', $user_id)->where('contact.status', 1)
-            ->get([
-                'users.id',
-                'users.nickname',
-                'users.avatar',
-                'users.motto',
-                'users.gender',
-                'contact.remark as friend_remark',
-            ])->toArray();
-    }
-
-    /**
-     * 获取指定用户的所有朋友的用户ID
-     *
-     * @param int $user_id 指定用户ID
-     * @return array
-     */
-    public function getFriendIds(int $user_id): array
-    {
-        return Contact::where('user_id', $user_id)->where('status', 1)->pluck('friend_id')->toArray();
     }
 }

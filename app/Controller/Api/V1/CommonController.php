@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Repository\UserRepository;
 use App\Support\SendEmailCode;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -35,7 +36,7 @@ class CommonController extends CController
      *
      * @RequestMapping(path="sms-code", methods="post")
      */
-    public function SmsCode()
+    public function SmsCode(UserRepository $userRepository)
     {
         $params = $this->request->all();
 
@@ -47,7 +48,7 @@ class CommonController extends CController
         switch ($params['channel']) {
             case SmsConstant::SmsLoginChannel:
             case SmsConstant::SmsForgetAccountChannel:
-                if (!$this->userService->isMobileExist($params['mobile'])) {
+                if (!$userRepository->isExistMobile($params['mobile'])) {
                     return $this->response->fail("账号不存在或密码错误！");
                 }
 
@@ -55,7 +56,7 @@ class CommonController extends CController
 
             case SmsConstant::SmsRegisterChannel:
             case SmsConstant::SmsChangeAccountChannel:
-                if ($this->userService->isMobileExist($params['mobile'])) {
+                if ($userRepository->isExistMobile($params['mobile'])) {
                     return $this->response->fail("账号已被他（她）人使用！");
                 }
 

@@ -8,10 +8,21 @@ use App\Cache\ServerRunID;
 use App\Cache\UnreadTalkCache;
 use App\Constants\TalkModeConstant;
 use App\Model\Talk\TalkSession;
+use App\Repository\Talk\TalkSessionRepository;
 use Carbon\Carbon;
 
-class TalkListService
+class TalkSessionService extends BaseService
 {
+    /**
+     * @var TalkSessionRepository
+     */
+    private $repository;
+
+    public function __construct(TalkSessionRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     /**
      * 创建聊天列表记录
      *
@@ -23,7 +34,7 @@ class TalkListService
      */
     public function create(int $user_id, int $receiver_id, int $talk_type, bool $is_robot = false): array
     {
-        $result = TalkSession::updateOrCreate([
+        $result = $this->repository->updateOrCreate([
             'talk_type'   => $talk_type,
             'user_id'     => $user_id,
             'receiver_id' => $receiver_id,
@@ -32,8 +43,6 @@ class TalkListService
             'is_delete'  => 0,
             'is_disturb' => 0,
             'is_robot'   => intval($is_robot),
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
         ]);
 
         return [
@@ -46,38 +55,26 @@ class TalkListService
     /**
      * 聊天对话列表置顶操作
      *
-     * @param int  $user_id 用户ID
-     * @param int  $list_id 会话列表ID
-     * @param bool $is_top  是否置顶（true:是 false:否）
+     * @param int  $user_id    用户ID
+     * @param int  $session_id 会话列表ID
+     * @param bool $is_top     是否置顶（true:是 false:否）
      * @return bool
      */
-    public function top(int $user_id, int $list_id, $is_top = true): bool
+    public function top(int $user_id, int $session_id, bool $is_top = true): bool
     {
-        return (bool)TalkSession::query()->where([
-            ['id', '=', $list_id],
-            ['user_id', '=', $user_id],
-        ])->update([
-            'is_top'     => $is_top ? 1 : 0,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        return (bool)$this->repository->update(['id' => $session_id, 'user_id' => $user_id], ['is_top' => $is_top ? 1 : 0]);
     }
 
     /**
      * 删除会话列表
      *
-     * @param int $user_id 用户ID
-     * @param int $list_id 会话列表ID
+     * @param int $user_id    用户ID
+     * @param int $session_id 会话列表ID
      * @return bool
      */
-    public function delete(int $user_id, int $list_id): bool
+    public function delete(int $user_id, int $session_id): bool
     {
-        return (bool)TalkSession::query()->where([
-            ['id', '=', $list_id],
-            ['user_id', '=', $user_id],
-        ])->update([
-            'is_delete'  => 1,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        return (bool)$this->repository->update(['id' => $session_id, 'user_id' => $user_id], ['is_delete' => 1]);
     }
 
     /**
@@ -90,14 +87,7 @@ class TalkListService
      */
     public function deleteByType(int $user_id, int $receiver_id, int $talk_type): bool
     {
-        return (bool)TalkSession::query()->where([
-            ['user_id', '=', $user_id],
-            ['talk_type', '=', $talk_type],
-            ['receiver_id', '=', $receiver_id],
-        ])->update([
-            'is_delete'  => 1,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        return (bool)$this->repository->update(['user_id' => $user_id, 'talk_type' => $talk_type, 'receiver_id' => $receiver_id], ['is_delete' => 1]);
     }
 
     /**
@@ -173,20 +163,17 @@ class TalkListService
      */
     public function disturb(int $user_id, int $receiver_id, int $talk_type, int $is_disturb): bool
     {
-        $result = TalkSession::query()->where([
-            ['user_id', '=', $user_id],
-            ['talk_type', '=', $talk_type],
-            ['receiver_id', '=', $receiver_id],
-        ])->first(['id', 'is_disturb']);
+        $result = $this->repository->first([
+            'user_id'     => $user_id,
+            'talk_type'   => $talk_type,
+            'receiver_id' => $receiver_id,
+        ], ['id', 'is_disturb']);
 
         if (!$result || $is_disturb == $result->is_disturb) {
             return false;
         }
 
-        return (bool)TalkSession::query()->where('id', $result->id)->update([
-            'is_disturb' => $is_disturb,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        return (bool)$this->repository->update(['id' => $result->id], ['is_disturb' => $is_disturb]);
     }
 
     /**
@@ -199,10 +186,10 @@ class TalkListService
      */
     public function isDisturb(int $user_id, int $receiver_id, int $talk_type): bool
     {
-        return (bool)TalkSession::query()->where([
-            ['user_id', '=', $user_id],
-            ['talk_type', '=', $talk_type],
-            ['receiver_id', '=', $receiver_id],
-        ])->value('is_disturb');
+        return (bool)$this->repository->value([
+            'user_id'     => $user_id,
+            'talk_type'   => $talk_type,
+            'receiver_id' => $receiver_id,
+        ], "is_disturb");
     }
 }

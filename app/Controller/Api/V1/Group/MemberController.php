@@ -5,9 +5,9 @@ namespace App\Controller\Api\V1\Group;
 
 use App\Controller\Api\V1\CController;
 use App\Model\Group\GroupMember;
+use App\Repository\Contact\ContactRepository;
 use App\Service\Group\GroupMemberService;
 use App\Service\Group\GroupService;
-use App\Service\UserService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -75,12 +75,11 @@ class MemberController extends CController
      *
      * @RequestMapping(path="invites", methods="get")
      */
-    public function invites(UserService $service): ResponseInterface
+    public function invites(): ResponseInterface
     {
         $group_id = (int)$this->request->input('group_id', 0);
 
-        $friends = $service->getUserFriends($this->uid());
-
+        $friends = di()->get(ContactRepository::class)->friends($this->uid());
         if ($group_id > 0 && $friends) {
             if ($ids = $this->groupMemberService->getMemberIds($group_id)) {
                 foreach ($friends as $k => $item) {

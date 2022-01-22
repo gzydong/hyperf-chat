@@ -35,10 +35,8 @@ class TalkMessageService
      */
     public function insertText(array $message): bool
     {
-        $message['msg_type']   = TalkMessageType::TEXT_MESSAGE;
-        $message['content']    = htmlspecialchars($message['content']);
-        $message['created_at'] = date('Y-m-d H:i:s');
-        $message['updated_at'] = date('Y-m-d H:i:s');
+        $message['msg_type'] = TalkMessageType::TEXT_MESSAGE;
+        $message['content']  = htmlspecialchars($message['content']);
 
         $result = TalkRecords::create($message);
 
@@ -58,9 +56,7 @@ class TalkMessageService
     {
         Db::beginTransaction();
         try {
-            $message['msg_type']   = TalkMessageType::CODE_MESSAGE;
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $message['updated_at'] = date('Y-m-d H:i:s');
+            $message['msg_type'] = TalkMessageType::CODE_MESSAGE;
 
             $insert = TalkRecords::create($message);
             if (!$insert) {
@@ -95,9 +91,7 @@ class TalkMessageService
     {
         Db::beginTransaction();
         try {
-            $message['msg_type']   = TalkMessageType::FILE_MESSAGE;
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $message['updated_at'] = date('Y-m-d H:i:s');
+            $message['msg_type'] = TalkMessageType::FILE_MESSAGE;
 
             $insert = TalkRecords::create($message);
             if (!$insert) {
@@ -137,11 +131,9 @@ class TalkMessageService
 
         Db::beginTransaction();
         try {
-            $message['msg_type']   = TalkMessageType::VOTE_MESSAGE;
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $message['updated_at'] = date('Y-m-d H:i:s');
+            $message['msg_type'] = TalkMessageType::VOTE_MESSAGE;
+            $insert              = TalkRecords::create($message);
 
-            $insert  = TalkRecords::create($message);
             $options = [];
             foreach ($vote['answer_option'] as $k => $option) {
                 $options[chr(65 + $k)] = $option;
@@ -150,8 +142,6 @@ class TalkMessageService
             $vote['record_id']     = $insert->id;
             $vote['answer_option'] = $options;
             $vote['answer_num']    = $answer_num;
-            $vote['created_at']    = date('Y-m-d H:i:s');
-            $vote['updated_at']    = $vote['created_at'];
 
             if (!TalkRecordsVote::create($vote)) {
                 throw new Exception('插入聊天记录(投票消息)失败...');
@@ -259,11 +249,9 @@ class TalkMessageService
 
         Db::beginTransaction();
         try {
-            $message['user_id']    = $user_id;
-            $message['talk_type']  = TalkModeConstant::PRIVATE_CHAT;
-            $message['msg_type']   = TalkMessageType::USER_LOGIN_MESSAGE;
-            $message['created_at'] = date('Y-m-d H:i:s');
-            $message['updated_at'] = date('Y-m-d H:i:s');
+            $message['user_id']   = $user_id;
+            $message['talk_type'] = TalkModeConstant::PRIVATE_CHAT;
+            $message['msg_type']  = TalkMessageType::USER_LOGIN_MESSAGE;
 
             $insert = TalkRecords::create($message);
             if (!$insert) {
@@ -284,7 +272,7 @@ class TalkMessageService
         }
 
         // 创建对话列表
-        di()->get(TalkListService::class)->create($insert->receiver_id, $insert->user_id, $insert->talk_type, true);
+        di()->get(TalkSessionService::class)->create($insert->receiver_id, $insert->user_id, $insert->talk_type, true);
 
         $this->handle($insert, ['text' => '[登录提醒]']);
 

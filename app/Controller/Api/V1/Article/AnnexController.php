@@ -53,7 +53,6 @@ class AnnexController extends CController
         $annex = [
             'suffix'        => pathinfo($file->getClientFilename(), PATHINFO_EXTENSION),
             'size'          => $file->getSize(),
-            'path'          => '',
             'drive'         => FileDriveConstant::Local,
             'original_name' => $file->getClientFilename()
         ];

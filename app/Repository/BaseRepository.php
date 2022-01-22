@@ -37,7 +37,7 @@ use Hyperf\Utils\Collection;
  * @method bool exists(array $where) 判断是否存在相关数据
  * @method bool doesntExist(array $where) 判断是否不存在相关数据
  *
- * @todo    待完善，请勿使用
+ * @todo    待完善
  *
  * @package App\Repository
  */

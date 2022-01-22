@@ -8,10 +8,10 @@
  * @link   https://github.com/gzydong/hyperf-chat
  */
 
-namespace App\Service;
+namespace App\Service\Contact;
 
-use App\Model\User;
-use App\Model\Contact\Contact;
+use App\Repository\Contact\ContactRepository;
+use App\Service\BaseService;
 use App\Traits\PagingTrait;
 
 /**
@@ -25,6 +25,19 @@ class ContactsService extends BaseService
     use PagingTrait;
 
     /**
+     * @var ContactRepository
+     */
+    private $repository;
+
+    /**
+     * @param ContactRepository $repository
+     */
+    public function __construct(ContactRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    /**
      * 删除联系人
      *
      * @param int $user_id   用户ID
@@ -33,16 +46,15 @@ class ContactsService extends BaseService
      */
     public function delete(int $user_id, int $friend_id): bool
     {
-        $res = (bool)Contact::where('user_id', $user_id)->where('friend_id', $friend_id)->where('status', 1)->update([
-            'status'     => 0,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        $isTrue = (bool)$this->repository->update([
+            "user_id"   => $user_id,
+            "friend_id" => $friend_id,
+            "status"    => 1,
+        ], ['status' => 0]);
 
-        if ($res) redis()->del("good_friends:{$user_id}_{$friend_id}");
+        if ($isTrue) redis()->del("good_friends:{$user_id}_{$friend_id}");
 
-
-
-        return $res;
+        return $isTrue;
     }
 
     /**
@@ -55,22 +67,9 @@ class ContactsService extends BaseService
      */
     public function editRemark(int $user_id, int $friend_id, string $remark): bool
     {
-        return (bool)Contact::where('user_id', $user_id)->where('friend_id', $friend_id)->update([
-            'remark'     => $remark,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
-    }
-
-    /**
-     * 搜索联系人
-     *
-     * @param string $mobile 用户手机号/登录账号
-     * @return array
-     */
-    public function findContact(string $mobile): array
-    {
-        $user = User::where('mobile', $mobile)->first(['id', 'nickname', 'mobile', 'avatar', 'gender']);
-
-        return $user ? $user->toArray() : [];
+        return (bool)$this->repository->update([
+            "user_id"   => $user_id,
+            "friend_id" => $friend_id,
+        ], ['remark' => $remark]);
     }
 }

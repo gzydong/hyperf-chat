@@ -9,7 +9,7 @@ use App\Model\Group\Group;
 use App\Model\Group\GroupNotice;
 use App\Service\Group\GroupMemberService;
 use App\Service\Group\GroupService;
-use App\Service\TalkListService;
+use App\Service\TalkSessionService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -138,7 +138,7 @@ class GroupController extends CController
      * 获取群信息接口
      * @RequestMapping(path="detail", methods="get")
      */
-    public function detail(TalkListService $service): ResponseInterface
+    public function detail(TalkSessionService $service): ResponseInterface
     {
         $group_id = (int)$this->request->input('group_id', 0);
         $user_id  = $this->uid();

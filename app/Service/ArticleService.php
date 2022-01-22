@@ -22,27 +22,6 @@ class ArticleService extends BaseService
     use PagingTrait;
 
     /**
-     * 获取用户文章分类列表
-     *
-     * @param int $user_id 用户ID
-     * @return array
-     */
-    public function getUserClass(int $user_id): array
-    {
-        $fields = [
-            'article_class.id', 'article_class.class_name',
-            'article_class.is_default',
-            'sub_join.count',
-        ];
-
-        $subJoin = Article::select(['class_id', Db::raw('count(class_id) as count')])->where('user_id', $user_id)->where('status', 1)->groupBy(['class_id']);
-
-        return ArticleClass::leftJoinSub($subJoin, 'sub_join', function ($join) {
-            $join->on('article_class.id', '=', 'sub_join.class_id');
-        })->where('article_class.user_id', $user_id)->orderBy('article_class.sort')->get($fields)->toArray();
-    }
-
-    /**
      * 获取用户文章标签列表
      *
      * @param int $user_id 用户ID

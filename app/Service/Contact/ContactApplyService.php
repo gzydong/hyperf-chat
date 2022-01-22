@@ -1,15 +1,18 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Contact;
 
 use App\Cache\FriendApply;
 use App\Constants\TalkEventConstant;
 use App\Event\TalkEvent;
-use App\Model\User;
 use App\Model\Contact\Contact;
 use App\Model\Contact\ContactApply;
+use App\Model\User;
+use App\Service\SocketClientService;
 use App\Traits\PagingTrait;
 use Hyperf\DbConnection\Db;
+use function di;
+use function event;
 
 class ContactApplyService
 {

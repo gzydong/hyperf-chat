@@ -67,7 +67,7 @@ class Initialize extends Seeder
 
         Contact::insert($friends);
 
-        $service = new \App\Service\TalkListService();
+        $service = new \App\Service\TalkSessionService();
         foreach ($list as $item) {
             $service->create($item->user_id, $item->friend_id, \App\Constants\TalkModeConstant::PRIVATE_CHAT);
         }

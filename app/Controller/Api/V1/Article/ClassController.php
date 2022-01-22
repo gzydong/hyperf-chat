@@ -5,6 +5,7 @@ namespace App\Controller\Api\V1\Article;
 
 use App\Cache\Repository\LockRedis;
 use App\Controller\Api\V1\CController;
+use App\Repository\Article\ArticleClassRepository;
 use App\Service\ArticleService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -36,11 +37,14 @@ class ClassController extends CController
      */
     public function list(): ResponseInterface
     {
-        $rows = $this->articleService->getUserClass($this->uid());
+        // $rows = $this->articleService->getUserClass($this->uid());
+        //
+        // foreach ($rows as &$row) {
+        //     $row['count'] = is_null($row['count']) ? 0 : $row['count'];
+        // }
 
-        foreach ($rows as &$row) {
-            $row['count'] = is_null($row['count']) ? 0 : $row['count'];
-        }
+
+        $rows = di()->get(ArticleClassRepository::class)->getUserClass($this->uid());
 
         return $this->response->success(['rows' => $rows]);
     }

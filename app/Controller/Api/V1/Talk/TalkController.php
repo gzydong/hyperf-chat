@@ -11,7 +11,7 @@ use App\Controller\Api\V1\CController;
 use App\Model\Group\Group;
 use App\Model\Talk\TalkSession;
 use App\Model\User;
-use App\Service\TalkListService;
+use App\Service\TalkSessionService;
 use App\Service\TalkService;
 use App\Service\UserFriendService;
 use App\Support\UserRelation;
@@ -39,7 +39,7 @@ class TalkController extends CController
 
     /**
      * @Inject
-     * @var TalkListService
+     * @var TalkSessionService
      */
     public $talkListService;
 

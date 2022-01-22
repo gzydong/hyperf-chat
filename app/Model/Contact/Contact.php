@@ -22,6 +22,8 @@ class Contact extends BaseModel
 {
     protected $table = 'contact';
 
+    public $timestamps = true;
+
     protected $fillable = [
         'user_id',
         'friend_id',
