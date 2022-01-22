@@ -21,12 +21,6 @@ class CommonController extends CController
 {
     /**
      * @Inject
-     * @var UserService
-     */
-    private $userService;
-
-    /**
-     * @Inject
      * @var SmsCodeService
      */
     private $sms;

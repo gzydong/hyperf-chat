@@ -38,7 +38,7 @@ class ContactRepository extends BaseRepository
             'contact.user_id' => $user_id,
             'contact.status'  => 1,
             'join table'      => [
-                ['users', 'users.id', '=', 'contact.friend_id', 'left'],
+                ['users', 'users.id', '=', 'contact.friend_id', 'inner'],
             ]
         ], [
             'users.id',

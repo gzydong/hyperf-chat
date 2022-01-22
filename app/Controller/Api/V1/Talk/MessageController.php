@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1\Talk;
 
 use App\Cache\UnreadTalkCache;
+use App\Constants\MediaTypeConstant;
 use App\Constants\TalkEventConstant;
 use App\Constants\TalkModeConstant;
 use App\Controller\Api\V1\CController;
@@ -187,6 +188,12 @@ class MessageController extends CController
         }
 
         $save_dir = "private/files/talks/" . date('Ymd') . '/' . create_random_filename($file->file_ext);
+        $url      = "";
+        if (MediaTypeConstant::getMediaType($file->file_ext) <= 3) {
+            $save_dir = "public/media/" . date('Ymd') . '/' . create_random_filename($file->file_ext);
+            $url      = get_media_url($save_dir);
+        }
+
         try {
             $filesystem->copy($file->path, $save_dir);
         } catch (\Exception $e) {
@@ -204,6 +211,7 @@ class MessageController extends CController
             'suffix'        => $file->file_ext,
             'size'          => $file->file_size,
             'path'          => $save_dir,
+            'url'           => $url,
         ]);
 
         if (!$isTrue) return $this->response->fail('文件发送失败！');
@@ -270,8 +278,6 @@ class MessageController extends CController
         $emoticon = EmoticonItem::where('id', $params['emoticon_id'])->where('user_id', $user_id)->first();
 
         if (!$emoticon) return $this->response->fail('表情不存在！');
-
-        var_dump($emoticon->toArray());
 
         $isTrue = $this->talkMessageService->insertFile([
             'talk_type'   => $params['talk_type'],
