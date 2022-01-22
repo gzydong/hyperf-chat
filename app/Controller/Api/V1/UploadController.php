@@ -107,10 +107,12 @@ class UploadController extends CController
 
             return $this->response->success([
                 'is_file_merge' => true,
-                'hash' => $params['upload_id']
+                'hash'          => $params['upload_id']
             ]);
         }
 
+
+        // 十多年咖金色那
         return $this->response->success(['is_file_merge' => false]);
     }
 }
