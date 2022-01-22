@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
@@ -7,7 +8,6 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
-use App\Constants\ResponseCode;
 use App\Model\Emoticon\Emoticon;
 use App\Model\Emoticon\EmoticonItem;
 use App\Service\EmoticonService;
@@ -66,7 +66,7 @@ class EmoticonController extends CController
     /**
      * 获取系统表情包
      *
-     * @RequestMapping(path="system", methods="get")
+     * @RequestMapping(path="system/list", methods="get")
      */
     public function system(): ResponseInterface
     {
@@ -85,7 +85,7 @@ class EmoticonController extends CController
     /**
      * 安装或移除系统表情包
      *
-     * @RequestMapping(path="set-user-emoticon", methods="post")
+     * @RequestMapping(path="system/install", methods="post")
      */
     public function setUserEmoticon(): ResponseInterface
     {
@@ -94,6 +94,8 @@ class EmoticonController extends CController
             'emoticon_id' => 'required|integer',
             'type'        => 'required|in:1,2'
         ]);
+
+        $params['emoticon_id'] = intval($params['emoticon_id']);
 
         $user_id = $this->uid();
 
@@ -132,7 +134,8 @@ class EmoticonController extends CController
     /**
      * 自定义上传表情包
      *
-     * @RequestMapping(path="upload-emoticon", methods="post")
+     * @RequestMapping(path="customize/create", methods="post")
+     *
      * @param Filesystem $filesystem
      * @return ResponseInterface
      */
@@ -140,24 +143,16 @@ class EmoticonController extends CController
     {
         $file = $this->request->file('emoticon');
         if (!$file->isValid()) {
-            return $this->response->fail(
-                '图片上传失败，请稍后再试！',
-                [],
-                ResponseCode::VALIDATION_ERROR
-            );
+            return $this->response->invalidParams('上传文件验证失败！');
         }
 
         $ext = $file->getExtension();
         if (!in_array($ext, ['jpg', 'png', 'jpeg', 'gif', 'webp'])) {
-            return $this->response->fail(
-                '图片格式错误，目前仅支持jpg、png、jpeg、gif和webp',
-                [],
-                ResponseCode::VALIDATION_ERROR
-            );
+            return $this->response->invalidParams('图片格式错误，目前仅支持jpg、png、jpeg、gif和webp');
         }
 
         try {
-            $path = 'media/images/emoticon/' . date('Ymd') . '/' . create_image_name($ext, getimagesize($file->getRealPath()));
+            $path = 'public/media/images/emoticon/' . date('Ymd') . '/' . create_image_name($ext, getimagesize($file->getRealPath()));
             $filesystem->write($path, file_get_contents($file->getRealPath()));
         } catch (\Exception $e) {
             return $this->response->fail('图片上传失败！');
@@ -165,10 +160,9 @@ class EmoticonController extends CController
 
         $result = EmoticonItem::create([
             'user_id'     => $this->uid(),
-            'url'         => $path,
+            'url'         => get_media_url($path),
             'file_suffix' => $ext,
             'file_size'   => $file->getSize(),
-            'created_at'  => date('Y-m-d H:i:s')
         ]);
 
         if (!$result) {
@@ -177,14 +171,15 @@ class EmoticonController extends CController
 
         return $this->response->success([
             'media_id' => $result->id,
-            'src'      => get_media_url($result->url)
+            'src'      => $result->url,
         ]);
     }
 
     /**
      * 移除收藏的表情包
      *
-     * @RequestMapping(path="del-collect-emoticon", methods="post")
+     * @RequestMapping(path="customize/delete", methods="post")
+     * @throws \Exception
      */
     public function delCollectEmoticon(): ResponseInterface
     {

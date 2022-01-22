@@ -81,7 +81,8 @@ class UsersController extends CController
 
     /**
      * 编辑我的信息
-     * @RequestMapping(path="edit/detail", methods="post")
+     *
+     * @RequestMapping(path="change/detail", methods="post")
      *
      * @return ResponseInterface
      */
@@ -103,7 +104,8 @@ class UsersController extends CController
 
     /**
      * 修改我的密码
-     * @RequestMapping(path="edit/password", methods="post")
+     *
+     * @RequestMapping(path="change/password", methods="post")
      *
      * @return ResponseInterface
      */
@@ -133,7 +135,8 @@ class UsersController extends CController
 
     /**
      * 更换用户手机号
-     * @RequestMapping(path="edit/mobile", methods="post")
+     *
+     * @RequestMapping(path="change/mobile", methods="post")
      *
      * @param SmsCodeService $smsCodeService
      * @return ResponseInterface
@@ -168,7 +171,8 @@ class UsersController extends CController
 
     /**
      * 修改用户邮箱接口
-     * @RequestMapping(path="edit/email", methods="post")
+     *
+     * @RequestMapping(path="change/email", methods="post")
      *
      * @param \App\Support\SendEmailCode $emailCode
      * @return \Psr\Http\Message\ResponseInterface

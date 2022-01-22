@@ -34,7 +34,7 @@ class UploadController extends CController
      * @param Filesystem $filesystem
      * @return ResponseInterface
      */
-    public function fileStream(Filesystem $filesystem): ResponseInterface
+    public function avatar(Filesystem $filesystem): ResponseInterface
     {
         $file = $this->request->file("file");
 
@@ -60,6 +60,7 @@ class UploadController extends CController
     public function initiateMultipart(): ResponseInterface
     {
         $params = $this->request->inputs(['file_name', 'file_size']);
+
         $this->validate($params, [
             'file_name' => "required",
             'file_size' => 'required|integer'
@@ -79,14 +80,16 @@ class UploadController extends CController
      */
     public function fileSubareaUpload(): ResponseInterface
     {
-        $file   = $this->request->file('file');
+
         $params = $this->request->inputs(['upload_id', 'split_index', 'split_num']);
+
         $this->validate($params, [
             'upload_id'   => 'required',
             'split_index' => 'required',
             'split_num'   => 'required'
         ]);
 
+        $file = $this->request->file('file');
         if (!$file || !$file->isValid()) {
             return $this->response->fail();
         }

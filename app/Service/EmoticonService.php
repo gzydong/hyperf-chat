@@ -157,11 +157,6 @@ class EmoticonService extends BaseService
      */
     public function getDetailsAll(array $where = []): array
     {
-        $items = EmoticonItem::where($where)->get(['id as media_id', 'url as src'])->toArray();
-        foreach ($items as $k => $item) {
-            $items[$k]['src'] = get_media_url($item['src']);
-        }
-
-        return $items;
+        return EmoticonItem::where($where)->get(['id as media_id', 'url as src'])->toArray();
     }
 }

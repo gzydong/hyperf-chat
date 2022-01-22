@@ -39,10 +39,9 @@ class Response
         $resp = [
             "code"    => ResponseCode::SUCCESS,
             "message" => $message,
-            "data"    => $data,
         ];
 
-        // if ($data) $resp["data"] = $data;
+        if ($data) $resp["data"] = $data;
 
         return $this->response->json($resp);
     }
@@ -55,7 +54,7 @@ class Response
      * @param int    $code    错误码
      * @return PsrResponseInterface
      */
-    public function fail(string $message = 'fail', array $data = [], $code = ResponseCode::FAIL): PsrResponseInterface
+    public function fail(string $message = 'fail', array $data = [], int $code = ResponseCode::FAIL): PsrResponseInterface
     {
         $resp = [
             "code"    => $code,
@@ -65,6 +64,19 @@ class Response
         if ($data) $resp["data"] = $data;
 
         return $this->response->json($resp);
+    }
+
+    /**
+     * 参数验证错误
+     * @param string $message 错误信息
+     * @return PsrResponseInterface
+     */
+    public function invalidParams(string $message = 'fail'): PsrResponseInterface
+    {
+        return $this->response->json([
+            "code"    => ResponseCode::VALIDATION_ERROR,
+            "message" => $message,
+        ]);
     }
 
     /**

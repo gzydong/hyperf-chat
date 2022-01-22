@@ -36,6 +36,7 @@ class TalkRecordsFile extends BaseModel
         'suffix',
         'size',
         'path',
+        'url',
         'created_at'
     ];
 

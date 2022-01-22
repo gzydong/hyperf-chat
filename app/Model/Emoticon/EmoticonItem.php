@@ -1,5 +1,4 @@
 <?php
-
 declare (strict_types=1);
 
 namespace App\Model\Emoticon;
@@ -18,11 +17,14 @@ use App\Model\BaseModel;
  * @property int    $file_size   表情包文件大小
  * @property string $created_at  创建时间
  * @property string $updated_at  更新时间
+ *
  * @package App\Model
  */
 class EmoticonItem extends BaseModel
 {
     protected $table = 'emoticon_item';
+
+    public $timestamps = true;
 
     protected $fillable = [
         'emoticon_id',

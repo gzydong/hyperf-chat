@@ -136,7 +136,7 @@ class MessageController extends CController
         }
 
         try {
-            $path = 'media/images/talks/' . date('Ymd') . '/' . create_image_name($ext, getimagesize($file->getRealPath()));
+            $path = 'public/media/images/talks/' . date('Ymd') . '/' . create_image_name($ext, getimagesize($file->getRealPath()));
             $filesystem->write($path, file_get_contents($file->getRealPath()));
         } catch (\Exception $e) {
             return $this->response->fail();
@@ -152,6 +152,7 @@ class MessageController extends CController
             'suffix'        => $ext,
             'size'          => $file->getSize(),
             'path'          => $path,
+            'url'           => get_media_url($path),
             'original_name' => $file->getClientFilename(),
         ]);
 
@@ -254,6 +255,7 @@ class MessageController extends CController
     public function emoticon(): ResponseInterface
     {
         $params = $this->request->inputs(['talk_type', 'receiver_id', 'emoticon_id']);
+
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',
@@ -268,6 +270,8 @@ class MessageController extends CController
         $emoticon = EmoticonItem::where('id', $params['emoticon_id'])->where('user_id', $user_id)->first();
 
         if (!$emoticon) return $this->response->fail('表情不存在！');
+
+        var_dump($emoticon->toArray());
 
         $isTrue = $this->talkMessageService->insertFile([
             'talk_type'   => $params['talk_type'],

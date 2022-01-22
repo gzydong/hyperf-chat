@@ -97,7 +97,7 @@ class FormatMessageService
         if ($files) {
             $files = TalkRecordsFile::whereIn('record_id', $files)->get([
                 'id', 'record_id', 'user_id', 'source', 'type', 'drive',
-                'original_name', 'suffix', 'size', 'path'
+                'original_name', 'suffix', 'size', 'path', 'url'
             ])->keyBy('record_id')->toArray();
         }
 
@@ -149,7 +149,7 @@ class FormatMessageService
                 case TalkMessageType::FILE_MESSAGE:
                     $rows[$k]['file'] = $files[$row['id']] ?? [];
                     if ($rows[$k]['file']) {
-                        $rows[$k]['file']['file_url'] = get_media_url($rows[$k]['file']['path']);
+                        $rows[$k]['file']['file_url'] = $rows[$k]['file']['url'];
                     }
                     break;
 
