@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Hyperf\Di\Annotation\Inject;
 use App\Cache\SocketRoom;
 use App\Service\Group\GroupMemberService;
 use App\Service\Message\ReceiveHandleService;
-use Hyperf\Di\Annotation\Inject;
 use App\Constant\TalkEventConstant;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
@@ -27,7 +27,6 @@ use Swoole\WebSocket\Server;
 use App\Service\SocketClientService;
 use App\Event\TalkEvent;
 
-
 /**
  * Class WebSocketController
  *
@@ -36,16 +35,16 @@ use App\Event\TalkEvent;
 class WebSocketController implements OnMessageInterface, OnOpenInterface, OnCloseInterface
 {
     /**
-     * @inject
+     * @Inject
      * @var SocketClientService
      */
-    private $client;
+    protected $client;
 
     /**
-     * @inject
+     * @Inject
      * @var ReceiveHandleService
      */
-    private $receiveHandle;
+    protected $receiveHandle;
 
     /**
      * 连接创建成功回调事件
