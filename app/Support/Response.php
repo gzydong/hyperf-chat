@@ -6,7 +6,7 @@ namespace App\Support;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
-use App\Constants\ResponseCode;
+use App\Constant\ResponseCode;
 
 class Response
 {

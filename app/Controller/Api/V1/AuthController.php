@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\SmsConstant;
+use App\Constant\SmsConstant;
 use App\Event\LoginEvent;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;

@@ -6,7 +6,7 @@ namespace App\Service;
 use App\Cache\LastMessage;
 use App\Cache\ServerRunID;
 use App\Cache\UnreadTalkCache;
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkModeConstant;
 use App\Model\Talk\TalkSession;
 use App\Repository\Talk\TalkSessionRepository;
 use Carbon\Carbon;

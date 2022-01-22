@@ -18,7 +18,7 @@ use Hyperf\HttpServer\Contract\ResponseInterface;
 use Psr\Container\ContainerInterface;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 use App\Exception\ValidateException;
-use App\Constants\ResponseCode;
+use App\Constant\ResponseCode;
 
 abstract class AbstractController
 {

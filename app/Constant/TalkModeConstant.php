@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Constants;
+namespace App\Constant;
 
 /**
  * 聊天对话模式

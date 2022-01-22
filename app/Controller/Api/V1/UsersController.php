@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use App\Constants\SmsConstant;
+use App\Constant\SmsConstant;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
@@ -11,7 +11,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use App\Middleware\JWTAuthMiddleware;
 use App\Model\User;
 use App\Support\SendEmailCode;
-use App\Helpers\HashHelper;
+use App\Helper\HashHelper;
 use App\Service\UserService;
 use App\Service\SmsCodeService;
 use Psr\Http\Message\ResponseInterface;

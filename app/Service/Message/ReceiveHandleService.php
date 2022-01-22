@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Service\Message;
 
-use App\Constants\TalkEventConstant;
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkEventConstant;
+use App\Constant\TalkModeConstant;
 use App\Event\TalkEvent;
 use App\Service\SocketClientService;
 use App\Service\TalkMessageService;

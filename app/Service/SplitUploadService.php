@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Constants\FileDriveConstant;
+use App\Constant\FileDriveConstant;
 use App\Model\SplitUpload;
 use Hyperf\HttpMessage\Upload\UploadedFile;
 use League\Flysystem\Filesystem;

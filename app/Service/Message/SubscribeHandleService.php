@@ -5,8 +5,8 @@ namespace App\Service\Message;
 
 use App\Cache\GroupCache;
 use App\Cache\SocketRoom;
-use App\Constants\TalkEventConstant;
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkEventConstant;
+use App\Constant\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\User;
 use App\Model\Contact\ContactApply;

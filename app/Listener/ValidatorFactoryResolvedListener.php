@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Listener;
 
-use App\Helpers\RegularHelper;
+use App\Helper\RegularHelper;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 use Hyperf\Validation\Event\ValidatorFactoryResolved;

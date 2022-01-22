@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1\Group;
 
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkModeConstant;
 use App\Controller\Api\V1\CController;
 use App\Model\Group\Group;
 use App\Model\Group\GroupNotice;

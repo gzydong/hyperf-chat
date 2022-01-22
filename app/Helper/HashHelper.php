@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Helper;
 
 /**
  * Hash 密码加密辅助类

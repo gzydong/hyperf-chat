@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace HyperfTest\Cases\Helper;
 
 
-use App\Helpers\ArrayHelper;
+use App\Helper\ArrayHelper;
 use HyperfTest\HttpTestCase;
 
 class ArrayHelperTest extends HttpTestCase

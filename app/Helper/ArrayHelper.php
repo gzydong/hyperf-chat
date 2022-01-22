@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Helper;
 
 class ArrayHelper
 {
@@ -31,7 +31,7 @@ class ArrayHelper
      * @param int    $sort  排序方式
      * @return array
      */
-    public static function sort(array $array, string $field, $sort = SORT_DESC): array
+    public static function sort(array $array, string $field, int $sort = SORT_DESC): array
     {
         array_multisort(array_column($array, $field), $sort, $array);
         return $array;

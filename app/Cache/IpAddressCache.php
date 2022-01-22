@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
-use App\Helpers\JsonHelper;
+use App\Helper\JsonHelper;
 use App\Support\IpAddress;
 
 class IpAddressCache extends HashRedis

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Helper;
 
 /**
  * 字符串助手类

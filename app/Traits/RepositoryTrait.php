@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use App\Helpers\ArrayHelper;
+use App\Helper\ArrayHelper;
 use Hyperf\Database\Model\Builder;
 use Hyperf\Database\Model\Model;
 use Hyperf\DbConnection\Db;

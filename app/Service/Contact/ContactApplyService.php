@@ -3,7 +3,7 @@
 namespace App\Service\Contact;
 
 use App\Cache\FriendApply;
-use App\Constants\TalkEventConstant;
+use App\Constant\TalkEventConstant;
 use App\Event\TalkEvent;
 use App\Model\Contact\Contact;
 use App\Model\Contact\ContactApply;

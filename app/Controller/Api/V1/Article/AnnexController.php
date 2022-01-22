@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1\Article;
 
-use App\Constants\FileDriveConstant;
+use App\Constant\FileDriveConstant;
 use App\Controller\Api\V1\CController;
-use App\Helpers\DateHelper;
+use App\Helper\DateHelper;
 use App\Model\Article\ArticleAnnex;
 use App\Service\ArticleService;
 use Hyperf\Di\Annotation\Inject;

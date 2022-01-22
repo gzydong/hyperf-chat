@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Helper;
 
 /**
  * Json 字符串助手

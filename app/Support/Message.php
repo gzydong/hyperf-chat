@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Constants\RedisSubscribeChan;
+use App\Constant\RedisSubscribeChan;
 
 class Message
 {

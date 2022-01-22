@@ -16,7 +16,7 @@ use App\Cache\SocketRoom;
 use App\Service\Group\GroupMemberService;
 use App\Service\Message\ReceiveHandleService;
 use Hyperf\Di\Annotation\Inject;
-use App\Constants\TalkEventConstant;
+use App\Constant\TalkEventConstant;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;

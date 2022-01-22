@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1\Article;
 
 use App\Controller\Api\V1\CController;
-use App\Helpers\StringHelper;
+use App\Helper\StringHelper;
 use App\Service\ArticleService;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;

@@ -5,9 +5,9 @@ namespace App\Service\Group;
 
 use App\Cache\LastMessage;
 use App\Cache\SocketRoom;
-use App\Constants\TalkEventConstant;
-use App\Constants\TalkMessageType;
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkEventConstant;
+use App\Constant\TalkMessageType;
+use App\Constant\TalkModeConstant;
 use App\Event\TalkEvent;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsInvite;

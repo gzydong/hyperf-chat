@@ -4,7 +4,7 @@ namespace App\Controller\Api\V1\Contact;
 
 use App\Cache\FriendRemark;
 use App\Cache\ServerRunID;
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkModeConstant;
 use App\Controller\Api\V1\CController;
 use App\Middleware\JWTAuthMiddleware;
 use App\Repository\Contact\ContactRepository;

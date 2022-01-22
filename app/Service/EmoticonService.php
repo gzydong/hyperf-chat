@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Constants\TalkMessageType;
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkMessageType;
+use App\Constant\TalkModeConstant;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsFile;
 use App\Model\Emoticon\EmoticonItem;

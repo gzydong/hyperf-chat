@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1\Talk;
 
-use App\Constants\FileDriveConstant;
-use App\Constants\TalkMessageType;
-use App\Constants\TalkModeConstant;
+use App\Constant\FileDriveConstant;
+use App\Constant\TalkMessageType;
+use App\Constant\TalkModeConstant;
 use App\Controller\Api\V1\CController;
 use App\Model\Talk\TalkRecords;
 use App\Model\Talk\TalkRecordsFile;

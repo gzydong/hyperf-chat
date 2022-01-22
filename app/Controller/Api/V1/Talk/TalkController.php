@@ -6,7 +6,7 @@ namespace App\Controller\Api\V1\Talk;
 use App\Cache\LastMessage;
 use App\Cache\Repository\LockRedis;
 use App\Cache\UnreadTalkCache;
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkModeConstant;
 use App\Controller\Api\V1\CController;
 use App\Model\Group\Group;
 use App\Model\Talk\TalkSession;

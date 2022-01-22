@@ -5,7 +5,7 @@ namespace App\Service\Message;
 
 use App\Cache\VoteCache;
 use App\Cache\VoteStatisticsCache;
-use App\Constants\TalkMessageType;
+use App\Constant\TalkMessageType;
 use App\Model\Talk\TalkRecordsCode;
 use App\Model\Talk\TalkRecordsFile;
 use App\Model\Talk\TalkRecordsForward;

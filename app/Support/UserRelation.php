@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Constants\TalkModeConstant;
+use App\Constant\TalkModeConstant;
 use App\Service\Group\GroupMemberService;
 use App\Service\UserFriendService;
 

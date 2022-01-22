@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1\Talk;
 
 use App\Cache\UnreadTalkCache;
-use App\Constants\MediaTypeConstant;
-use App\Constants\TalkEventConstant;
-use App\Constants\TalkModeConstant;
+use App\Constant\MediaTypeConstant;
+use App\Constant\TalkEventConstant;
+use App\Constant\TalkModeConstant;
 use App\Controller\Api\V1\CController;
 use App\Event\TalkEvent;
 use App\Model\Emoticon\EmoticonItem;

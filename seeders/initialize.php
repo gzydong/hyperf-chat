@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Helpers\HashHelper;
+use App\Helper\HashHelper;
 use Hyperf\Database\Seeders\Seeder;
 use App\Model\User;
 use App\Model\Article\ArticleClass;
@@ -69,7 +69,7 @@ class Initialize extends Seeder
 
         $service = new \App\Service\TalkSessionService();
         foreach ($list as $item) {
-            $service->create($item->user_id, $item->friend_id, \App\Constants\TalkModeConstant::PRIVATE_CHAT);
+            $service->create($item->user_id, $item->friend_id, \App\Constant\TalkModeConstant::PRIVATE_CHAT);
         }
     }
 }

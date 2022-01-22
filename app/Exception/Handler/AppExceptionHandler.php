@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Exception\Handler;
 
 use App\Cache\Repository\LockRedis;
-use App\Constants\ResponseCode;
+use App\Constant\ResponseCode;
 use App\Templates\MailerTemplate;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\ExceptionHandler\ExceptionHandler;

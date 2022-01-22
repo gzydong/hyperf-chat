@@ -9,7 +9,7 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use App\Service\SmsCodeService;
-use App\Constants\SmsConstant;
+use App\Constant\SmsConstant;
 use App\Service\UserService;
 
 /**

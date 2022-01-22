@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Process;
 
-use App\Constants\RedisSubscribeChan;
+use App\Constant\RedisSubscribeChan;
 use App\Service\Message\SubscribeHandleService;
 use Hyperf\Process\AbstractProcess;
 use Hyperf\Process\Annotation\Process;
