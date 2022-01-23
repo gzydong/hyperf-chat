@@ -41,13 +41,5 @@ class TestCommand extends HyperfCommand
     {
         // $repository = di()->get(ExampleRepository::class);
         // $repository->where_case2();
-
-        // di()->get(RobotService::class)->create([
-        //     'robot_name' => "登录助手",
-        //     'describe'   => "异地登录助手",
-        //     'logo'       => '',
-        //     'is_talk'    => 0,
-        //     'type'       => 1,
-        // ]);
     }
 }

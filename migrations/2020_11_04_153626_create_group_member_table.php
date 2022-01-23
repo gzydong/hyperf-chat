@@ -20,6 +20,7 @@ class CreateGroupMemberTable extends Migration
             $table->tinyInteger('is_quit')->default(0)->comment('是否退群[0:否;1:是;]');
             $table->string('user_card', 20)->default('')->comment('群名片');
             $table->dateTime('created_at')->nullable()->comment('入群时间');
+            $table->dateTime('updated_at')->nullable()->comment('更新时间');
             $table->dateTime('deleted_at')->nullable()->comment('退群时间');
 
             $table->charset   = 'utf8';

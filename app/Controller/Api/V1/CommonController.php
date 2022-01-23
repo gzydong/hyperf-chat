@@ -84,6 +84,7 @@ class CommonController extends CController
     public function EmailCode(SendEmailCode $sendEmailCode)
     {
         $params = $this->request->inputs(['email']);
+
         $this->validate($params, [
             'email' => "required|email"
         ]);

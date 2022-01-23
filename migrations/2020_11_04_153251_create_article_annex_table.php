@@ -15,6 +15,7 @@ class CreateArticleAnnexTable extends Migration
             $table->unsignedBigInteger('id', true)->comment('文件ID');
             $table->unsignedInteger('user_id')->unsigned()->comment('上传文件的用户ID');
             $table->unsignedInteger('article_id')->default(0)->comment('笔记ID');
+            $table->unsignedInteger('drive')->unsigned()->default(1)->comment('文件驱动[1:local;2:cos;]');
             $table->string('suffix', 10)->default('')->comment('文件后缀名');
             $table->unsignedBigInteger('size')->default(0)->comment('文件大小（单位字节）');
             $table->string('path', 500)->nullable(false)->default('')->comment('文件保存地址（相对地址）');

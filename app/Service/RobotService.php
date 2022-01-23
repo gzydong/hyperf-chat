@@ -23,6 +23,7 @@ class RobotService
         try {
             $user = User::create([
                 'mobile'   => '100' . mt_rand(1000, 9999) . mt_rand(1000, 9999),
+                "nickname" => "登录助手",
                 'password' => HashHelper::make(Str::random(10)),
                 'is_robot' => 1
             ]);

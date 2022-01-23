@@ -176,12 +176,12 @@ class MessageController extends CController
      */
     public function file(Filesystem $filesystem): ResponseInterface
     {
-        $params = $this->request->inputs(['talk_type', 'receiver_id', 'hash_name']);
+        $params = $this->request->inputs(['talk_type', 'receiver_id', 'upload_id']);
 
         $this->validate($params, [
             'talk_type'   => 'required|in:1,2',
             'receiver_id' => 'required|integer|min:1',
-            'hash_name'   => 'required',
+            'upload_id'   => 'required',
         ]);
 
         $user_id = $this->uid();
@@ -189,7 +189,7 @@ class MessageController extends CController
             return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
         }
 
-        $file = SplitUpload::where('user_id', $user_id)->where('upload_id', $params['hash_name'])->where('type', 1)->first();
+        $file = SplitUpload::where('user_id', $user_id)->where('upload_id', $params['upload_id'])->where('type', 1)->first();
         if (!$file || empty($file->path)) {
             return $this->response->fail('文件不存在...');
         }

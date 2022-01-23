@@ -12,7 +12,6 @@ use App\Model\User;
 use App\Model\Contact\ContactApply;
 use App\Repository\Contact\ContactRepository;
 use App\Service\SocketClientService;
-use App\Service\UserService;
 
 class SubscribeHandleService
 {
@@ -49,15 +48,7 @@ class SubscribeHandleService
     }
 
     /**
-     * @param array $data 数据
-     *                    <pre>
-     *                    [
-     *                    'uuid'    => '',
-     *                    'event'   => '',
-     *                    'data'    => '',
-     *                    'options' => ''
-     *                    ];
-     *                    </pre>
+     * @param array $data 数据 ['uuid' => '','event' => '','data' => '','options' => ''];
      */
     public function handle(array $data)
     {

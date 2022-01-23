@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Templates\MailerTemplate;
+use App\Template\MailerTemplate;
 
 class SendEmailCode
 {

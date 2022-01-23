@@ -498,7 +498,7 @@ class ArticleService extends BaseService
             return false;
         }
 
-        $annex_files = $info->annexs()->get(['id', 'article_id', 'save_dir'])->toArray();
+        $annex_files = $info->annexs()->get(['id', 'article_id', 'path'])->toArray();
 
         //判断笔记是否存在附件，不存在直接删除
         if (count($annex_files) == 0) {

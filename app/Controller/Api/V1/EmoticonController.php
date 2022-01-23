@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class EmoticonController
+ *
  * @Controller(prefix="/api/v1/emoticon")
  * @Middleware(JWTAuthMiddleware::class)
  *

@@ -33,7 +33,6 @@ class RecordsController extends CController
      */
     private $talkService;
 
-
     public function __construct(TalkService $talkService)
     {
         parent::__construct();

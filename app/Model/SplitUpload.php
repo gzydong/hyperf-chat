@@ -28,6 +28,8 @@ class SplitUpload extends BaseModel
 {
     protected $table = 'split_upload';
 
+    public $timestamps = true;
+
     protected $fillable = [
         'type',
         'drive',

@@ -109,6 +109,10 @@ class ContactController extends CController
             'id', 'nickname', 'mobile', 'avatar', 'gender'
         ]);
 
+        if (empty($result)) {
+            return $this->response->fail("手机号不存在！");
+        }
+
         return $this->response->success($result);
     }
 

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Templates;
+namespace App\Template;
 
 abstract class BaseTemplate
 {

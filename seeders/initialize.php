@@ -18,7 +18,7 @@ class Initialize extends Seeder
      */
     public function run()
     {
-        if (User::count() > 0) {
+        if (User::count() > 1) {
             echo "数据库已存在数据，不能执行初始化数据脚本...\n";
             return;
         }
@@ -37,14 +37,14 @@ class Initialize extends Seeder
         User::insert($users);
 
         $defaultArticleClass = [];
-        $usersFriends        = [];
         foreach (User::all() as $user) {
             $defaultArticleClass[] = [
                 'user_id'    => $user->id,
                 'class_name' => '我的笔记',
                 'sort'       => 1,
                 'is_default' => 1,
-                'created_at' => time(),
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ];
         }
 
@@ -67,7 +67,7 @@ class Initialize extends Seeder
 
         Contact::insert($friends);
 
-        $service = new \App\Service\TalkSessionService();
+        $service = di()->get(\App\Service\TalkSessionService::class);
         foreach ($list as $item) {
             $service->create($item->user_id, $item->friend_id, \App\Constant\TalkModeConstant::PRIVATE_CHAT);
         }

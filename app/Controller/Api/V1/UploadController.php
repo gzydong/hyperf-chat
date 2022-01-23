@@ -72,10 +72,14 @@ class UploadController extends CController
         ]);
 
         $data = $this->splitUploadService->create($this->uid(), $params['file_name'], $params['file_size']);
+        if (empty($data)) {
+            return $this->response->fail('获取文件拆分信息失败！');
+        }
 
-        $data['hash_name'] = $data["upload_id"];
-
-        return $data ? $this->response->success($data) : $this->response->fail('获取文件拆分信息失败！');
+        return $this->response->success([
+            "upload_id"  => $data["upload_id"],
+            "split_size" => $data["split_size"],
+        ]);
     }
 
     /**
@@ -111,11 +115,11 @@ class UploadController extends CController
             }
 
             return $this->response->success([
-                'is_file_merge' => true,
-                'hash'          => $params['upload_id']
+                'is_merge'  => true,
+                'upload_id' => $params['upload_id']
             ]);
         }
 
-        return $this->response->success(['is_file_merge' => false]);
+        return $this->response->success(['is_merge' => false]);
     }
 }
