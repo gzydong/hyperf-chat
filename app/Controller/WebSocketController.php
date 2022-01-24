@@ -54,6 +54,14 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
      */
     public function onOpen($server, Request $request): void
     {
+        $server->push($request->fd, json_encode([
+            "event"   => "connect",
+            "content" => [
+                "ping_interval" => 20,
+                "ping_timeout"  => 20 * 3,
+            ],
+        ]));
+
         // 当前连接的用户
         $user_id = auth('jwt')->user()->getId();
 
@@ -61,11 +69,6 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
 
         // 判断是否存在异地登录
         $isOnline = $this->client->isOnlineAll($user_id);
-
-        // 若开启单点登录，则主动关闭之前登录的连接
-        if ($isOnline) {
-            // todo 预留
-        }
 
         // 绑定fd与用户关系
         $this->client->bind($request->fd, $user_id);
