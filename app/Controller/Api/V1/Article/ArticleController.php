@@ -34,7 +34,7 @@ class ArticleController extends CController
 
         $this->articleService = $service;
     }
-    
+
     /**
      * 获取笔记列表
      *
@@ -113,7 +113,7 @@ class ArticleController extends CController
             'content'    => htmlspecialchars($params['content'])
         ]);
 
-        return $id ? $this->response->success(['aid' => $id], '笔记编辑成功...') : $this->response->fail();
+        return $id ? $this->response->success(['id' => $id], '笔记编辑成功...') : $this->response->fail();
     }
 
     /**
