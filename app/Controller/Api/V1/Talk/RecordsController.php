@@ -190,8 +190,7 @@ class RecordsController extends CController
 
                 return $response->download($this->getFilePath($info->path), $info->original_name);
             case FileDriveConstant::Cos:
-                // 后期添加
-                break;
+                return $this->response->fail('文件驱动不存在！');
             default:
                 break;
         }
