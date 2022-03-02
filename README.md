@@ -2,8 +2,6 @@
 
 ## 1、简介
 
-这是一个使用Hyperf框架的开发的IM后端应用程序。此项目是 [LumenIM-Serve](https://github.com/gzydong/LumenIM-Serve) 的重构版本。
-
 Lumen-IM 是一个网页版在线即时聊天项目，前端使用 Element-ui + Vue ，后端使用 PHP + Swoole 进行开发。项目后端采用 Hyperf 框架。
 
 - 基于 Swoole WebSocket 服务做消息即时推送
@@ -135,6 +133,10 @@ server {
     }
 }
 ```
+
+### 前端地址
+
+https://github.com/gzydong/LumenIM
 
 ### 注意事项
 
