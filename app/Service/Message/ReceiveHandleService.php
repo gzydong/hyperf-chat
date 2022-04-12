@@ -22,8 +22,8 @@ class ReceiveHandleService
 
     // 消息事件绑定
     const EVENTS = [
-        TalkEventConstant::EVENT_TALK     => 'onTalk',
-        TalkEventConstant::EVENT_KEYBOARD => 'onKeyboard',
+        TalkEventConstant::EVENT_TALK          => 'onTalk',
+        TalkEventConstant::EVENT_TALK_KEYBOARD => 'onKeyboard',
     ];
 
     /**
@@ -79,7 +79,7 @@ class ReceiveHandleService
      */
     public function onKeyboard($server, Frame $frame, $data)
     {
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_KEYBOARD, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK_KEYBOARD, [
             'sender_id'   => (int)$data['sender_id'],
             'receiver_id' => (int)$data['receiver_id'],
         ]));

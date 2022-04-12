@@ -282,7 +282,6 @@ class GroupService extends BaseService
             Db::commit();
         } catch (Exception $e) {
             Db::rollBack();
-            var_dump($e->getMessage());
             return false;
         }
 

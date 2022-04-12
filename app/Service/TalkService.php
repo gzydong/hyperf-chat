@@ -213,7 +213,7 @@ class TalkService extends BaseService
         $result->is_revoke = 1;
         $result->save();
 
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_REVOKE_TALK, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_TALK_REVOKE, [
             'record_id' => $result->id
         ]));
 

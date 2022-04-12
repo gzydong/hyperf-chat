@@ -80,7 +80,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         }
 
         if (!$isOnline) {
-            event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_ONLINE_STATUS, [
+            event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_LOGIN, [
                 'user_id' => $user_id,
                 'status'  => 1,
             ]));
@@ -133,7 +133,7 @@ class WebSocketController implements OnMessageInterface, OnOpenInterface, OnClos
         $isOnline = $this->client->isOnlineAll($user_id);
         if ($isOnline) return;
 
-        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_ONLINE_STATUS, [
+        event()->dispatch(new TalkEvent(TalkEventConstant::EVENT_LOGIN, [
             'user_id' => $user_id,
             'status'  => 0,
         ]));

@@ -25,16 +25,16 @@ class SubscribeHandleService
         TalkEventConstant::EVENT_TALK          => 'onConsumeTalk',
 
         // 键盘输入事件
-        TalkEventConstant::EVENT_KEYBOARD      => 'onConsumeKeyboard',
+        TalkEventConstant::EVENT_TALK_KEYBOARD => 'onConsumeKeyboard',
 
         // 用户在线状态事件
-        TalkEventConstant::EVENT_ONLINE_STATUS => 'onConsumeOnlineStatus',
+        TalkEventConstant::EVENT_LOGIN         => 'onConsumeOnlineStatus',
 
         // 聊天消息推送事件
-        TalkEventConstant::EVENT_REVOKE_TALK   => 'onConsumeRevokeTalk',
+        TalkEventConstant::EVENT_TALK_REVOKE   => 'onConsumeRevokeTalk',
 
         // 好友申请相关事件
-        TalkEventConstant::EVENT_FRIEND_APPLY  => 'onConsumeFriendApply'
+        TalkEventConstant::EVENT_CONTACT_APPLY => 'onConsumeFriendApply'
     ];
 
     /**
@@ -133,7 +133,7 @@ class SubscribeHandleService
     {
         $fds = $this->clientService->findUserFds($data['data']['receiver_id']);
 
-        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_KEYBOARD, $data['data']));
+        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_TALK_KEYBOARD, $data['data']));
     }
 
     /**
@@ -157,7 +157,7 @@ class SubscribeHandleService
 
         $fds = array_unique(array_merge(...$fds));
 
-        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_ONLINE_STATUS, [
+        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_LOGIN, [
             'user_id' => $user_id,
             'status'  => $status
         ]));
@@ -188,7 +188,7 @@ class SubscribeHandleService
 
         if (!$fds) return;
 
-        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_REVOKE_TALK, [
+        $this->push($fds, $this->toJson(TalkEventConstant::EVENT_TALK_REVOKE, [
             'talk_type'   => $record->talk_type,
             'sender_id'   => $record->user_id,
             'receiver_id' => $record->receiver_id,
@@ -234,7 +234,7 @@ class SubscribeHandleService
             'mobile'   => $friendInfo->mobile,
         ];
 
-        $this->push(array_unique($fds), $this->toJson(TalkEventConstant::EVENT_FRIEND_APPLY, $msg));
+        $this->push(array_unique($fds), $this->toJson(TalkEventConstant::EVENT_CONTACT_APPLY, $msg));
     }
 
     private function toJson(string $event, array $data): string
