@@ -196,7 +196,7 @@ class TalkService extends BaseService
         if (!$result) return [false, '消息记录不存在'];
 
         // 判断是否在两分钟之内撤回消息，超过2分钟不能撤回消息
-        if ((time() - strtotime($result->created_at) > 120)) {
+        if ((time() - $result->created_at->timestamp > 120)) {
             return [false, '已超过有效的撤回时间', []];
         }
 
