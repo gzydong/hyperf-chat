@@ -16,7 +16,7 @@ class CreateSplitUploadTable extends Migration
             $table->unsignedTinyInteger('type')->default(2)->comment('数据类型[1:合并文件;2:拆分文件]');
             $table->unsignedInteger('drive')->unsigned()->default(1)->comment('文件驱动[1:local;2:cos;]');
             $table->unsignedInteger('user_id')->default(0)->comment('上传的用户ID');
-            $table->string('upload_id', 32)->default('')->comment('上传文件ID');
+            $table->string('upload_id', 100)->default('')->comment('上传文件ID');
             $table->string('original_name', 100)->default('')->comment('原文件名');
             $table->unsignedTinyInteger('split_index')->default(0)->comment('当前索引块');
             $table->unsignedTinyInteger('split_num')->default(0)->comment('总上传索引块');
