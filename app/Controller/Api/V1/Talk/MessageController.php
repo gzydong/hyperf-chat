@@ -66,9 +66,14 @@ class MessageController extends CController
             'text'        => 'required|max:65535',
         ]);
 
+        $user_id = $this->uid();
+        if (!UserRelation::isFriendOrGroupMember($user_id, (int)$params['receiver_id'], (int)$params['talk_type'])) {
+            return $this->response->fail('暂不属于好友关系或群聊成员，无法发送聊天消息！');
+        }
+
         $this->talkMessageService->insertText([
             'talk_type'   => $params['talk_type'],
-            'user_id'     => $this->uid(),
+            'user_id'     => $user_id,
             'receiver_id' => $params['receiver_id'],
             'content'     => $params['text'],
         ]);
