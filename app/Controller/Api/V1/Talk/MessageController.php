@@ -361,7 +361,7 @@ class MessageController extends CController
 
         if ($receive_user_ids) {
             foreach ($receive_user_ids as $v) {
-                UnreadTalkCache::getInstance()->increment($user_id, $v['id']);
+                UnreadTalkCache::getInstance()->increment($user_id, $v['id'],$params['talk_type']);
             }
         }
 

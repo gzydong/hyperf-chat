@@ -128,13 +128,13 @@ class TalkSessionService extends BaseService
                 'is_top'      => $item['is_top'],
                 'is_disturb'  => $item['is_disturb'],
                 'is_robot'    => $item['is_robot'],
+                'unread_num'  => UnreadTalkCache::getInstance()->read($item['receiver_id'], $user_id,$item['talk_type']) ,
                 'updated_at'  => Carbon::parse($item['updated_at'])->toDateTimeString(),
             ]);
 
             if ($item['talk_type'] == TalkModeConstant::PRIVATE_CHAT) {
                 $data['name']        = $item['nickname'];
                 $data['avatar']      = $item['user_avatar'];
-                $data['unread_num']  = UnreadTalkCache::getInstance()->read($item['receiver_id'], $user_id);
                 $data['is_online']   = (int)di()->get(SocketClientService::class)->isOnlineAll($item['receiver_id'], $runIdAll);
                 $data['remark_name'] = di()->get(UserFriendService::class)->getFriendRemark($user_id, $item['receiver_id']);
             } else if (TalkModeConstant::GROUP_CHAT) {
