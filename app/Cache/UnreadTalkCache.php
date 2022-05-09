@@ -76,6 +76,9 @@ class UnreadTalkCache extends HashRedis
         while ($elements = $this->redis()->hscan($this->getCacheKey(), $iterator, '*_*_' . $user_id, 20)) {
             foreach ($elements as $key => $value) {
                 $keyArr=explode('_', $key);
+                if(count($keyArr)===2){
+                    array_unshift($keyArr,TalkModeConstant::PRIVATE_CHAT);
+                }
                 $arr[$keyArr[1]]=['talk_type'=>$keyArr[0],'num'=>$value];
             }
         }
