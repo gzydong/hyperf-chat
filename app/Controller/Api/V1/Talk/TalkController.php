@@ -63,7 +63,7 @@ class TalkController extends CController
         // 读取用户的未读消息列表
         if ($list = UnreadTalkCache::getInstance()->reads($user_id)) {
             foreach ($list as $receiver_id => $val) {
-                $this->talkSessionService->create($user_id, $receiver_id, $val['talk_type']);
+                $this->talkSessionService->create($user_id, $receiver_id, (int)$val['talk_type']);
             }
         }
 
