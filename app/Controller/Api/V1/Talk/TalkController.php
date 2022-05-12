@@ -201,9 +201,7 @@ class TalkController extends CController
         ]);
 
         // 设置好友消息未读数
-        if ($params['talk_type'] == TalkModeConstant::PRIVATE_CHAT) {
-            UnreadTalkCache::getInstance()->reset((int)$params['receiver_id'], $this->uid(),$params['talk_type']);
-        }
+        UnreadTalkCache::getInstance()->reset((int)$params['receiver_id'], $this->uid(),$params['talk_type']);
 
         return $this->response->success();
     }
