@@ -39,9 +39,8 @@ class Response
         $resp = [
             "code"    => ResponseCode::SUCCESS,
             "message" => $message,
+            "data"    => $data,
         ];
-
-        if ($data) $resp["data"] = $data;
 
         return $this->response->json($resp);
     }
