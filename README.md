@@ -136,7 +136,7 @@ server {
 
 ### 前端地址
 
-https://github.com/gzydong/LumenIM
+[https://github.com/gzydong/LumenIM](https://github.com/gzydong/LumenIM/tree/php-frontend)
 
 ### 注意事项
 
