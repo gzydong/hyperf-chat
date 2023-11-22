@@ -288,7 +288,18 @@ class TalkMessageService
     private function handle(TalkRecords $record, array $option = []): void
     {
         if ($record->talk_type == TalkModeConstant::PRIVATE_CHAT) {
-            UnreadTalkCache::getInstance()->increment($record->user_id, $record->receiver_id);
+            UnreadTalkCache::getInstance()->increment($record->user_id, $record->receiver_id,$record->talk_type);
+        }else{
+            //拉取其它群友,批量增加一次未读
+            $members = GroupMember::select(['group_member.user_id'])
+                ->where([
+                    ['group_member.group_id', '=', $record->receiver_id],
+                    ['group_member.user_id', '<>', $record->user_id],
+                    ['group_member.is_quit', '=', 0],
+                ])->get()->toArray();
+            foreach ($members as $user){
+                UnreadTalkCache::getInstance()->increment($record->receiver_id,$user['user_id'],$record->talk_type);
+            }
         }
 
         LastMessage::getInstance()->save($record->talk_type, $record->user_id, $record->receiver_id, [

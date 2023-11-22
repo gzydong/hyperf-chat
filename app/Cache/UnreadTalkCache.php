@@ -3,6 +3,7 @@
 namespace App\Cache;
 
 use App\Cache\Repository\HashRedis;
+use App\Constant\TalkModeConstant;
 
 /**
  * 私信消息未读数 - 缓存助手
@@ -18,10 +19,11 @@ class UnreadTalkCache extends HashRedis
      *
      * @param int $sender  发送者ID
      * @param int $receive 接收者ID
+     * @param int $talk_type 消息类型
      */
-    public function increment(int $sender, int $receive)
+    public function increment(int $sender, int $receive,int $talk_type)
     {
-        $this->incr($this->flag($sender, $receive), 1);
+        $this->incr($this->flag($talk_type,$sender, $receive), 1);
     }
 
     /**
@@ -29,11 +31,12 @@ class UnreadTalkCache extends HashRedis
      *
      * @param int $sender  发送者ID
      * @param int $receive 接收者ID
+     * @param int $talk_type 消息类型
      * @return int
      */
-    public function read(int $sender, int $receive): int
+    public function read(int $sender, int $receive,int $talk_type): int
     {
-        return (int)$this->get($this->flag($sender, $receive));
+        return (int)$this->get($this->flag($talk_type,$sender, $receive));
     }
 
     /**
@@ -41,10 +44,11 @@ class UnreadTalkCache extends HashRedis
      *
      * @param int $sender  发送者ID
      * @param int $receive 接收者ID
+     * @param int $talk_type 消息类型
      */
-    public function reset(int $sender, int $receive)
+    public function reset(int $sender, int $receive,int $talk_type)
     {
-        $this->rem($this->flag($sender, $receive));
+        $this->rem($this->flag($talk_type,$sender, $receive));
     }
 
     /**
@@ -54,9 +58,9 @@ class UnreadTalkCache extends HashRedis
      * @param int $receive
      * @return string
      */
-    public function flag(int $sender, int $receive): string
+    public function flag(int $talk_type,int $sender, int $receive): string
     {
-        return sprintf("%s_%s", $sender, $receive);
+        return sprintf("%s_%s_%s",$talk_type, $sender, $receive);
     }
 
     /**
@@ -69,9 +73,13 @@ class UnreadTalkCache extends HashRedis
     {
         $iterator = null;
         $arr      = [];
-        while ($elements = $this->redis()->hscan($this->getCacheKey(), $iterator, '*_' . $user_id, 20)) {
+        while ($elements = $this->redis()->hscan($this->getCacheKey(), $iterator, '*_*_' . $user_id, 20)) {
             foreach ($elements as $key => $value) {
-                $arr[explode('_', $key)[0]] = $value;
+                $keyArr=explode('_', $key);
+                if(count($keyArr)===2){
+                    array_unshift($keyArr,TalkModeConstant::PRIVATE_CHAT);
+                }
+                $arr[$keyArr[1]]=['talk_type'=>$keyArr[0],'num'=>$value];
             }
         }
 
